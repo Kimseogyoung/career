@@ -1,13 +1,16 @@
 services:
   app:
-    # 서버에서 빌드하지 않는다. 외부에서 빌드해 올린 이미지를 pull 한다 (ADR-009).
-    image: ghcr.io/colisej1129/career-log:latest
+    # 서버에서 빌드하지 않고 외부에서 빌드한 이미지를 pull 한다 (ADR-009).
+    # 이미지 주소는 .env 의 CAREER_LOG_IMAGE 로 지정한다. 기본값은 로컬 빌드 태그라
+    # 특정 레지스트리/계정에 묶이지 않는다 (오픈소스).
+    image: ${CAREER_LOG_IMAGE:-career-log:latest}
     container_name: career-log
     restart: unless-stopped
     env_file: .env
     ports:
-      # 루프백에만 바인딩한다. 외부 노출은 앞단의 리버스 프록시가 맡는다.
-      - "127.0.0.1:13000:3000"
+      # 호스트 쪽 바인딩만 설정으로 뺀다. 컨테이너 내부는 항상 3000.
+      # 기본은 루프백 바인딩 — 외부 노출은 앞단의 리버스 프록시가 맡는다.
+      - "${APP_BIND:-127.0.0.1}:${APP_PORT:-3000}:3000"
     volumes:
       # 미동기화 쓰기 큐만 보관한다. 과거 기록은 원격 저장소에 있다 (ADR-004/006).
       - ./queue:/app/queue

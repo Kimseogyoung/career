@@ -201,18 +201,22 @@ PUT /api/journal/2026-10-01/entries/<id>
 ```yaml
 services:
   app:
-    image: ghcr.io/<user>/career-log:latest
+    # 이미지·호스트 포트는 .env 로 뺀다. 특정 레지스트리/계정/포트에 묶지 않는다.
+    image: ${CAREER_LOG_IMAGE:-career-log:latest}
     restart: unless-stopped
     env_file: .env
-    ports: ["127.0.0.1:13000:3000"]   # nginx가 앞단. 외부에 직접 열지 않는다
+    ports:
+      - "${APP_BIND:-127.0.0.1}:${APP_PORT:-3000}:3000" # 프록시가 앞단. 외부에 직접 열지 않는다
     volumes:
-      - ./queue:/app/queue      # 미동기화 쓰기 큐만. 과거 기록 아님
+      - ./queue:/app/queue # 미동기화 쓰기 큐만. 과거 기록 아님
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:3000/api/health"]
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3000/api/health"]
       interval: 30s
 ```
 
-볼륨은 쓰기 큐 하나뿐이다. 이 볼륨을 날려도 **미동기화분만** 잃고 과거 기록은 원격에 그대로 있다.
+이미지 주소와 호스트 포트는 `.env` 변수로 조립한다. 레포에는 중립적 기본값만 두어
+각자 자신의 레지스트리·포트로 덮어쓰게 한다(오픈소스). 볼륨은 쓰기 큐 하나뿐이고,
+이 볼륨을 날려도 **미동기화분만** 잃고 과거 기록은 원격에 그대로 있다.
 
 ### 8.3 외부 노출
 
