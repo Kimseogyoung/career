@@ -20,6 +20,9 @@ vapid-keys.json
 queue/*
 !queue/.gitkeep
 
+# docker save 이미지 산출물 (레포에 넣지 않는다)
+*.tar
+
 # 백업/스냅샷 임시 산출물
 tmp/
 *.tar.gz
