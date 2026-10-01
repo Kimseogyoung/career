@@ -15,7 +15,8 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "gen:password": "node scripts/gen-password.mjs",
-    "gen:secret": "node scripts/gen-secret.mjs"
+    "gen:secret": "node scripts/gen-secret.mjs",
+    "check:password": "node scripts/check-password.mjs"
   },
   "dependencies": {
     "@node-rs/argon2": "^2.2.1",
