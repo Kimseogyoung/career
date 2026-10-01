@@ -1,0 +1,12 @@
+node_modules
+.next
+.git
+.github
+queue
+docs
+*.md
+.env
+.env.*
+!.env.example
+.vscode
+.idea

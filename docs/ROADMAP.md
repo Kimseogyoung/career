@@ -4,22 +4,33 @@
 
 ---
 
-## 0단계 — 뼈대 (현재)
+## 0단계 — 뼈대 ✅
 
 - [x] 레포 초기화, Claude 작업 규칙(`CLAUDE.md`)
 - [x] 기획서 / 아키텍처 / 데이터 모델 / 설계 결정 문서
-- [ ] Next.js 프로젝트 스캐폴드, TypeScript·ESLint·Prettier
-- [ ] Dockerfile(multi-stage, standalone) + docker-compose
-- [ ] `/api/health`
-- [ ] 단일 사용자 로그인 + 세션 미들웨어
+- [x] Next.js 16 스캐폴드, TypeScript 5.9 · ESLint 9 · Prettier
+- [x] Dockerfile(multi-stage, standalone) + docker-compose
+- [x] `/api/health` — 인증 불필요, 외부 의존 상태를 보지 않음
+- [x] 단일 사용자 로그인 + 세션 미들웨어 (argon2 + JWT 쿠키, 슬라이딩 갱신, 레이트 리밋)
+- [x] `gen:password` / `gen:secret` 스크립트
 
 **완료 조건**: 홈서버에서 컨테이너가 뜨고 로그인된다.
+
+검증한 것: health 공개 접근, 미인증 페이지 리다이렉트(307), 미인증 API 401,
+오답/잘못된 본문 거부, 정답 로그인 후 httpOnly 쿠키 발급, 쿠키로 보호 경로 접근,
+로그인 상태에서 `/login` 접근 시 홈으로, 로그아웃 후 재차단, 6회 실패 시 429,
+변조 토큰 거부.
+
+> ESLint는 10이 아니라 9를 쓴다. `eslint-config-next` 16이 번들한
+> `eslint-plugin-react`가 ESLint 10의 rule context 변경과 호환되지 않는다.
+> TypeScript도 7이 아닌 5.9를 쓴다. 둘 다 상류가 따라오면 올린다.
 
 ---
 
 ## 1단계 — MVP: 기록이 쌓인다
 
 ### 1-1. 원격 저장 계층
+
 - [ ] GitHub Contents API 클라이언트 (읽기/쓰기/sha 동시성/409 재시도)
 - [ ] 메모리 LRU 캐시 (월 24개 상한) + `index.json` 전량 상주
 - [ ] 로컬 쓰기 큐 + 10초 디바운스 플러시 + 지수 백오프
@@ -27,23 +38,27 @@
 - [ ] **원격 장애를 주입한 통합 테스트** — 저장 계층은 장애 경로가 정상 경로만큼 중요하다
 
 ### 1-2. 기록 CRUD
+
 - [ ] 엔트리 생성/수정/삭제 API
 - [ ] 일 상세 화면 — 시간 슬롯 그리드, 카테고리·태그·텍스트 입력
 - [ ] 기록 시간대 설정 (기본 09–18시, 범위 밖 수동 추가)
 
 ### 1-3. 달력
+
 - [ ] 월 그리드, 일 셀에 요약 첫 줄 + `…`
 - [ ] 주간 요약 상시 노출
 - [ ] 카테고리 색, 태그 필터
 - [ ] 일 셀 클릭 → 일 상세
 
 ### 1-4. 요약
+
 - [ ] Claude API 연동 (`claude-opus-5`, adaptive thinking)
 - [ ] 일/주/월 요약 생성 + 수동 수정 + 재생성
 - [ ] node-cron 스케줄 (23:50 / 일 23:55 / 말일 23:55)
 - [ ] 키 없을 때 수동 폴백
 
 ### 1-5. 알람
+
 - [ ] PWA 매니페스트, Service Worker
 - [ ] VAPID 키 생성 스크립트, 구독 등록/해제
 - [ ] 매시 정각 푸시 (이미 기록된 슬롯은 skip)
@@ -51,6 +66,7 @@
 - [ ] iOS 설치 안내
 
 ### 1-6. 복구
+
 - [ ] 커밋 이력 조회, 특정 시점 복원
 - [ ] 월 1회 `snapshots/` tar.gz
 - [ ] 전체 JSON 내보내기

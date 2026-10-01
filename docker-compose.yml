@@ -1,0 +1,20 @@
+services:
+  app:
+    # 서버에서 빌드하지 않는다. 외부에서 빌드해 올린 이미지를 pull 한다 (ADR-009).
+    image: ghcr.io/colisej1129/career-log:latest
+    container_name: career-log
+    restart: unless-stopped
+    env_file: .env
+    ports:
+      # 외부에는 직접 열지 않는다. 앞단의 nginx 리버스 프록시가
+      # career.sandbox.seogyoung.com → 127.0.0.1:13000 으로 넘긴다.
+      - "127.0.0.1:13000:3000"
+    volumes:
+      # 미동기화 쓰기 큐만 보관한다. 과거 기록은 원격 저장소에 있다 (ADR-004/006).
+      - ./queue:/app/queue
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3000/api/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 10s

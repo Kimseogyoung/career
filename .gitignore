@@ -36,6 +36,10 @@ Thumbs.db
 !.vscode/extensions.json
 .idea/
 
+# typescript (빌드가 생성)
+*.tsbuildinfo
+next-env.d.ts
+
 # test & coverage
 coverage/
 .nyc_output/
