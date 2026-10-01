@@ -28,7 +28,7 @@
 ## 한눈에 보는 구조
 
 ```
-브라우저/PWA ──HTTPS──> nginx(기존 인프라) ──> career-log 컨테이너
+브라우저/PWA ──HTTPS──> 리버스 프록시 ──> career-log 컨테이너
                                                     │
                                       ┌─────────────┴─────────────┐
                                       ▼                           ▼
@@ -68,9 +68,13 @@ docker compose up -d
 
 - Linux + Docker Compose가 도는 홈서버
 - 데이터 전용 **private GitHub 레포** + contents 읽기/쓰기 권한 PAT
-- nginx 리버스 프록시에 서브도메인 1개 추가 (HTTPS 필수 — 알림이 보안 컨텍스트를 요구한다)
+- HTTPS를 종단하는 리버스 프록시 (알림이 보안 컨텍스트를 요구하므로 HTTPS 필수)
 - (선택) Anthropic API 키 — 없으면 요약은 수동 작성으로 폴백
 
 ### 나중에
 
 업무 기록이 쌓이면 그걸 근거로 이력서·지원 내역을 관리하는 기능을 올릴 계획이다. MVP 범위는 아니다. → [로드맵 2·3단계](docs/ROADMAP.md)
+
+## 라이선스
+
+[MIT](LICENSE)

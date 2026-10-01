@@ -13,9 +13,8 @@
 ┌──────────────────────────────▼──────────────────────────────┐
 │ 홈서버 (Linux)                                               │
 │                                                              │
-│   nginx 리버스 프록시  ── career.sandbox.seogyoung.com        │
-│   (별도 레포가 관리, Let's Encrypt)                           │
-│            │ http://127.0.0.1:13000                          │
+│   리버스 프록시 (HTTPS 종단)                                  │
+│            │ http://127.0.0.1:<포트>                         │
 │            ▼                                                 │
 │   ┌──────────────────────────────────┐                       │
 │   │ career-log (Docker, Next.js)     │                       │
@@ -216,37 +215,20 @@ services:
 
 ### 8.3 외부 노출
 
-**이미 운영 중인 nginx 리버스 프록시를 재사용한다.** 이 프로젝트는 HTTPS를 직접 처리하지 않는다.
+**이 앱은 HTTPS를 직접 처리하지 않는다.** 앞단의 리버스 프록시가 TLS를 종단하고
+`127.0.0.1`의 앱 포트로 평문 전달한다. 컨테이너는 루프백에만 바인딩하며 외부에 직접 열지 않는다.
 
-- 별도 레포(`SeogyoungNetComInfra`)가 nginx 설정과 Let's Encrypt 인증서를 관리한다.
-- 패턴: 서브도메인 하나당 conf 파일 하나, `proxy_pass`로 `127.0.0.1:<포트>`에 넘긴다. 기존 앱들이 11000·12000번을 쓰고 있으므로 이 앱은 **13000번**을 쓴다.
+프록시가 충족해야 할 조건은 두 가지다.
 
-추가해야 할 것은 두 가지다.
+- **`X-Forwarded-Proto`를 전달할 것.** 이게 없으면 앱이 요청을 HTTP로 인식해
+  세션 쿠키에 `Secure` 플래그를 붙이지 못하고, 그 결과 로그인이 유지되지 않는다.
+- **유효한 인증서로 HTTPS를 제공할 것.** Web Push와 Service Worker는 보안 컨텍스트에서만
+  동작하므로, 인증서가 없으면 기록 알람 기능 자체가 뜨지 않는다.
 
-1. `nginx/conf.d/career.conf` 신규 작성
+`X-Real-IP` 또는 `X-Forwarded-For`도 전달하면 로그인 레이트 리밋이 클라이언트별로 동작한다.
+없으면 모든 요청이 한 덩어리로 묶인다.
 
-```nginx
-server {
-    listen 80;
-    server_name career.sandbox.seogyoung.com;
-
-    location / {
-        proxy_pass http://127.0.0.1:13000;
-        proxy_set_header Host              $host;
-        proxy_set_header X-Real-IP         $remote_addr;
-        proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;   # ← 아래 주의 참조
-    }
-}
-```
-
-2. `ssl_setup.sh`의 `DOMAINS` 배열에 `career.sandbox.seogyoung.com` 추가 후 재발급.
-
-> **`X-Forwarded-Proto`는 빠뜨리면 안 된다.** 기존 conf들에는 이 헤더가 없다. 이게 없으면 앱이 요청을 HTTP로 인식해 **세션 쿠키의 `Secure` 플래그를 붙이지 못하고**, 그 결과 로그인이 유지되지 않는다.
-
-> **HTTPS는 선택이 아니다.** Web Push와 Service Worker는 보안 컨텍스트에서만 동작하므로, 인증서가 없으면 기록 알람 기능 자체가 뜨지 않는다.
-
----
+프록시 자체의 설정과 인증서 발급은 이 레포의 범위가 아니다.
 
 ## 9. 장애 시 동작
 
