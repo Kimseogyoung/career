@@ -12,10 +12,7 @@
 
 설계 완료, 구현 전. → [로드맵](docs/ROADMAP.md)
 
-> **이 프로젝트는 바이브 코딩으로 만들어집니다.**
-> 기획·설계 문서와 코드 대부분을 [Claude Code](https://claude.com/claude-code)로 작성합니다.
-> 설계 결정의 근거와 포기한 선택지는 [DECISIONS.md](docs/DECISIONS.md)에,
-> AI가 따라야 할 제약은 [CLAUDE.md](CLAUDE.md)에 남겨 둡니다.
+> 이 프로젝트는 바이브 코딩위주로 구현합니다.
 
 ## 문서
 
