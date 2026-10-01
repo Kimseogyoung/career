@@ -10,38 +10,56 @@
        │                       │  ▲ Web Push           │
        └───────────────────────┼──┴────────────────────┘
                                │ HTTPS
-                    ┌──────────▼──────────┐
-                    │  Cloudflare Tunnel  │   (고정 IP·포트포워딩 불필요)
-                    └──────────┬──────────┘
-                               │
-            ┌──────────────────▼──────────────────┐
-            │  홈서버 (Linux + Docker Compose)     │
-            │  ┌────────────────────────────────┐ │
-            │  │  career-log (Next.js standalone)│ │
-            │  │   ├ App Router (UI)             │ │
-            │  │   ├ Route Handlers (API)        │ │
-            │  │   ├ 메모리 LRU 캐시 (24개월)    │ │
-            │  │   ├ 쓰기 큐 (미동기화분 한정)   │ │
-            │  │   └ node-cron 스케줄러          │ │
-            │  └────────────┬───────────────────┘ │
-            └───────────────┼─────────────────────┘
-                            │ HTTPS
-          ┌─────────────────┼─────────────────┐
-          ▼                                   ▼
-┌───────────────────┐              ┌───────────────────┐
-│ GitHub (private)  │              │  Claude API       │
-│  ← 기록의 정본    │              │  claude-opus-5    │
-│  Contents API     │              │  요약 생성        │
-└───────────────────┘              └───────────────────┘
+┌──────────────────────────────▼──────────────────────────────┐
+│ 홈서버 (Linux)                                               │
+│                                                              │
+│   nginx 리버스 프록시  ── career.sandbox.seogyoung.com        │
+│   (별도 레포가 관리, Let's Encrypt)                           │
+│            │ http://127.0.0.1:13000                          │
+│            ▼                                                 │
+│   ┌──────────────────────────────────┐                       │
+│   │ career-log (Docker, Next.js)     │                       │
+│   │  ├ App Router (UI)               │                       │
+│   │  ├ Route Handlers (API)          │                       │
+│   │  ├ 메모리 LRU 캐시 (24개월)      │                       │
+│   │  ├ 쓰기 큐 (미동기화분 한정)     │                       │
+│   │  └ node-cron 스케줄러            │                       │
+│   └──────────────┬───────────────────┘                       │
+└──────────────────┼──────────────────────────────────────────┘
+                   │ HTTPS
+       ┌───────────┴───────────┐
+       ▼                       ▼
+┌───────────────────┐  ┌───────────────────┐
+│ GitHub (private)  │  │  Claude API       │
+│  ← 기록의 정본    │  │  claude-opus-5    │
+│  Contents API     │  │  요약 생성        │
+└───────────────────┘  └───────────────────┘
 ```
 
 **컨테이너는 1개다.** 프론트엔드, API, 스케줄러가 한 Next.js 프로세스 안에 있다. 저사양 홈서버에서 프로세스 수를 늘리지 않는 것이 이 설계의 기본 원칙이다.
 
 ---
 
-## 2. 저장 계층
+## 2. 기술 스택
 
-### 2.1 세 계층의 역할
+| 영역 | 선택 | 비고 |
+|---|---|---|
+| 프레임워크 | Next.js (App Router) + TypeScript | UI·API·스케줄러가 한 프로세스 |
+| 스케줄러 | node-cron | `instrumentation.ts`에서 기동 |
+| 요약 | `@anthropic-ai/sdk` — `claude-opus-5`, `thinking: { type: "adaptive" }` | 키 없으면 수동 폴백 |
+| 알림 | `web-push` (VAPID) + Service Worker | PWA |
+| 인증 | argon2 해시 + JWT httpOnly 쿠키 | 사용자 테이블 없음 |
+| 원격 저장 | GitHub Contents API (`fetch`) | git 바이너리·로컬 `.git` 불필요 |
+| 캐시 | 프로세스 내 LRU | 외부 캐시 서버 없음 |
+| 배포 | Docker multi-stage (`output: "standalone"`, node alpine) + Compose | 서버에서 빌드하지 않음 |
+
+새 런타임 의존성을 추가하기 전에 [DECISIONS.md](./DECISIONS.md)의 "프로세스를 늘리지 않는다" 제약과 충돌하지 않는지 확인한다.
+
+---
+
+## 3. 저장 계층
+
+### 3.1 세 계층의 역할
 
 | 계층 | 위치 | 수명 | 담는 것 |
 |---|---|---|---|
@@ -51,7 +69,7 @@
 
 홈서버 디스크에 과거 기록이 남지 않는다. 쓰기 큐는 원격 반영에 성공하는 즉시 삭제된다.
 
-### 2.2 읽기 경로
+### 3.2 읽기 경로
 
 ```
 GET /day/2026-10-01
@@ -68,7 +86,7 @@ GET /day/2026-10-01
 
 달력(월 뷰)은 `index.json` 1개만 읽으면 렌더된다. 월 상세로 들어갈 때 비로소 해당 월 파일을 읽는다.
 
-### 2.3 쓰기 경로
+### 3.3 쓰기 경로
 
 ```
 PUT /api/journal/2026-10-01/entries/<id>
@@ -89,7 +107,7 @@ PUT /api/journal/2026-10-01/entries/<id>
 
 **핵심 불변식**: 쓰기 큐가 비어 있다 == 모든 변경이 원격에 반영되었다. 이 불변식이 깨지지 않는 한 데이터는 유실되지 않는다.
 
-### 2.4 왜 월 단위 파일인가
+### 3.4 왜 월 단위 파일인가
 
 네트워크가 정본이면 **API 요청 수가 곧 응답 속도**다.
 
@@ -103,17 +121,18 @@ PUT /api/journal/2026-10-01/entries/<id>
 
 ---
 
-## 3. 인증
+## 4. 인증
 
 - **단일 사용자.** 비밀번호 argon2 해시를 환경변수로 보관(`AUTH_PASSWORD_HASH`). DB도 사용자 테이블도 없다.
 - 로그인 성공 시 JWT를 httpOnly + Secure + SameSite=Lax 쿠키로 발급(유효기간 30일, 슬라이딩 갱신).
 - 모든 `/api/*`와 페이지는 미들웨어에서 세션을 검사한다. `/login`, `/api/auth/login`, 서비스워커 관련 경로만 예외.
 - 로그인 엔드포인트에 레이트 리밋(IP당 5회/분). 외부 노출 전제이므로 필수.
 - **GitHub PAT와 Anthropic API 키는 서버 환경변수로만 존재한다.** 클라이언트 번들에 절대 들어가지 않는다(`NEXT_PUBLIC_` 접두사 금지, VAPID 공개키만 예외).
+- 비밀값을 다루는 모듈은 `server-only`를 import해 클라이언트 유입을 컴파일 타임에 차단한다.
 
 ---
 
-## 4. 알림 (Web Push)
+## 5. 알림 (Web Push)
 
 ```
 [설치] 브라우저 → 알림 권한 요청 → PushSubscription 생성
@@ -134,13 +153,13 @@ PUT /api/journal/2026-10-01/entries/<id>
 
 ---
 
-## 5. 스케줄러
+## 6. 스케줄러
 
 `instrumentation.ts`에서 node-cron을 기동한다. Next.js standalone 서버 프로세스 안에서 돈다.
 
 | 잡 | 시각 (KST) | 하는 일 |
 |---|---|---|
-| 기록 알람 | 매시 정각 | §4 참조 |
+| 기록 알람 | 매시 정각 | §5 참조 |
 | 일간 요약 | 매일 23:50 | 그날 엔트리 → Claude 요약 → 원격 기록 |
 | 주간 요약 | 일 23:55 | 그 주 일간 요약 → Claude 요약 |
 | 월간 요약 | 말일 23:55 | 그 달 주간 요약 → Claude 요약 |
@@ -151,7 +170,7 @@ PUT /api/journal/2026-10-01/entries/<id>
 
 ---
 
-## 6. 요약 생성 (Claude API)
+## 7. 요약 생성 (Claude API)
 
 - SDK: `@anthropic-ai/sdk`, 모델 `claude-opus-5`, `thinking: { type: "adaptive" }`.
 - 입력은 해당 기간의 엔트리/하위 요약뿐. 토큰이 작아(1K 미만) 스트리밍 불필요.
@@ -161,9 +180,9 @@ PUT /api/journal/2026-10-01/entries/<id>
 
 ---
 
-## 7. 배포
+## 8. 배포
 
-### 7.1 빌드는 서버 밖에서
+### 8.1 빌드는 서버 밖에서
 
 홈서버 여유 디스크는 4GB다. 거기서 `npm ci && next build`를 돌리면 일시적으로 1GB 가까이 쓴다. **데이터가 아니라 빌드가 실제 위협이다.**
 
@@ -177,7 +196,7 @@ PUT /api/journal/2026-10-01/entries/<id>
 
 최종 이미지 목표 크기: **200MB 이하.**
 
-### 7.2 compose 구성
+### 8.2 compose 구성
 
 ```yaml
 services:
@@ -185,7 +204,7 @@ services:
     image: ghcr.io/<user>/career-log:latest
     restart: unless-stopped
     env_file: .env
-    ports: ["3000:3000"]
+    ports: ["127.0.0.1:13000:3000"]   # nginx가 앞단. 외부에 직접 열지 않는다
     volumes:
       - ./queue:/app/queue      # 미동기화 쓰기 큐만. 과거 기록 아님
     healthcheck:
@@ -195,13 +214,41 @@ services:
 
 볼륨은 쓰기 큐 하나뿐이다. 이 볼륨을 날려도 **미동기화분만** 잃고 과거 기록은 원격에 그대로 있다.
 
-### 7.3 외부 노출
+### 8.3 외부 노출
 
-Cloudflare Tunnel을 기본으로 한다. 포트포워딩·고정 IP·인증서 갱신이 전부 불필요하고, 홈서버 IP가 외부에 노출되지 않는다.
+**이미 운영 중인 nginx 리버스 프록시를 재사용한다.** 이 프로젝트는 HTTPS를 직접 처리하지 않는다.
+
+- 별도 레포(`SeogyoungNetComInfra`)가 nginx 설정과 Let's Encrypt 인증서를 관리한다.
+- 패턴: 서브도메인 하나당 conf 파일 하나, `proxy_pass`로 `127.0.0.1:<포트>`에 넘긴다. 기존 앱들이 11000·12000번을 쓰고 있으므로 이 앱은 **13000번**을 쓴다.
+
+추가해야 할 것은 두 가지다.
+
+1. `nginx/conf.d/career.conf` 신규 작성
+
+```nginx
+server {
+    listen 80;
+    server_name career.sandbox.seogyoung.com;
+
+    location / {
+        proxy_pass http://127.0.0.1:13000;
+        proxy_set_header Host              $host;
+        proxy_set_header X-Real-IP         $remote_addr;
+        proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;   # ← 아래 주의 참조
+    }
+}
+```
+
+2. `ssl_setup.sh`의 `DOMAINS` 배열에 `career.sandbox.seogyoung.com` 추가 후 재발급.
+
+> **`X-Forwarded-Proto`는 빠뜨리면 안 된다.** 기존 conf들에는 이 헤더가 없다. 이게 없으면 앱이 요청을 HTTP로 인식해 **세션 쿠키의 `Secure` 플래그를 붙이지 못하고**, 그 결과 로그인이 유지되지 않는다.
+
+> **HTTPS는 선택이 아니다.** Web Push와 Service Worker는 보안 컨텍스트에서만 동작하므로, 인증서가 없으면 기록 알람 기능 자체가 뜨지 않는다.
 
 ---
 
-## 8. 장애 시 동작
+## 9. 장애 시 동작
 
 | 상황 | 동작 |
 |---|---|
