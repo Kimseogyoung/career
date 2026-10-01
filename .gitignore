@@ -1,0 +1,44 @@
+# dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# next.js
+.next/
+out/
+build/
+dist/
+
+# env & secrets
+.env
+.env.local
+.env*.local
+*.pem
+vapid-keys.json
+
+# 미동기화 쓰기 큐 (로컬 전용, 절대 커밋 금지)
+queue/
+!queue/.gitkeep
+
+# 백업/스냅샷 임시 산출물
+tmp/
+*.tar.gz
+
+# logs
+*.log
+npm-debug.log*
+yarn-error.log*
+
+# os / editor
+.DS_Store
+Thumbs.db
+.vscode/*
+!.vscode/extensions.json
+.idea/
+
+# test & coverage
+coverage/
+.nyc_output/
+
+# claude local overrides
+.claude/settings.local.json
