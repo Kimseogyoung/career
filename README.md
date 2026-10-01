@@ -10,20 +10,20 @@
 
 ## 상태
 
-설계 완료, 구현 전. → [로드맵](docs/ROADMAP.md)
+0단계(뼈대) 완료. 다음은 1-1 원격 저장 계층. → [로드맵](docs/ROADMAP.md)
 
 > 이 프로젝트는 바이브 코딩위주로 구현합니다.
 
 ## 문서
 
-|                                   |                                                    |
-| --------------------------------- | -------------------------------------------------- |
-| [기획서](docs/PLAN.md)            | 무엇을 왜 만드는가, 기능 명세, 화면                |
-| [아키텍처](docs/ARCHITECTURE.md)  | 시스템 구성, 기술 스택, 저장 계층, 배포, 장애 동작 |
-| [데이터 모델](docs/DATA-MODEL.md) | 저장 레이아웃, 스키마, API, 코드 규약              |
-| [설계 결정](docs/DECISIONS.md)    | ADR — 무엇을 포기했고 언제 뒤집는가                |
-| [로드맵](docs/ROADMAP.md)         | 단계별 범위                                        |
-| [CLAUDE.md](CLAUDE.md)            | Claude Code 작업 규칙                              |
+| | |
+|---|---|
+| [기획서](docs/PLAN.md) | 무엇을 왜 만드는가, 기능 명세, 화면 |
+| [아키텍처](docs/ARCHITECTURE.md) | 시스템 구성, 기술 스택, 저장 계층, 배포, 장애 동작 |
+| [데이터 모델](docs/DATA-MODEL.md) | 저장 레이아웃, 스키마, API, 코드 규약 |
+| [설계 결정](docs/DECISIONS.md) | ADR — 무엇을 포기했고 언제 뒤집는가 |
+| [로드맵](docs/ROADMAP.md) | 단계별 범위 |
+| [CLAUDE.md](CLAUDE.md) | Claude Code 작업 규칙 |
 
 ## 한눈에 보는 구조
 

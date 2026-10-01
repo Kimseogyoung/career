@@ -40,26 +40,26 @@
     "2026-10-01": {
       "entries": [
         {
-          "id": "01JA8Z...", // ULID. 시간순 정렬 가능
-          "start": "09:00", // KST, 슬롯 시작
+          "id": "01JA8Z...",            // ULID. 시간순 정렬 가능
+          "start": "09:00",             // KST, 슬롯 시작
           "end": "10:00",
-          "category": "work", // work | study | meeting | side | etc
+          "category": "work",           // work | study | meeting | side | etc
           "tags": ["career-log", "nextjs"],
           "content": "달력 월 뷰 컴포넌트 작성. 주간 요약 노출 위치 결정.",
           "createdAt": "2026-10-01T10:02:11+09:00",
-          "updatedAt": "2026-10-01T10:02:11+09:00",
-        },
+          "updatedAt": "2026-10-01T10:02:11+09:00"
+        }
       ],
       "summary": {
         "text": "Next.js 달력 뷰 골격을 세우고…",
-        "generatedBy": "ai", // ai | manual
+        "generatedBy": "ai",            // ai | manual
         "model": "claude-opus-5",
         "generatedAt": "2026-10-01T23:50:03+09:00",
-        "editedAt": null, // 사람이 고쳤으면 그 시각
-        "status": "ok", // ok | failed | pending
-      },
-    },
-  },
+        "editedAt": null,               // 사람이 고쳤으면 그 시각
+        "status": "ok"                  // ok | failed | pending
+      }
+    }
+  }
 }
 ```
 
@@ -75,18 +75,18 @@
   "updatedAt": "2026-10-01T23:50:05+09:00",
   "days": {
     "2026-10-01": {
-      "head": "Next.js 달력 뷰 골격을 세우고 주간 요약 노출 위치를 결정", // 최대 80자
-      "count": 6, // 엔트리 수
-      "categories": ["work", "study"], // 셀 색 표시용
-      "hasSummary": true,
-    },
+      "head": "Next.js 달력 뷰 골격을 세우고 주간 요약 노출 위치를 결정",  // 최대 80자
+      "count": 6,                        // 엔트리 수
+      "categories": ["work", "study"],   // 셀 색 표시용
+      "hasSummary": true
+    }
   },
   "weeks": {
-    "2026-W40": { "head": "인증 모듈을 세션 기반으로 재작성하고…", "hasSummary": true },
+    "2026-W40": { "head": "인증 모듈을 세션 기반으로 재작성하고…", "hasSummary": true }
   },
   "months": {
-    "2026-10": { "hasSummary": true, "totalHours": 142 },
-  },
+    "2026-10": { "hasSummary": true, "totalHours": 142 }
+  }
 }
 ```
 
@@ -109,8 +109,8 @@
   "stats": {
     "totalHours": 38,
     "byCategory": { "work": 30, "study": 6, "meeting": 2 },
-    "topTags": [{ "tag": "career-log", "hours": 12 }],
-  },
+    "topTags": [{ "tag": "career-log", "hours": 12 }]
+  }
 }
 ```
 
@@ -125,27 +125,21 @@
   "recordingHours": { "start": "09:00", "end": "18:00" },
   "reminder": {
     "enabled": true,
-    "days": [1, 2, 3, 4, 5], // 0=일 … 6=토
+    "days": [1, 2, 3, 4, 5],          // 0=일 … 6=토
     "hours": { "start": "09:00", "end": "18:00" },
-    "skipIfRecorded": true,
+    "skipIfRecorded": true
   },
   "categories": [
-    { "id": "work", "label": "업무", "color": "#2563eb" },
-    { "id": "study", "label": "공부", "color": "#16a34a" },
-    { "id": "meeting", "label": "회의", "color": "#d97706" },
-    { "id": "side", "label": "사이드", "color": "#9333ea" },
-    { "id": "etc", "label": "기타", "color": "#64748b" },
+    { "id": "work",    "label": "업무",  "color": "#2563eb" },
+    { "id": "study",   "label": "공부",  "color": "#16a34a" },
+    { "id": "meeting", "label": "회의",  "color": "#d97706" },
+    { "id": "side",    "label": "사이드","color": "#9333ea" },
+    { "id": "etc",     "label": "기타",  "color": "#64748b" }
   ],
   "pushSubscriptions": [
-    {
-      "id": "…",
-      "label": "회사 PC",
-      "endpoint": "…",
-      "keys": { "p256dh": "…", "auth": "…" },
-      "createdAt": "…",
-    },
+    { "id": "…", "label": "회사 PC", "endpoint": "…", "keys": { "p256dh": "…", "auth": "…" }, "createdAt": "…" }
   ],
-  "summary": { "autoGenerate": true, "model": "claude-opus-5" },
+  "summary": { "autoGenerate": true, "model": "claude-opus-5" }
 }
 ```
 
@@ -170,10 +164,10 @@
 ## 4. 메모리 인덱스
 
 ```ts
-index: IndexFile; // index.json 전량 상주 (~100KB)
-months: LRUCache<string, MonthFile>; // "2026-10" → 월 데이터. 상한 24개
-weeklies: LRUCache<string, WeeklySummary>;
-tagIndex: Map<string, Set<string>>; // 태그 → 날짜 집합. index.json 로드 시 구성
+index: IndexFile                       // index.json 전량 상주 (~100KB)
+months: LRUCache<string, MonthFile>    // "2026-10" → 월 데이터. 상한 24개
+weeklies: LRUCache<string, WeeklySummary>
+tagIndex: Map<string, Set<string>>     // 태그 → 날짜 집합. index.json 로드 시 구성
 ```
 
 - LRU 상한 24개월 ≈ 1.5MB. RSS 목표 250MB에 영향 없다.
@@ -183,29 +177,29 @@ tagIndex: Map<string, Set<string>>; // 태그 → 날짜 집합. index.json 로�
 
 ## 5. API 설계
 
-| 메서드  | 경로                                      | 설명                                          |
-| ------- | ----------------------------------------- | --------------------------------------------- |
-| POST    | `/api/auth/login`                         | 비밀번호 → 세션 쿠키                          |
-| POST    | `/api/auth/logout`                        | 세션 파기                                     |
-| GET     | `/api/calendar?month=2026-10`             | 달력 렌더 데이터 (index 기반, 원격 fetch 0회) |
-| GET     | `/api/journal/:date`                      | 하루 엔트리 + 일간 요약                       |
-| POST    | `/api/journal/:date/entries`              | 엔트리 생성                                   |
-| PATCH   | `/api/journal/:date/entries/:id`          | 엔트리 수정                                   |
-| DELETE  | `/api/journal/:date/entries/:id`          | 엔트리 삭제                                   |
-| GET/PUT | `/api/summary/day/:date`                  | 일간 요약 조회/수정                           |
-| POST    | `/api/summary/day/:date/generate`         | 일간 요약 AI 재생성                           |
-| GET/PUT | `/api/summary/week/:isoWeek`              | 주간 요약 (`generate` 동일 패턴)              |
-| GET/PUT | `/api/summary/month/:ym`                  | 월간 요약 (`generate` 동일 패턴)              |
-| GET     | `/api/search?tag=&category=&from=&to=&q=` | 검색                                          |
-| GET/PUT | `/api/settings`                           | 설정                                          |
-| POST    | `/api/push/subscribe`                     | 푸시 구독 등록                                |
-| DELETE  | `/api/push/subscribe/:id`                 | 구독 해제                                     |
-| GET     | `/api/sync/status`                        | 큐 길이, 마지막 성공 시각, 저하 여부          |
-| POST    | `/api/sync/flush`                         | 수동 플러시                                   |
-| GET     | `/api/sync/history`                       | 원격 커밋 이력                                |
-| POST    | `/api/sync/restore`                       | 특정 커밋 시점으로 복원                       |
-| GET     | `/api/export`                             | 전체 JSON 내보내기                            |
-| GET     | `/api/health`                             | 헬스체크 (인증 불필요)                        |
+| 메서드 | 경로 | 설명 |
+|---|---|---|
+| POST | `/api/auth/login` | 비밀번호 → 세션 쿠키 |
+| POST | `/api/auth/logout` | 세션 파기 |
+| GET | `/api/calendar?month=2026-10` | 달력 렌더 데이터 (index 기반, 원격 fetch 0회) |
+| GET | `/api/journal/:date` | 하루 엔트리 + 일간 요약 |
+| POST | `/api/journal/:date/entries` | 엔트리 생성 |
+| PATCH | `/api/journal/:date/entries/:id` | 엔트리 수정 |
+| DELETE | `/api/journal/:date/entries/:id` | 엔트리 삭제 |
+| GET/PUT | `/api/summary/day/:date` | 일간 요약 조회/수정 |
+| POST | `/api/summary/day/:date/generate` | 일간 요약 AI 재생성 |
+| GET/PUT | `/api/summary/week/:isoWeek` | 주간 요약 (`generate` 동일 패턴) |
+| GET/PUT | `/api/summary/month/:ym` | 월간 요약 (`generate` 동일 패턴) |
+| GET | `/api/search?tag=&category=&from=&to=&q=` | 검색 |
+| GET/PUT | `/api/settings` | 설정 |
+| POST | `/api/push/subscribe` | 푸시 구독 등록 |
+| DELETE | `/api/push/subscribe/:id` | 구독 해제 |
+| GET | `/api/sync/status` | 큐 길이, 마지막 성공 시각, 저하 여부 |
+| POST | `/api/sync/flush` | 수동 플러시 |
+| GET | `/api/sync/history` | 원격 커밋 이력 |
+| POST | `/api/sync/restore` | 특정 커밋 시점으로 복원 |
+| GET | `/api/export` | 전체 JSON 내보내기 |
+| GET | `/api/health` | 헬스체크 (인증 불필요) |
 
 ### 응답 규약
 

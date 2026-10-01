@@ -3,3 +3,8 @@ node_modules
 out
 queue
 package-lock.json
+
+# 마크다운은 손으로 정렬한다.
+# Prettier의 표 패딩은 문자 수 기준이라 한글(폭 2)에서 오히려 어긋나고,
+# 문서를 고칠 때마다 정렬 변경 diff가 따라붙는다.
+*.md
