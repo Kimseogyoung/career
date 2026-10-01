@@ -29,5 +29,10 @@ if (!password || password.length < 8) {
 }
 
 const digest = await hash(password);
-console.log("\n.env 에 아래 줄을 넣으세요:\n");
-console.log(`AUTH_PASSWORD_HASH=${digest}`);
+
+// argon2 해시는 `$argon2id$v=19$m=...` 처럼 `$`가 많다. .env 파서(Next.js의 @next/env)는
+// `$v`·`$m` 등을 변수 참조로 보고 치환해 해시를 망가뜨린다. 그래서 base64로 저장하고
+// 앱에서 디코드한다. base64는 .env·셸·에디터 어디서도 특수문자가 없어 안전하다.
+const encoded = Buffer.from(digest, "utf8").toString("base64");
+console.log("\n.env 에 아래 줄을 넣으세요 (base64 인코딩됨):\n");
+console.log(`AUTH_PASSWORD_HASH=${encoded}`);
