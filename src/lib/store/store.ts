@@ -4,7 +4,7 @@ import { LruCache } from "./cache";
 import { WriteQueue } from "./queue";
 import { applyOpsToMonth, emptyIndex, parseIndex, parseMonth, reindexMonth } from "./model";
 import { INDEX_PATH, monthFilePath, monthOf } from "./paths";
-import type { Entry, IndexFile, MonthFile, QueueOp, Summary } from "./types";
+import type { DayRecord, Entry, IndexFile, MonthFile, QueueOp, Summary } from "./types";
 
 // 원격 저장 계층의 오케스트레이터.
 //
@@ -90,6 +90,12 @@ export class Store {
 
     this.months.set(month, { data, sha: file?.sha ?? null });
     return data;
+  }
+
+  /** 하루치 기록. 기록 없는 날은 빈 엔트리 배열을 돌려준다. */
+  async getDay(date: string): Promise<DayRecord> {
+    const month = await this.getMonth(monthOf(date));
+    return month.days[date] ?? { entries: [] };
   }
 
   // 원격 읽기 래퍼. 성공하면 저하 해제, 실패는 저하 표시 후 그대로 던진다.

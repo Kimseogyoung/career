@@ -81,3 +81,23 @@ export interface PutSummaryOp {
 }
 
 export type QueueOp = UpsertEntryOp | DeleteEntryOp | PutSummaryOp;
+
+// ── 설정 (settings.json) ──────────────────────────────────────────
+
+export interface RecordingHours {
+  start: string; // "09:00"
+  end: string; // "18:00"
+}
+
+export interface Category {
+  id: CategoryId;
+  label: string;
+  color: string;
+}
+
+export interface Settings {
+  version: 1;
+  timezone: string;
+  recordingHours: RecordingHours;
+  categories: Category[];
+}
