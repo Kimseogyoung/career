@@ -56,13 +56,33 @@ npm run dev
 
 ### 서버 배포
 
+서버에는 Docker만 있으면 된다. Node·npm·빌드 툴체인은 필요 없다.
+소스를 clone하는 것은 `docker-compose.yml`과 `.env`를 두기 위해서일 뿐,
+실행은 레지스트리에서 받은 이미지로 한다(빌드 아님).
+
 ```bash
-cp .env.example .env     # 토큰·키 채우기
-docker compose pull
-docker compose up -d
+git clone <이 레포>
+cd career-log
+cp .env.example .env     # 아래 "비밀값은 개발 머신에서" 참고
+docker compose pull      # 이미지 받기
+docker compose up -d     # 실행
 ```
 
 이미지는 **서버에서 빌드하지 않는다.** 개발 머신이나 CI에서 빌드해 레지스트리에 올린 뒤 pull한다. ([근거](docs/DECISIONS.md))
+서버가 ARM(라즈베리파이 등)이면 이미지도 그 아키텍처로 빌드해야 한다:
+`docker buildx build --platform linux/arm64 -t <이미지> --push .`
+
+#### 비밀값은 개발 머신에서 만든다
+
+`AUTH_PASSWORD_HASH`와 `SESSION_SECRET`은 **개발 머신에서** 생성해 서버 `.env`에 복붙한다.
+둘 다 단순 문자열이라 어느 머신에서 만들든 동일하게 동작하며, 생성기(`npm run gen:*`)는
+개발 머신 전용이다. 서버에 npm을 깔지 않기 위한 의도적인 분리다.
+
+```bash
+# 개발 머신에서
+npm run gen:password     # → AUTH_PASSWORD_HASH=...
+npm run gen:secret       # → SESSION_SECRET=...
+```
 
 ### 필요한 것
 
