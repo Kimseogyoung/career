@@ -1,31 +1,21 @@
 #!/usr/bin/env node
-// 진단용: .env 의 AUTH_PASSWORD_HASH 가 주어진 비밀번호와 맞는지 확인한다.
+// 진단용: .env 의 AUTH_PASSWORD_HASH 가 입력한 비밀번호와 맞는지 확인한다.
 // 로그인이 안 될 때 "생성/저장이 틀렸나" vs "로그인 입력이 틀렸나" 를 가른다.
 //
-//   PowerShell:  $env:GEN_PASSWORD='!비밀번호'; npm run check:password
-//   bash:        GEN_PASSWORD='!비밀번호' npm run check:password
+//   npm run check:password    → 비밀번호를 물어보면 입력
 //
 // 앱과 똑같이 @next/env 로 .env 를 읽으므로, .env 파서가 값을 망가뜨리는 문제까지 그대로 재현된다.
 import { verify } from "@node-rs/argon2";
 // @next/env 는 CommonJS라 named import가 안 된다. default 로 받아 구조분해한다.
 import nextEnv from "@next/env";
-const { loadEnvConfig } = nextEnv;
+import { promptPassword } from "./prompt-password.mjs";
 
-const password = process.env.GEN_PASSWORD;
-if (!password) {
-  console.error(
-    "GEN_PASSWORD 환경변수로 비밀번호를 주세요.\n" +
-      "  PowerShell:  $env:GEN_PASSWORD='!비밀번호'; npm run check:password\n" +
-      "  bash:        GEN_PASSWORD='!비밀번호' npm run check:password",
-  );
-  process.exit(1);
-}
+const { loadEnvConfig } = nextEnv;
 
 // 앱(src/lib/password.ts)과 동일한 경로로 .env 를 읽는다.
 loadEnvConfig(process.cwd());
 
 const encoded = process.env.AUTH_PASSWORD_HASH;
-console.log(`입력한 비밀번호 길이: ${password.length}자`);
 console.log(`AUTH_PASSWORD_HASH 존재: ${Boolean(encoded)}`);
 
 if (!encoded) {
@@ -44,6 +34,7 @@ if (!decoded.startsWith("$argon2")) {
   process.exit(1);
 }
 
+const password = await promptPassword("확인할 비밀번호: ");
 const match = await verify(decoded, password);
 console.log(`\n비밀번호 일치: ${match}`);
 if (!match) {

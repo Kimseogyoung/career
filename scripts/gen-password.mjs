@@ -2,34 +2,13 @@
 // 로그인 비밀번호의 argon2 해시를 만든다. 출력된 줄을 .env 의 AUTH_PASSWORD_HASH 에 넣는다.
 // 비밀번호 자체는 어디에도 저장되지 않는다.
 //
-// 입력 방법 (권장 순서):
-//   1) 환경변수 — 셸·터미널이 입력을 건드리지 않아 가장 안전하다.
-//        PowerShell:  $env:GEN_PASSWORD='!비밀번호'; npm run gen:password   (작은따옴표 필수)
-//        bash:        GEN_PASSWORD='!비밀번호' npm run gen:password
-//   2) 프롬프트 — 그냥 `npm run gen:password` 실행 후 입력(화면에 안 보임).
-//      일부 Windows 터미널에서 가림 입력이 불안정하면 1)을 쓸 것.
+//   npm run gen:password      → 비밀번호를 물어보면 입력(화면에 *로 표시)
+//
+// `!` 등 특수문자가 있어도 안전하다. 프롬프트 입력은 셸을 거치지 않기 때문이다.
 import { hash } from "@node-rs/argon2";
-import { createInterface } from "node:readline";
+import { promptPassword } from "./prompt-password.mjs";
 
-function prompt(question) {
-  return new Promise((resolve) => {
-    const rl = createInterface({ input: process.stdin, output: process.stdout, terminal: true });
-    const muted = { muted: false };
-    rl._writeToOutput = function (chunk) {
-      if (!muted.muted) rl.output.write(chunk);
-    };
-    rl.question(question, (answer) => {
-      rl.close();
-      process.stdout.write("\n");
-      resolve(answer);
-    });
-    muted.muted = true;
-  });
-}
-
-// 우선순위: GEN_PASSWORD 환경변수 > 프롬프트. (인자로 받지 않는다 — 셸 히스토리 확장이
-// bash/zsh 에서 `!` 를 먹어 비밀번호가 조용히 바뀌는 사고를 막기 위해서다.)
-const password = process.env.GEN_PASSWORD ?? (await prompt("비밀번호: "));
+const password = await promptPassword("비밀번호: ");
 
 if (!password || password.length < 8) {
   console.error("비밀번호는 8자 이상이어야 합니다.");
