@@ -5,6 +5,9 @@ import { DEFAULT_SETTINGS } from "@/lib/store/settings";
 import { isValidDate } from "@/lib/validation";
 import { formatKoreanDate, shiftDate } from "@/lib/time";
 import type { Entry } from "@/lib/store/types";
+import { canGenerate } from "@/lib/summary/summarizer";
+import type { Summary } from "@/lib/store/types";
+import { SummaryPanel } from "@/app/summary-panel";
 import { DayGrid } from "./day-grid";
 import styles from "./day.module.css";
 
@@ -17,6 +20,7 @@ export default async function DayPage({ params }: { params: Promise<{ date: stri
 
   const configured = isStoreConfigured();
   let entries: Entry[] = [];
+  let daySummary: Summary | null = null;
   let stale = false;
   let settings = DEFAULT_SETTINGS;
 
@@ -27,6 +31,7 @@ export default async function DayPage({ params }: { params: Promise<{ date: stri
       if (store) {
         const day = await store.getDay(date);
         entries = day.entries;
+        daySummary = day.summary ?? null;
         stale = store.syncStatus().degraded;
       }
       if (settingsStore) settings = await settingsStore.get();
@@ -66,6 +71,16 @@ export default async function DayPage({ params }: { params: Promise<{ date: stri
           원격 저장소에 연결하지 못했습니다. 최신이 아닐 수 있고, 지금 작성한 기록은 큐에 쌓여
           연결되면 자동 반영됩니다.
         </p>
+      ) : null}
+
+      {configured ? (
+        <SummaryPanel
+          scope="day"
+          summaryKey={date}
+          title="일간 요약"
+          initial={daySummary}
+          canGenerate={canGenerate()}
+        />
       ) : null}
 
       <DayGrid

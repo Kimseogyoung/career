@@ -3,7 +3,7 @@ import { AuthError, ConflictError, GitHubStore, TransientError, type RemoteFile 
 import { LruCache } from "./cache";
 import { WriteQueue } from "./queue";
 import { applyOpsToMonth, emptyIndex, parseIndex, parseMonth, reindexMonth } from "./model";
-import { INDEX_PATH, monthFilePath, monthOf } from "./paths";
+import { INDEX_PATH, monthFilePath, monthOf, monthlySummaryPath, weeklySummaryPath } from "./paths";
 import type { DayRecord, Entry, IndexFile, MonthFile, QueueOp, Summary } from "./types";
 
 // 원격 저장 계층의 오케스트레이터.
@@ -28,6 +28,32 @@ interface CachedMonth {
 
 const BACKOFF_MS = [30_000, 120_000, 600_000, 3_600_000];
 const MAX_CONFLICT_RETRY = 3;
+
+// 주/월 요약 파일({week|month, ...Summary})을 Summary 로 파싱.
+function parseSummaryFile(text: string | null): Summary | null {
+  if (!text) return null;
+  try {
+    const parsed = JSON.parse(text) as Partial<Summary>;
+    if (typeof parsed.text === "string") {
+      return {
+        text: parsed.text,
+        generatedBy: parsed.generatedBy ?? "manual",
+        model: parsed.model ?? null,
+        generatedAt: parsed.generatedAt ?? null,
+        editedAt: parsed.editedAt ?? null,
+        status: parsed.status ?? "ok",
+      };
+    }
+  } catch {
+    /* 깨진 파일은 없는 것으로 */
+  }
+  return null;
+}
+
+function summaryHead(summary: Summary): string {
+  const first = summary.text.trim().split("\n")[0] ?? "";
+  return first.length > 80 ? first.slice(0, 80) : first;
+}
 
 export class Store {
   private readonly months: LruCache<CachedMonth>;
@@ -131,6 +157,87 @@ export class Store {
       at: this.iso(),
       seq: 0,
     });
+  }
+
+  // ── 주/월 요약 (별도 파일) ────────────────────────────────────────
+  // 일 요약은 월 파일에 내장돼 큐로 반영되지만, 주/월 요약은 독립 파일이다.
+  // 변경이 드물고 유실돼도 재생성 가능하므로 큐를 거치지 않고 원격에 직접 쓴다(sha 재시도).
+
+  async getWeekSummary(isoWeek: string): Promise<Summary | null> {
+    const file = await this.safeRead(weeklySummaryPath(isoWeek));
+    return parseSummaryFile(file?.text ?? null);
+  }
+
+  async getMonthSummary(ym: string): Promise<Summary | null> {
+    const file = await this.safeRead(monthlySummaryPath(ym));
+    return parseSummaryFile(file?.text ?? null);
+  }
+
+  async putWeekSummary(isoWeek: string, summary: Summary): Promise<void> {
+    await this.mutateRemote(
+      weeklySummaryPath(isoWeek),
+      () => JSON.stringify({ week: isoWeek, ...summary }, null, 2),
+      `summary: 주간 ${isoWeek}`,
+    );
+    await this.patchIndex((idx) => {
+      idx.weeks = { ...idx.weeks, [isoWeek]: { head: summaryHead(summary), hasSummary: true } };
+    });
+  }
+
+  async putMonthSummary(ym: string, summary: Summary): Promise<void> {
+    await this.mutateRemote(
+      monthlySummaryPath(ym),
+      () => JSON.stringify({ month: ym, ...summary }, null, 2),
+      `summary: 월간 ${ym}`,
+    );
+    await this.patchIndex((idx) => {
+      const prev = idx.months[ym] ?? { hasSummary: false, totalHours: 0 };
+      idx.months = { ...idx.months, [ym]: { ...prev, hasSummary: true } };
+    });
+  }
+
+  // 원격 파일 1개를 읽어 새 내용으로 쓴다(신규면 sha 없이). 409 충돌 시 재시도.
+  private async mutateRemote(
+    path: string,
+    build: (current: string | null) => string,
+    message: string,
+  ): Promise<void> {
+    for (let attempt = 0; attempt <= MAX_CONFLICT_RETRY; attempt++) {
+      const remote = await this.github.read(path);
+      const next = build(remote?.text ?? null);
+      try {
+        await this.github.write(path, next, remote?.sha, message);
+        this.clearDegraded();
+        return;
+      } catch (e) {
+        if (e instanceof ConflictError && attempt < MAX_CONFLICT_RETRY) continue;
+        if (e instanceof AuthError || e instanceof TransientError) this.markDegraded(e.message);
+        throw e;
+      }
+    }
+  }
+
+  // 인덱스를 읽어 mutator 로 수정 후 쓴다. 메모리 캐시(this.index)도 최신으로 맞춘다.
+  private async patchIndex(mutate: (idx: IndexFile) => void): Promise<void> {
+    for (let attempt = 0; attempt <= MAX_CONFLICT_RETRY; attempt++) {
+      const remote = await this.github.read(INDEX_PATH);
+      const idx = parseIndex(remote?.text ?? null);
+      idx.updatedAt = this.iso();
+      mutate(idx);
+      try {
+        const sha = await this.github.write(
+          INDEX_PATH,
+          JSON.stringify(idx, null, 2),
+          remote?.sha,
+          "index: 요약 반영",
+        );
+        this.index = { data: idx, sha };
+        return;
+      } catch (e) {
+        if (e instanceof ConflictError && attempt < MAX_CONFLICT_RETRY) continue;
+        throw e;
+      }
+    }
   }
 
   private async enqueue(op: QueueOp): Promise<void> {

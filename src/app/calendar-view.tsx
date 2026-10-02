@@ -91,14 +91,14 @@ export function CalendarView({ month, weeks, days, weekSummaries, categories, to
                 );
               })}
 
-              <div className={styles.weekSummary}>
+              <Link href={`/week/${wk}`} className={styles.weekSummary}>
                 <b>주간 요약</b>
                 {summary?.head ? (
                   <span className={styles.weekSummaryText}>{summary.head}</span>
                 ) : (
-                  <span className={styles.empty}>아직 없음</span>
+                  <span className={styles.empty}>아직 없음 · 열기</span>
                 )}
-              </div>
+              </Link>
             </div>
           </div>
         );

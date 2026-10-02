@@ -66,3 +66,17 @@ export function monthLabel(month: string): string {
   const [y, m] = month.split("-").map(Number);
   return `${y}년 ${m}월`;
 }
+
+/** ISO 주 "YYYY-Www" 에 속한 월~일 7개 날짜("YYYY-MM-DD"). */
+export function isoWeekDates(isoWeekKey: string): string[] {
+  const [yStr, wStr] = isoWeekKey.split("-W");
+  const year = Number(yStr);
+  const week = Number(wStr);
+  // ISO: 1월 4일이 속한 주가 1주. 그 주 월요일 + (week-1)*7.
+  const jan4 = new Date(Date.UTC(year, 0, 4));
+  const jan4Dow = (jan4.getUTCDay() + 6) % 7; // Mon=0
+  const monday = new Date(jan4);
+  monday.setUTCDate(jan4.getUTCDate() - jan4Dow + (week - 1) * 7);
+  const base = `${monday.getUTCFullYear()}-${String(monday.getUTCMonth() + 1).padStart(2, "0")}-${String(monday.getUTCDate()).padStart(2, "0")}`;
+  return Array.from({ length: 7 }, (_, i) => shiftDate(base, i));
+}

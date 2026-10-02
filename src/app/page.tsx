@@ -57,7 +57,13 @@ export default async function HomePage({
           >
             ‹
           </Link>
-          <h1 className={styles.monthTitle}>{monthLabel(month)}</h1>
+          <Link
+            className={styles.monthTitle}
+            href={`/month/${month}`}
+            style={{ textDecoration: "none", color: "inherit" }}
+          >
+            {monthLabel(month)}
+          </Link>
           <Link
             className={styles.navBtn}
             href={`/?month=${shiftMonth(month, 1)}`}

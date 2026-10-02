@@ -47,11 +47,12 @@
 - [ ] 카테고리 색, 태그 필터
 - [ ] 일 셀 클릭 → 일 상세
 
-### 1-4. 요약
-- [ ] Claude API 연동 (`claude-opus-5`, adaptive thinking)
-- [ ] 일/주/월 요약 생성 + 수동 수정 + 재생성
-- [ ] node-cron 스케줄 (23:50 / 일 23:55 / 말일 23:55)
-- [ ] 키 없을 때 수동 폴백
+### 1-4. 요약 ✅
+- [x] Claude API 연동 (`claude-opus-5-5` 기본, adaptive thinking, 비스트리밍)
+- [x] 일/주/월 요약 생성 + 수동 수정 + 재생성 (SummaryPanel)
+- [x] node-cron 스케줄 (일 23:50 / 주 일 23:55 / 월 말일 23:55 / 큐 재시도 5분)
+- [x] 키 없을 때 수동 폴백 (canGenerate=false → 생성 버튼 숨김, 직접 작성)
+- [x] 주/월 상세 페이지(`/week/[isoWeek]`, `/month/[ym]`)
 
 ### 1-5. 알람
 - [ ] PWA 매니페스트, Service Worker

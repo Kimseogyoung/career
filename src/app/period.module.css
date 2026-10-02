@@ -1,0 +1,72 @@
+.shell {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 32px 20px 80px;
+}
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.title {
+  margin: 0;
+  font-size: 20px;
+  letter-spacing: -0.01em;
+}
+.sub {
+  color: var(--text-muted);
+  font-size: 13px;
+  margin: 2px 0 0;
+}
+.nav {
+  display: flex;
+  gap: 6px;
+}
+.navLink {
+  color: var(--text-muted);
+  text-decoration: none;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  padding: 4px 10px;
+  font-size: 13px;
+}
+.navLink:hover {
+  color: var(--text);
+}
+.listTitle {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin: 18px 0 8px;
+}
+.item {
+  display: block;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin-bottom: 6px;
+  text-decoration: none;
+  color: inherit;
+  background: var(--surface);
+}
+.item:hover {
+  border-color: var(--text-muted);
+}
+.itemLabel {
+  font-size: 13px;
+  font-weight: 600;
+}
+.itemHead {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+.banner {
+  background: color-mix(in srgb, var(--danger) 12%, var(--surface));
+  border: 1px solid color-mix(in srgb, var(--danger) 40%, var(--border));
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 13px;
+  margin: 12px 0;
+}
