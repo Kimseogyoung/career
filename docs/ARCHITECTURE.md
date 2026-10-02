@@ -208,15 +208,22 @@ services:
     ports:
       - "${APP_BIND:-127.0.0.1}:${APP_PORT:-3000}:3000" # 프록시가 앞단. 외부에 직접 열지 않는다
     volumes:
-      - ./queue:/app/queue # 미동기화 쓰기 큐만. 과거 기록 아님
+      - career-queue:/app/queue # 미동기화 쓰기 큐만(named volume). 과거 기록 아님
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3000/api/health"]
       interval: 30s
+volumes:
+  career-queue:
 ```
 
 이미지 주소와 호스트 포트는 `.env` 변수로 조립한다. 레포에는 중립적 기본값만 두어
 각자 자신의 레지스트리·포트로 덮어쓰게 한다(오픈소스). 볼륨은 쓰기 큐 하나뿐이고,
 이 볼륨을 날려도 **미동기화분만** 잃고 과거 기록은 원격에 그대로 있다.
+
+> 큐는 bind mount(`./queue`)가 아니라 **named volume**이다. bind mount 는 호스트
+> 디렉토리 소유권(레포를 clone 한 유저, 보통 uid 1000)과 컨테이너 비루트 유저(uid 1001)가
+> 달라 쓰기 권한이 깨진다(EACCES). named volume 은 Docker 가 컨테이너 유저 소유로
+> 초기화하므로 그 문제가 없고 새 머신에서도 바로 동작한다.
 
 ### 8.3 외부 노출
 

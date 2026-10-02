@@ -16,6 +16,7 @@
       "Bash(git add:*)",
       "Bash(git show:*)",
       "Bash(git branch:*)",
+      "Bash(git push:*)",
       "Bash(docker compose config:*)",
       "Bash(docker compose ps:*)",
       "Bash(docker compose logs:*)"
@@ -25,7 +26,6 @@
       "Read(./.env.local)",
       "Read(./.env.production)",
       "Read(./queue/**)",
-      "Bash(git push:*)",
       "Bash(docker compose down:*)"
     ]
   }

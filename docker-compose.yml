@@ -13,10 +13,16 @@ services:
       - "${APP_BIND:-127.0.0.1}:${APP_PORT:-3000}:3000"
     volumes:
       # 미동기화 쓰기 큐만 보관한다. 과거 기록은 원격 저장소에 있다 (ADR-004/006).
-      - ./queue:/app/queue
+      # named volume 을 쓴다 — bind mount(./queue) 는 호스트 디렉토리 소유권(clone 한
+      # 유저)과 컨테이너 비루트 유저(uid 1001)가 달라 쓰기 권한(EACCES)이 깨진다.
+      # named volume 은 Docker 가 컨테이너 유저 소유로 초기화해 그 문제가 없고 이식성도 유지된다.
+      - career-queue:/app/queue
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3000/api/health"]
       interval: 30s
       timeout: 3s
       retries: 3
       start_period: 10s
+
+volumes:
+  career-queue:
