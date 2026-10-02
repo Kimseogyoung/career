@@ -1,36 +1,93 @@
 import Link from "next/link";
 import { LogoutButton } from "./logout-button";
-import { todayKst, shiftDate, formatKoreanDate } from "@/lib/time";
-import styles from "./page.module.css";
+import { CalendarView } from "./calendar-view";
+import { getSettingsStore, getStore, isStoreConfigured } from "@/lib/store/instance";
+import { DEFAULT_SETTINGS } from "@/lib/store/settings";
+import { monthGrid, monthLabel, monthOfDate, shiftMonth } from "@/lib/calendar";
+import { todayKst } from "@/lib/time";
+import type { IndexDay } from "@/lib/store/types";
+import styles from "./calendar.module.css";
 
-// 1-3 에서 월 달력으로 교체된다. 지금은 오늘/어제로 가는 입구만.
-export default function HomePage() {
+export const dynamic = "force-dynamic";
+
+const MONTH_RE = /^\d{4}-\d{2}$/;
+
+// 월 달력 — 기본 화면. index.json 만 읽어 그 달을 렌더한다(원격 fetch 1회).
+export default async function HomePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ month?: string }>;
+}) {
   const today = todayKst();
-  const yesterday = shiftDate(today, -1);
+  const sp = await searchParams;
+  const month = sp.month && MONTH_RE.test(sp.month) ? sp.month : monthOfDate(today);
+
+  const weeks = monthGrid(month);
+  const configured = isStoreConfigured();
+
+  let days: Record<string, IndexDay> = {};
+  let weekSummaries: Record<string, { head: string; hasSummary: boolean }> = {};
+  let settings = DEFAULT_SETTINGS;
+  let stale = false;
+
+  if (configured) {
+    try {
+      const store = await getStore();
+      const settingsStore = await getSettingsStore();
+      if (store) {
+        const index = await store.getIndex();
+        days = index.days;
+        weekSummaries = index.weeks;
+        stale = store.syncStatus().degraded;
+      }
+      if (settingsStore) settings = await settingsStore.get();
+    } catch {
+      stale = true;
+    }
+  }
 
   return (
     <main className={styles.shell}>
-      <header className={styles.header}>
-        <h1 className={styles.title}>Career Log</h1>
+      <div className={styles.topbar}>
+        <div className={styles.monthNav}>
+          <Link
+            className={styles.navBtn}
+            href={`/?month=${shiftMonth(month, -1)}`}
+            aria-label="이전 달"
+          >
+            ‹
+          </Link>
+          <h1 className={styles.monthTitle}>{monthLabel(month)}</h1>
+          <Link
+            className={styles.navBtn}
+            href={`/?month=${shiftMonth(month, 1)}`}
+            aria-label="다음 달"
+          >
+            ›
+          </Link>
+          <Link className={styles.todayBtn} href={`/?month=${monthOfDate(today)}`}>
+            오늘
+          </Link>
+        </div>
         <LogoutButton />
-      </header>
+      </div>
 
-      <section className={styles.card}>
-        <h2 className={styles.cardTitle}>업무 일지</h2>
-        <p className={styles.muted}>하루에 한 일을 1시간 단위로 기록합니다.</p>
-        <ul className={styles.checklist}>
-          <li>
-            <Link className={styles.linkButton} href={`/day/${today}`}>
-              오늘 — {formatKoreanDate(today)}
-            </Link>
-          </li>
-          <li>
-            <Link className={styles.linkButton} href={`/day/${yesterday}`}>
-              어제 — {formatKoreanDate(yesterday)}
-            </Link>
-          </li>
-        </ul>
-      </section>
+      {!configured ? (
+        <p className={styles.banner}>
+          원격 저장소가 설정되지 않았습니다. <code>.env</code> 를 채우면 기록이 달력에 나타납니다.
+        </p>
+      ) : stale ? (
+        <p className={styles.banner}>원격 저장소에 연결하지 못했습니다. 최신이 아닐 수 있습니다.</p>
+      ) : null}
+
+      <CalendarView
+        month={month}
+        weeks={weeks}
+        days={days}
+        weekSummaries={weekSummaries}
+        categories={settings.categories}
+        today={today}
+      />
     </main>
   );
 }
