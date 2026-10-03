@@ -36,6 +36,9 @@ RUN addgroup -g 1001 -S nodejs \
 # standalone 출력에는 실행에 필요한 node_modules 만 들어 있다.
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+# standalone 은 public/ 을 자동 포함하지 않는다. 직접 복사해야 PWA 자산
+# (manifest, sw.js, 아이콘)이 서빙된다.
+COPY --from=builder --chown=nextjs:nodejs /app/public ./public
 
 # 미동기화 쓰기 큐. 볼륨으로 덮어쓰이지만 볼륨 없이 떠도 동작하도록 만들어 둔다.
 RUN mkdir -p /app/queue && chown nextjs:nodejs /app/queue
