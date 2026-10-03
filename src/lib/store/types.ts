@@ -100,4 +100,21 @@ export interface Settings {
   timezone: string;
   recordingHours: RecordingHours;
   categories: Category[];
+  reminder: ReminderSettings;
+  pushSubscriptions: PushSubscriptionRecord[];
+}
+
+export interface PushSubscriptionRecord {
+  id: string;
+  label: string;
+  endpoint: string;
+  keys: { p256dh: string; auth: string };
+  createdAt: string;
+}
+
+export interface ReminderSettings {
+  enabled: boolean;
+  days: number[]; // 0=일 … 6=토
+  hours: RecordingHours;
+  skipIfRecorded: boolean;
 }

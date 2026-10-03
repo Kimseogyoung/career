@@ -1,0 +1,98 @@
+.shell {
+  max-width: 520px;
+  margin: 0 auto;
+  padding: 40px 20px;
+}
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+.title {
+  margin: 0;
+  font-size: 20px;
+}
+.link {
+  color: var(--text-muted);
+  text-decoration: none;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  padding: 4px 10px;
+  font-size: 13px;
+}
+.card {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+  padding: 18px;
+}
+.slot {
+  font-size: 15px;
+  margin: 0 0 14px;
+}
+.slot b {
+  font-variant-numeric: tabular-nums;
+}
+.row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+.input,
+.select,
+.textarea {
+  font: inherit;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: var(--bg);
+  color: var(--text);
+}
+.textarea {
+  width: 100%;
+  min-height: 90px;
+  resize: vertical;
+}
+.grow {
+  flex: 1;
+  min-width: 140px;
+}
+.submit {
+  width: 100%;
+  margin-top: 6px;
+  padding: 11px;
+  border: none;
+  border-radius: 8px;
+  background: var(--accent);
+  color: #fff;
+  font-weight: 600;
+}
+.submit:disabled {
+  opacity: 0.6;
+}
+.done {
+  text-align: center;
+  padding: 20px 0;
+}
+.doneActions {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin-top: 14px;
+}
+.btn {
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  padding: 8px 14px;
+  background: var(--bg);
+  color: var(--text);
+  text-decoration: none;
+  font-size: 14px;
+}
+.error {
+  color: var(--danger);
+  font-size: 13px;
+}

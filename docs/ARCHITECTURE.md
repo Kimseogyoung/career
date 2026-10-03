@@ -126,7 +126,7 @@ PUT /api/journal/2026-10-01/entries/<id>
 - 로그인 성공 시 JWT를 httpOnly + Secure + SameSite=Lax 쿠키로 발급(유효기간 30일, 슬라이딩 갱신).
 - 모든 `/api/*`와 페이지는 미들웨어에서 세션을 검사한다. `/login`, `/api/auth/login`, 서비스워커 관련 경로만 예외.
 - 로그인 엔드포인트에 레이트 리밋(IP당 5회/분). 외부 노출 전제이므로 필수.
-- **GitHub PAT와 Anthropic API 키는 서버 환경변수로만 존재한다.** 클라이언트 번들에 절대 들어가지 않는다(`NEXT_PUBLIC_` 접두사 금지, VAPID 공개키만 예외).
+- **GitHub PAT와 Anthropic API 키는 서버 환경변수로만 존재한다.** 클라이언트 번들에 절대 들어가지 않는다(`NEXT_PUBLIC_` 접두사 금지). VAPID 공개키조차 빌드에 박지 않고 `/api/push/vapid` 로 런타임에 내려준다 — 이미지가 env 무관해진다.
 - 비밀값을 다루는 모듈은 `server-only`를 import해 클라이언트 유입을 컴파일 타임에 차단한다.
 - 비밀번호 해시와 세션 시크릿은 개발 머신에서 생성해 서버 `.env`에 복붙한다. 서버에는 생성 도구(npm)를 두지 않는다 — 서버가 필요로 하는 것은 Docker뿐이다.
 

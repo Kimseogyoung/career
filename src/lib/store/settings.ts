@@ -1,7 +1,7 @@
 import "server-only";
 import { ConflictError, GitHubStore } from "./github";
 import { SETTINGS_PATH } from "./paths";
-import type { Settings } from "./types";
+import type { PushSubscriptionRecord, Settings } from "./types";
 
 // 설정 저장. 저널(1-1)과 달리 변경이 드물고 유실돼도 치명적이지 않아,
 // 쓰기 큐를 거치지 않고 원격에 직접 쓴다(sha 충돌 시 재시도). 미설정/오프라인이면 기본값.
@@ -17,6 +17,13 @@ export const DEFAULT_SETTINGS: Settings = {
     { id: "side", label: "사이드", color: "#9333ea" },
     { id: "etc", label: "기타", color: "#64748b" },
   ],
+  reminder: {
+    enabled: true,
+    days: [1, 2, 3, 4, 5], // 평일
+    hours: { start: "09:00", end: "18:00" },
+    skipIfRecorded: true,
+  },
+  pushSubscriptions: [],
 };
 
 function parse(text: string | null): Settings {
@@ -31,6 +38,8 @@ function parse(text: string | null): Settings {
         Array.isArray(parsed.categories) && parsed.categories.length > 0
           ? parsed.categories
           : DEFAULT_SETTINGS.categories,
+      reminder: parsed.reminder ?? DEFAULT_SETTINGS.reminder,
+      pushSubscriptions: Array.isArray(parsed.pushSubscriptions) ? parsed.pushSubscriptions : [],
     };
   } catch {
     return DEFAULT_SETTINGS;
@@ -72,5 +81,20 @@ export class SettingsStore {
       }
     }
     throw new Error("설정 저장 재시도 초과");
+  }
+
+  /** 푸시 구독 추가(같은 endpoint 는 교체). */
+  async addSubscription(sub: PushSubscriptionRecord): Promise<void> {
+    const current = await this.get();
+    const kept = current.pushSubscriptions.filter((s) => s.endpoint !== sub.endpoint);
+    await this.update({ pushSubscriptions: [...kept, sub] });
+  }
+
+  /** 푸시 구독 제거(endpoint 기준). */
+  async removeSubscription(endpoint: string): Promise<void> {
+    const current = await this.get();
+    await this.update({
+      pushSubscriptions: current.pushSubscriptions.filter((s) => s.endpoint !== endpoint),
+    });
   }
 }

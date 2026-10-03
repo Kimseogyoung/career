@@ -75,7 +75,12 @@ export default async function HomePage({
             오늘
           </Link>
         </div>
-        <LogoutButton />
+        <div className={styles.monthNav}>
+          <Link className={styles.todayBtn} href="/settings">
+            설정
+          </Link>
+          <LogoutButton />
+        </div>
       </div>
 
       {!configured ? (
