@@ -202,21 +202,24 @@ function EntryForm({
   return (
     <form className={styles.form} onSubmit={submit}>
       <div className={styles.row}>
-        <input
-          className={`${styles.input} ${styles.timeInput}`}
-          type="time"
-          value={start}
-          onChange={(e) => setStart(e.target.value)}
-          required
-        />
-        <span className={styles.slotTime}>–</span>
-        <input
-          className={`${styles.input} ${styles.timeInput}`}
-          type="time"
-          value={end}
-          onChange={(e) => setEnd(e.target.value)}
-          required
-        />
+        {/* 시작·끝 시간은 한 묶음으로 묶어 좁은 화면에서도 같은 줄에 유지한다. */}
+        <div className={styles.timeRange}>
+          <input
+            className={`${styles.input} ${styles.timeInput}`}
+            type="time"
+            value={start}
+            onChange={(e) => setStart(e.target.value)}
+            required
+          />
+          <span className={styles.slotTime}>–</span>
+          <input
+            className={`${styles.input} ${styles.timeInput}`}
+            type="time"
+            value={end}
+            onChange={(e) => setEnd(e.target.value)}
+            required
+          />
+        </div>
         <select
           className={styles.select}
           value={category}

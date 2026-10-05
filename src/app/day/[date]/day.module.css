@@ -176,10 +176,22 @@
   resize: vertical;
 }
 
+/* 시작–끝 시간 묶음: 좁은 화면에서도 줄바꿈 없이 한 줄 유지, 공간이 모자라면 축소. */
+.timeRange {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: nowrap;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
 .timeInput {
-  /* 한국어 로케일의 네이티브 time 입력은 "오전 09:00" 을 표시하므로 넉넉히. */
-  width: 130px;
-  min-width: 130px;
+  /* 한국어 로케일의 네이티브 time 입력은 "오전 09:00" 을 표시하므로 넉넉히 잡되,
+     좁은 폭에서는 flex 로 줄어들 수 있게 한다. */
+  flex: 1 1 0;
+  width: auto;
+  min-width: 0;
   font-variant-numeric: tabular-nums;
 }
 
