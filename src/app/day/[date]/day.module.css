@@ -177,8 +177,15 @@
 }
 
 .timeInput {
-  width: 72px;
+  /* 한국어 로케일의 네이티브 time 입력은 "오전 09:00" 을 표시하므로 넉넉히. */
+  width: 130px;
+  min-width: 130px;
   font-variant-numeric: tabular-nums;
+}
+
+.select {
+  min-width: 96px;
+  padding-right: 8px;
 }
 
 .grow {
