@@ -1,0 +1,87 @@
+.header {
+  position: sticky;
+  top: env(safe-area-inset-top, 0px);
+  z-index: 10;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+}
+.inner {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.brand {
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--text);
+  text-decoration: none;
+  flex: none;
+}
+.nav {
+  display: flex;
+  gap: 2px;
+  margin-left: 4px;
+}
+.navItem {
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: 14.5px;
+  padding: 8px 12px;
+  border-radius: 8px;
+}
+.navItem:hover {
+  color: var(--text);
+}
+.navItem[data-on="true"] {
+  color: var(--text);
+  font-weight: 600;
+  background: var(--surface-2);
+}
+.theme {
+  margin-left: auto;
+  flex: none;
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  border-radius: 9px;
+  display: inline-grid;
+  place-items: center;
+  cursor: pointer;
+}
+.theme:hover {
+  border-color: var(--accent);
+}
+.theme svg {
+  width: 18px;
+  height: 18px;
+}
+/* 라이트=해, 다크=달 */
+.moon {
+  display: none;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .sun {
+    display: none;
+  }
+  :root:not([data-theme="light"]) .moon {
+    display: block;
+  }
+}
+:root[data-theme="dark"] .sun {
+  display: none;
+}
+:root[data-theme="dark"] .moon {
+  display: block;
+}
+:root[data-theme="light"] .sun {
+  display: block;
+}
+:root[data-theme="light"] .moon {
+  display: none;
+}

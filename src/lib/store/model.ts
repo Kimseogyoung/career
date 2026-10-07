@@ -106,11 +106,25 @@ export function dayHead(day: DayRecord): string {
 
 export function indexDayOf(day: DayRecord): IndexDay {
   const categories = [...new Set(day.entries.map((e) => e.category))];
+  // 최다 카테고리와 그 횟수(연 보기 색조·명도). 동점이면 먼저 나온 것.
+  const counts = new Map<string, number>();
+  let top: DayRecord["entries"][number]["category"] | null = null;
+  let topCount = 0;
+  for (const e of day.entries) {
+    const n = (counts.get(e.category) ?? 0) + 1;
+    counts.set(e.category, n);
+    if (n > topCount) {
+      topCount = n;
+      top = e.category;
+    }
+  }
   return {
     head: dayHead(day),
     count: day.entries.length,
     categories,
     hasSummary: Boolean(day.summary?.text?.trim()),
+    top,
+    topCount,
   };
 }
 

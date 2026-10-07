@@ -80,3 +80,33 @@ export function isoWeekDates(isoWeekKey: string): string[] {
   const base = `${monday.getUTCFullYear()}-${String(monday.getUTCMonth() + 1).padStart(2, "0")}-${String(monday.getUTCDate()).padStart(2, "0")}`;
   return Array.from({ length: 7 }, (_, i) => shiftDate(base, i));
 }
+
+/** 영문 월 약어. 내비 라벨·브레드크럼용. */
+export const MONTHS_EN = [
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
+];
+
+/** "YYYY-MM" → "Oct" 식 라벨. */
+export function monthShort(ym: string): string {
+  const m = Number(ym.slice(5, 7));
+  return MONTHS_EN[m - 1] ?? ym;
+}
+
+/** ISO 주 "YYYY-Www" → "10/5–10/11" 범위 라벨. */
+export function weekRangeLabel(isoWeek: string): string {
+  const dates = isoWeekDates(isoWeek);
+  const a = dates[0]!,
+    b = dates[6]!;
+  return `${Number(a.slice(5, 7))}/${Number(a.slice(8))}–${Number(b.slice(5, 7))}/${Number(b.slice(8))}`;
+}

@@ -11,6 +11,8 @@
   --accent: #3b43c4;
   --accent-fg: #ffffff;
   --danger: #b91c1c;
+  --holiday: #d23b3b;
+  --satblue: #2b6cb0;
   --radius: 10px;
   --shadow: none;
   color-scheme: light;
@@ -27,6 +29,8 @@
     --accent: #8b93ff;
     --accent-fg: #15131c;
     --danger: #f87171;
+    --holiday: #ff6b6b;
+    --satblue: #6aa6ff;
     color-scheme: dark;
   }
 }
@@ -41,6 +45,8 @@
   --accent: #8b93ff;
   --accent-fg: #15131c;
   --danger: #f87171;
+  --holiday: #ff6b6b;
+  --satblue: #6aa6ff;
   color-scheme: dark;
 }
 

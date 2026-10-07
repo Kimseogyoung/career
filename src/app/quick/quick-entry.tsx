@@ -77,7 +77,7 @@ export function QuickEntry({ categories }: { categories: Category[] }) {
         <div className={styles.done}>
           <p>✓ 기록했습니다</p>
           <div className={styles.doneActions}>
-            <Link className={styles.btn} href={`/day/${slot.date}`}>
+            <Link className={styles.btn} href={`/journal/day/${slot.date}`}>
               이 날 보기
             </Link>
             <Link className={styles.btn} href="/">

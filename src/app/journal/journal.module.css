@@ -1,0 +1,368 @@
+.shell {
+  max-width: 860px;
+  margin: 0 auto;
+  padding-block: 8px 80px;
+  padding-inline: 16px;
+}
+.vtitle {
+  margin: 10px 0 14px;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+.banner {
+  background: color-mix(in srgb, var(--danger) 12%, var(--surface));
+  border: 1px solid color-mix(in srgb, var(--danger) 40%, var(--border));
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 13px;
+  margin: 12px 0;
+}
+
+/* 카테고리 필터 */
+.filters {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+.chip {
+  font-size: 12px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-muted);
+  cursor: pointer;
+}
+.chip[data-on="true"] {
+  color: #fff;
+  border-color: transparent;
+  background: var(--chip, var(--accent));
+}
+
+/* 월 그리드 */
+.weekhead {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+  margin-bottom: 6px;
+}
+.weekhead span {
+  text-align: center;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.weekhead .sun {
+  color: var(--holiday);
+}
+.weekhead .sat {
+  color: var(--satblue);
+}
+.week {
+  margin-bottom: 6px;
+}
+.days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+}
+.cell {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-height: 72px;
+  min-width: 0;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px 8px;
+  background: var(--surface);
+  color: inherit;
+  text-decoration: none;
+  overflow: hidden;
+}
+.cell:hover {
+  border-color: var(--accent);
+}
+.cellOther {
+  opacity: 0.38;
+}
+.cellToday {
+  border-color: var(--accent);
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+.cellDimmed {
+  opacity: 0.25;
+}
+.cellTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+}
+.dayNum {
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+.dayNum.sun,
+.dayNum.holiday {
+  color: var(--holiday);
+  font-weight: 600;
+}
+.dayNum.sat {
+  color: var(--satblue);
+  font-weight: 600;
+}
+.hname {
+  font-size: 10px;
+  line-height: 1.1;
+  color: var(--holiday);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.dots {
+  display: flex;
+  gap: 3px;
+  flex-wrap: wrap;
+}
+.dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+.cellHead {
+  margin-top: 2px;
+  font-size: 12px;
+  line-height: 1.35;
+  color: var(--text-muted);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.wsum {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  font-size: 12px;
+  color: var(--text-muted);
+  background: var(--surface-2);
+  border: 1px dashed var(--border);
+  border-radius: 8px;
+  padding: 6px 10px;
+  margin-top: 2px;
+  text-decoration: none;
+}
+.wsum:hover {
+  border-color: var(--accent);
+}
+.wsum b {
+  color: var(--text);
+  font-weight: 600;
+  white-space: nowrap;
+}
+.wsum .txt {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+.wsum .go {
+  margin-left: auto;
+  color: var(--accent);
+  white-space: nowrap;
+}
+@media (max-width: 560px) {
+  .cell {
+    min-height: 58px;
+  }
+  .cellHead {
+    display: none;
+  }
+}
+
+/* 연간 */
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 14px;
+  margin: -2px 0 14px;
+}
+.legend .lg {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.legend .lg i {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+}
+.yearGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+@media (max-width: 620px) {
+  .yearGrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+@media (max-width: 420px) {
+  .yearGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+.mini {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 9px;
+  background: var(--surface);
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+.mini:hover {
+  border-color: var(--accent);
+}
+.mini h3 {
+  margin: 0 0 7px;
+  font-size: 12.5px;
+  font-weight: 600;
+}
+.mini h3 small {
+  color: var(--text-muted);
+  font-weight: 400;
+  margin-left: 4px;
+}
+.miniGrid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+.md {
+  aspect-ratio: 1;
+  border-radius: 2px;
+  background: var(--surface-2);
+}
+.md.empty {
+  background: transparent;
+}
+
+/* 주간 아젠다 */
+.agenda {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  overflow: hidden;
+}
+.summary {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface-2);
+  padding: 13px;
+  margin-bottom: 14px;
+}
+.summary .lab {
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--accent);
+  font-weight: 600;
+}
+.summary p {
+  margin: 6px 0 0;
+  font-size: 13.5px;
+  line-height: 1.6;
+}
+.summary .empty {
+  margin: 6px 0 0;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+.agDay {
+  display: grid;
+  grid-template-columns: 56px 1fr;
+  gap: 12px;
+  align-items: start;
+  text-decoration: none;
+  color: inherit;
+  border-top: 1px solid var(--border);
+  padding: 12px 14px;
+}
+.agDay:first-child {
+  border-top: none;
+}
+.agDay:hover {
+  background: var(--surface-2);
+}
+.agDate {
+  text-align: right;
+  padding-top: 1px;
+}
+.agDate .d {
+  display: block;
+  font-size: 17px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.05;
+}
+.agDate .w {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+.agDate.today .d {
+  color: var(--accent);
+}
+.agDate.sun .d,
+.agDate.holiday .d,
+.agDate.sun .w,
+.agDate.holiday .w {
+  color: var(--holiday);
+}
+.agDate.sat .d,
+.agDate.sat .w {
+  color: var(--satblue);
+}
+.agItems {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-top: 2px;
+}
+.agItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  font-size: 13px;
+}
+.agItem .t {
+  color: var(--text-muted);
+  font-size: 11px;
+  flex: none;
+  font-variant-numeric: tabular-nums;
+}
+.agItem .b {
+  width: 3px;
+  align-self: stretch;
+  min-height: 15px;
+  border-radius: 2px;
+  flex: none;
+}
+.agItem .tx {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+.agEmpty {
+  color: var(--text-muted);
+  font-size: 12.5px;
+  opacity: 0.7;
+}

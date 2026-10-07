@@ -42,6 +42,8 @@ export interface IndexDay {
   count: number;
   categories: CategoryId[];
   hasSummary: boolean;
+  top?: CategoryId | null; // 그날 최다 카테고리(연 보기 색조). 구버전 인덱스엔 없을 수 있음
+  topCount?: number; // 그 카테고리 횟수(연 보기 명도)
 }
 
 export interface IndexFile {
