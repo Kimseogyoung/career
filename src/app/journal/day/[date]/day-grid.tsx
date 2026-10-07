@@ -1,8 +1,21 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useMemo, useState, type FormEvent } from "react";
-import { buildSlots } from "@/lib/slots";
+import {
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+  type FormEvent,
+  type MouseEvent as ReactMouseEvent,
+} from "react";
+import {
+  computeDayLayout,
+  fromMin,
+  previousEntry,
+  toMin,
+  type RecentActivity,
+} from "@/lib/timeline";
 import type { Category, Entry, RecordingHours } from "@/lib/store/types";
 import styles from "./day.module.css";
 
@@ -11,20 +24,48 @@ interface Props {
   initialEntries: Entry[];
   categories: Category[];
   recordingHours: RecordingHours;
+  recent: RecentActivity[];
+  nowMinutes: number; // 오늘이 아니면 -1
 }
 
-// 폼이 열린 상태: 새 엔트리(해당 슬롯 start 프리필) 또는 기존 엔트리 편집.
-type Editing = { mode: "new"; start: string; end: string } | { mode: "edit"; entry: Entry } | null;
+// 시간당 높이(px). 눈금 그라데이션(.tlTrack)과 반드시 일치시킨다.
+const PX = 84;
+const GAP = 6;
+const MIN_CARD = 34;
 
-export function DayGrid({ date, initialEntries, categories, recordingHours }: Props) {
+type Prefill = { category: Category["id"]; tags: string[]; content: string };
+type Editing =
+  | { mode: "new"; start: string; end: string; prefill?: Prefill }
+  | { mode: "edit"; entry: Entry }
+  | null;
+
+export function DayGrid({
+  date,
+  initialEntries,
+  categories,
+  recordingHours,
+  recent,
+  nowMinutes,
+}: Props) {
   const router = useRouter();
   const [entries, setEntries] = useState<Entry[]>(initialEntries);
   const [editing, setEditing] = useState<Editing>(null);
+  const [formKey, setFormKey] = useState(0);
   const [error, setError] = useState<string | null>(null);
+  const [dawnOpen, setDawnOpen] = useState(false);
+  const [eveOpen, setEveOpen] = useState(false);
+  const [expanded, setExpanded] = useState<number | null>(null);
+  const trackRef = useRef<HTMLDivElement>(null);
 
   const catById = useMemo(() => new Map(categories.map((c) => [c.id, c])), [categories]);
-  const slots = useMemo(() => buildSlots(recordingHours, entries), [recordingHours, entries]);
+  const layout = useMemo(() => computeDayLayout(entries, recordingHours), [entries, recordingHours]);
 
+  const trackH = ((layout.endMin - layout.startMin) / 60) * PX;
+  const yOf = (min: number) => ((min - layout.startMin) / 60) * PX;
+  const hourMarks: number[] = [];
+  for (let m = layout.startMin; m <= layout.endMin; m += 60) hourMarks.push(m);
+
+  // ── 저장/삭제 (기존 API 재사용) ──────────────────────────────────
   function replaceEntry(next: Entry) {
     setEntries((prev) => {
       const i = prev.findIndex((e) => e.id === next.id);
@@ -58,7 +99,6 @@ export function DayGrid({ date, initialEntries, categories, recordingHours }: Pr
     const { entry } = (await res.json()) as { entry: Entry };
     replaceEntry(entry);
     setEditing(null);
-    // 서버 컴포넌트(일/월/주/홈)의 RSC 캐시를 무효화해 네비게이션·새로고침 후에도 반영되게 한다.
     router.refresh();
   }
 
@@ -71,95 +111,272 @@ export function DayGrid({ date, initialEntries, categories, recordingHours }: Pr
       return;
     }
     setEntries((prev) => prev.filter((e) => e.id !== entry.id));
+    setEditing(null);
     router.refresh();
   }
+
+  // ── 새 기록 열기 ────────────────────────────────────────────────
+  function openNew(atMin: number, prefill?: Prefill) {
+    const s = Math.max(0, Math.min(1439, Math.round(atMin / 30) * 30));
+    setEditing({ mode: "new", start: fromMin(s), end: fromMin(Math.min(s + 60, 1439)), prefill });
+    setFormKey((k) => k + 1);
+    setExpanded(null);
+  }
+
+  function openEdit(entry: Entry) {
+    setEditing({ mode: "edit", entry });
+    setFormKey((k) => k + 1);
+    setExpanded(null);
+  }
+
+  function applyChip(a: RecentActivity) {
+    setEditing((ed) =>
+      ed && ed.mode === "new"
+        ? { ...ed, prefill: { category: a.category, tags: a.tags, content: a.content } }
+        : ed,
+    );
+    setFormKey((k) => k + 1);
+  }
+
+  function sameAsPrev() {
+    if (!editing || editing.mode !== "new") return;
+    const prev = previousEntry(entries, toMin(editing.start));
+    if (!prev) return;
+    applyChip({ category: prev.category, tags: prev.tags, content: prev.content });
+  }
+
+  function onTrackClick(e: ReactMouseEvent<HTMLDivElement>) {
+    if (e.target !== trackRef.current) return; // 카드가 아니라 빈 바탕을 눌렀을 때만
+    const rect = trackRef.current.getBoundingClientRect();
+    const min = layout.startMin + ((e.clientY - rect.top) / PX) * 60;
+    openNew(min);
+  }
+
+  function defaultNewMin() {
+    if (nowMinutes >= layout.startMin && nowMinutes < layout.endMin) return nowMinutes;
+    return layout.startMin;
+  }
+
+  // 편집 폼 초기값
+  const formInitial: Partial<Entry> & { start: string; end: string } =
+    editing?.mode === "edit"
+      ? editing.entry
+      : editing
+        ? { start: editing.start, end: editing.end, ...editing.prefill }
+        : { start: "", end: "" };
 
   return (
     <>
       {error ? <p className={styles.error}>{error}</p> : null}
 
-      {slots.map((slot) => (
-        <div key={slot.start} className={styles.slot}>
-          <div className={styles.slotTime}>{slot.start}</div>
-          <div className={styles.slotBody}>
-            {slot.entries.map((entry) =>
-              editing?.mode === "edit" && editing.entry.id === entry.id ? (
-                <EntryForm
-                  key={entry.id}
-                  categories={categories}
-                  initial={entry}
-                  onCancel={() => setEditing(null)}
-                  onSave={save}
-                />
+      <div className={styles.tlToolbar}>
+        <button type="button" className={styles.addBtn} onClick={() => openNew(defaultNewMin())}>
+          + 기록 추가
+        </button>
+      </div>
+
+      {editing ? (
+        <div className={styles.panel}>
+          {editing.mode === "new" ? (
+            <div className={styles.quick}>
+              {recent.length ? (
+                <>
+                  <span className={styles.quickLabel}>빠르게 반복</span>
+                  <div className={styles.chips}>
+                    {recent.map((a, i) => (
+                      <button
+                        key={`${a.category}-${i}`}
+                        type="button"
+                        className={styles.reChip}
+                        style={{ ["--cat" as string]: catById.get(a.category)?.color }}
+                        onClick={() => applyChip(a)}
+                      >
+                        <span className={styles.dot} />
+                        {catById.get(a.category)?.label ?? a.category} · {a.content}
+                      </button>
+                    ))}
+                    {previousEntry(entries, toMin(editing.start)) ? (
+                      <button type="button" className={styles.reChip} onClick={sameAsPrev}>
+                        ↑ 직전과 동일
+                      </button>
+                    ) : null}
+                  </div>
+                </>
+              ) : null}
+            </div>
+          ) : null}
+          <EntryForm
+            key={formKey}
+            categories={categories}
+            initial={formInitial}
+            onCancel={() => setEditing(null)}
+            onSave={save}
+            onDelete={editing.mode === "edit" ? () => remove(editing.entry) : undefined}
+          />
+        </div>
+      ) : null}
+
+      {/* 접힌 새벽 */}
+      {layout.dawn ? (
+        <FoldBar
+          open={dawnOpen}
+          onToggle={() => setDawnOpen((v) => !v)}
+          label={`${fromMin(layout.dawn.from)}–${fromMin(layout.dawn.to)} · 새벽 · 기록 없음`}
+          onAdd={() => openNew(layout.dawn!.to - 60)}
+        />
+      ) : null}
+
+      {/* 타임라인 */}
+      <div className={styles.tl} style={{ height: trackH }}>
+        {hourMarks.map((m) => (
+          <div key={m} className={styles.hr} style={{ top: yOf(m) - 6 }}>
+            {fromMin(m)}
+          </div>
+        ))}
+        <div
+          className={styles.tlTrack}
+          ref={trackRef}
+          onClick={onTrackClick}
+          role="presentation"
+        >
+          {nowMinutes >= layout.startMin && nowMinutes < layout.endMin ? (
+            <div className={styles.nowline} style={{ top: yOf(nowMinutes) }}>
+              <span>{fromMin(nowMinutes)}</span>
+            </div>
+          ) : null}
+
+          {layout.items
+            .filter((it) => !it.overflow)
+            .map((it) => {
+              const cat = catById.get(it.entry.category);
+              const top = yOf(it.top) + GAP / 2;
+              const height = Math.max(yOf(it.top + it.height) - yOf(it.top) - GAP, MIN_CARD);
+              const single = it.ncols <= 1;
+              const style: CSSProperties = { top, height, ["--cat" as string]: cat?.color };
+              if (single) {
+                style.left = 4;
+                style.right = 4;
+              } else {
+                const vis = Math.min(it.ncols, 3);
+                const M = 2;
+                const G = 2;
+                const w = (100 - 2 * M - (vis - 1) * G) / vis;
+                style.left = `${M + it.col * (w + G)}%`;
+                style.width = `${w}%`;
+              }
+              return (
+                <button
+                  key={it.entry.id}
+                  type="button"
+                  className={`${styles.ev} ${single ? "" : styles.col}`}
+                  style={style}
+                  onClick={() => openEdit(it.entry)}
+                >
+                  <span className={styles.evHead}>
+                    <span className={styles.chip} style={{ ["--cat" as string]: cat?.color }}>
+                      {cat?.label ?? it.entry.category}
+                    </span>
+                    <span className={styles.etime}>
+                      {it.entry.start}–{it.entry.end}
+                    </span>
+                  </span>
+                  {it.entry.content ? (
+                    <span className={styles.evBody}>{it.entry.content}</span>
+                  ) : null}
+                </button>
+              );
+            })}
+
+          {/* 4개 이상 겹침: •••+N 배지 / 펼침 목록 */}
+          {layout.clusters
+            .filter((c) => c.overflowCount > 0)
+            .map((c) =>
+              expanded === c.id ? (
+                <div
+                  key={`exp-${c.id}`}
+                  className={styles.expand}
+                  style={{ top: yOf(c.top) + GAP / 2 }}
+                >
+                  {c.entries.map((e) => {
+                    const cat = catById.get(e.category);
+                    return (
+                      <button
+                        key={e.id}
+                        type="button"
+                        className={styles.exItem}
+                        style={{ ["--cat" as string]: cat?.color }}
+                        onClick={() => openEdit(e)}
+                      >
+                        <span className={styles.chip} style={{ ["--cat" as string]: cat?.color }}>
+                          {cat?.label ?? e.category}
+                        </span>
+                        <span className={styles.etime}>
+                          {e.start}–{e.end}
+                          {e.content ? ` · ${e.content}` : ""}
+                        </span>
+                      </button>
+                    );
+                  })}
+                  <button
+                    type="button"
+                    className={styles.lessPill}
+                    onClick={() => setExpanded(null)}
+                  >
+                    접기
+                  </button>
+                </div>
               ) : (
-                <EntryCard
-                  key={entry.id}
-                  entry={entry}
-                  category={catById.get(entry.category)}
-                  onEdit={() => setEditing({ mode: "edit", entry })}
-                  onDelete={() => remove(entry)}
-                />
+                <button
+                  key={`more-${c.id}`}
+                  type="button"
+                  className={styles.moreBadge}
+                  style={{ top: yOf(c.top) + GAP / 2 - 11 }}
+                  onClick={() => setExpanded(c.id)}
+                >
+                  •••<span>+{c.overflowCount}</span>
+                </button>
               ),
             )}
-
-            {editing?.mode === "new" && editing.start === slot.start ? (
-              <EntryForm
-                categories={categories}
-                initial={{ start: slot.start, end: slot.end }}
-                onCancel={() => setEditing(null)}
-                onSave={save}
-              />
-            ) : (
-              <button
-                type="button"
-                className={styles.addBtn}
-                onClick={() => setEditing({ mode: "new", start: slot.start, end: slot.end })}
-              >
-                + 기록 추가
-              </button>
-            )}
-          </div>
         </div>
-      ))}
+      </div>
+
+      {/* 접힌 저녁·밤 */}
+      {layout.eve ? (
+        <FoldBar
+          open={eveOpen}
+          onToggle={() => setEveOpen((v) => !v)}
+          label={`${fromMin(layout.eve.from)}–24:00 · 저녁·밤 · 기록 없음`}
+          onAdd={() => openNew(layout.eve!.from)}
+        />
+      ) : null}
     </>
   );
 }
 
-function EntryCard({
-  entry,
-  category,
-  onEdit,
-  onDelete,
+function FoldBar({
+  open,
+  onToggle,
+  label,
+  onAdd,
 }: {
-  entry: Entry;
-  category: Category | undefined;
-  onEdit: () => void;
-  onDelete: () => void;
+  open: boolean;
+  onToggle: () => void;
+  label: string;
+  onAdd: () => void;
 }) {
   return (
-    <div className={styles.entry} style={{ ["--cat" as string]: category?.color }}>
-      <div className={styles.entryHead}>
-        <span className={styles.catChip} style={{ ["--cat" as string]: category?.color }}>
-          {category?.label ?? entry.category}
-        </span>
-        <span className={styles.slotTime}>
-          {entry.start}–{entry.end}
-        </span>
-        {entry.tags.map((t) => (
-          <span key={t} className={styles.tag}>
-            #{t}
-          </span>
-        ))}
-      </div>
-      {entry.content ? <div className={styles.entryContent}>{entry.content}</div> : null}
-      <div className={styles.entryActions}>
-        <button type="button" className={styles.miniBtn} onClick={onEdit}>
-          수정
-        </button>
-        <button type="button" className={styles.miniBtn} onClick={onDelete}>
-          삭제
-        </button>
-      </div>
+    <div className={styles.foldWrap}>
+      <button type="button" className={`${styles.fold} ${open ? styles.foldOpen : ""}`} onClick={onToggle}>
+        <span className={styles.chev}>▸</span> {label}
+      </button>
+      {open ? (
+        <div className={styles.foldBody}>
+          비어 있어 접어 뒀습니다.{" "}
+          <button type="button" className={styles.miniBtn} onClick={onAdd}>
+            이 구간에 기록 추가
+          </button>
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -169,6 +386,7 @@ function EntryForm({
   initial,
   onCancel,
   onSave,
+  onDelete,
 }: {
   categories: Category[];
   initial: Partial<Entry> & { start: string; end: string };
@@ -180,6 +398,7 @@ function EntryForm({
     tags: string[];
     content: string;
   }) => void | Promise<void>;
+  onDelete?: () => void;
 }) {
   const [start, setStart] = useState(initial.start);
   const [end, setEnd] = useState(initial.end);
@@ -207,7 +426,6 @@ function EntryForm({
   return (
     <form className={styles.form} onSubmit={submit}>
       <div className={styles.row}>
-        {/* 시작·끝 시간은 한 묶음으로 묶어 좁은 화면에서도 같은 줄에 유지한다. */}
         <div className={styles.timeRange}>
           <input
             className={`${styles.input} ${styles.timeInput}`}
@@ -251,6 +469,12 @@ function EntryForm({
         autoFocus
       />
       <div className={styles.formActions}>
+        {onDelete ? (
+          <button type="button" className={styles.danger} onClick={onDelete} disabled={busy}>
+            삭제
+          </button>
+        ) : null}
+        <span className={styles.spacer} />
         <button type="button" className={styles.cancel} onClick={onCancel} disabled={busy}>
           취소
         </button>

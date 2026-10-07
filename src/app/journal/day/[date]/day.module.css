@@ -23,8 +23,7 @@
   gap: 6px;
 }
 
-.navLink,
-.backLink {
+.navLink {
   color: var(--text-muted);
   text-decoration: none;
   border: 1px solid var(--border);
@@ -33,8 +32,7 @@
   font-size: 13px;
 }
 
-.navLink:hover,
-.backLink:hover {
+.navLink:hover {
   color: var(--text);
 }
 
@@ -48,92 +46,28 @@
   margin: 12px 0;
 }
 
-.slot {
-  display: grid;
-  grid-template-columns: 64px 1fr;
-  gap: 12px;
-  border-top: 1px solid var(--border);
-  padding: 10px 0;
-}
-
-.slotTime {
-  color: var(--text-muted);
+.error {
+  color: var(--danger);
   font-size: 13px;
-  padding-top: 8px;
-  font-variant-numeric: tabular-nums;
+  margin: 8px 0 0;
 }
 
-.slotBody {
+/* ── 상단 추가 버튼 ── */
+.tlToolbar {
   display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.entry {
-  border: 1px solid var(--border);
-  border-left: 3px solid var(--cat, var(--border));
-  border-radius: 8px;
-  padding: 10px 12px;
-  background: var(--surface);
-}
-
-.entryHead {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 4px;
-  flex-wrap: wrap;
-}
-
-.catChip {
-  font-size: 12px;
-  padding: 1px 8px;
-  border-radius: 999px;
-  color: #fff;
-  background: var(--cat, var(--text-muted));
-}
-
-.tag {
-  font-size: 12px;
-  color: var(--text-muted);
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  padding: 1px 8px;
-}
-
-.entryContent {
-  white-space: pre-wrap;
-  font-size: 14px;
-}
-
-.entryActions {
-  display: flex;
-  gap: 10px;
-  margin-top: 6px;
-}
-
-.miniBtn {
-  background: none;
-  border: none;
-  color: var(--text-muted);
-  font-size: 12px;
-  text-decoration: underline;
-  padding: 0;
-}
-
-.miniBtn:hover {
-  color: var(--text);
+  justify-content: flex-end;
+  margin-top: 10px;
 }
 
 .addBtn {
-  align-self: flex-start;
   background: none;
   border: 1px dashed var(--border);
   border-radius: 8px;
   color: var(--text-muted);
-  padding: 8px 12px;
+  padding: 7px 12px;
   font-size: 13px;
+  cursor: pointer;
+  font-family: inherit;
 }
 
 .addBtn:hover {
@@ -141,7 +75,321 @@
   border-color: var(--text-muted);
 }
 
-/* 편집 폼 */
+/* ── 편집/추가 패널 ── */
+.panel {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface-2);
+  padding: 12px;
+  margin: 12px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.quick {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.quickLabel {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.reChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  border-radius: 999px;
+  padding: 5px 11px;
+  font-size: 12.5px;
+  color: var(--text);
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.reChip:hover {
+  border-color: var(--accent);
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--cat, var(--text-muted));
+  flex: none;
+}
+
+/* ── 접히는 빈 구간 ── */
+.foldWrap {
+  margin: 6px 0;
+}
+
+.fold {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  border: 1px dashed var(--border);
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 12.5px;
+  color: var(--text-muted);
+  padding: 9px 12px;
+  background: color-mix(in srgb, var(--text-muted) 6%, var(--surface));
+}
+
+.chev {
+  display: inline-block;
+  transition: transform 0.15s;
+}
+
+.foldOpen .chev {
+  transform: rotate(90deg);
+}
+
+.foldBody {
+  border: 1px dashed var(--border);
+  border-radius: 8px;
+  padding: 12px;
+  color: var(--text-muted);
+  font-size: 12.5px;
+  background: var(--surface);
+  margin-top: 6px;
+}
+
+.miniBtn {
+  background: none;
+  border: none;
+  color: var(--accent);
+  font: inherit;
+  font-size: 12.5px;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 0;
+}
+
+/* ── 타임라인 ── */
+.tl {
+  position: relative;
+  margin-top: 4px;
+}
+
+.hr {
+  position: absolute;
+  left: 0;
+  width: 44px;
+  text-align: right;
+  font-size: 11px;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.tlTrack {
+  position: absolute;
+  left: 52px;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  border-left: 1px solid var(--border);
+  background-image:
+    repeating-linear-gradient(to bottom, var(--border) 0 1px, transparent 1px 84px),
+    repeating-linear-gradient(
+      to bottom,
+      color-mix(in srgb, var(--border) 45%, transparent) 0 1px,
+      transparent 1px 42px
+    );
+}
+
+/* 카드(앱 .entry 와 동일한 여백) */
+.ev {
+  position: absolute;
+  box-sizing: border-box;
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--cat, var(--border));
+  border-radius: 8px;
+  padding: 10px 12px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.evHead {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.chip {
+  font-size: 12px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  color: #fff;
+  background: var(--cat, var(--text-muted));
+  flex: none;
+}
+
+.etime {
+  color: var(--text-muted);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+
+.evBody {
+  font-size: 14px;
+  line-height: 1.35;
+  margin-top: 2px;
+  overflow: hidden;
+}
+
+/* 좁아진(겹침) 카드: 작게, 세로 가운데. 시간은 자르지 않고 내용만 … */
+.col {
+  padding: 3px 5px;
+  justify-content: center;
+  gap: 0;
+}
+
+.col .evHead {
+  flex-wrap: nowrap;
+  gap: 5px;
+}
+
+.col .chip {
+  font-size: 10px;
+  padding: 1px 6px;
+}
+
+.col .etime {
+  flex: none;
+  font-size: 9.5px;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+}
+
+.col .evBody {
+  font-size: 11.5px;
+  margin-top: 3px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* 현재 시각선 */
+.nowline {
+  position: absolute;
+  left: 0;
+  right: 4px;
+  border-top: 2px solid var(--accent);
+  z-index: 4;
+}
+
+.nowline::before {
+  content: "";
+  position: absolute;
+  left: -4px;
+  top: -4px;
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--accent);
+}
+
+.nowline span {
+  position: absolute;
+  right: 2px;
+  top: -16px;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--accent-fg);
+  background: var(--accent);
+  padding: 0 5px;
+  border-radius: 4px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* 겹침 4개↑ 접기 */
+.moreBadge {
+  position: absolute;
+  right: -2px;
+  z-index: 7;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 9px;
+  border-radius: 999px;
+  border: 1px solid var(--accent);
+  background: var(--accent);
+  color: var(--accent-fg);
+  font-size: 10.5px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.expand {
+  position: absolute;
+  left: 4px;
+  right: 4px;
+  z-index: 6;
+  background: var(--surface);
+  border: 1px solid var(--accent);
+  border-radius: 8px;
+  padding: 7px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.exItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--cat, var(--border));
+  border-radius: 6px;
+  padding: 6px 9px;
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+}
+
+.exItem .etime {
+  font-size: 12px;
+}
+
+.lessPill {
+  align-self: flex-end;
+  border: none;
+  background: none;
+  color: var(--accent);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 2px 4px;
+}
+
+/* ── 편집 폼 ── */
 .form {
   border: 1px solid var(--accent);
   border-radius: 8px;
@@ -176,7 +424,6 @@
   resize: vertical;
 }
 
-/* 시작–끝 시간 묶음: 좁은 화면에서도 줄바꿈 없이 한 줄 유지, 공간이 모자라면 축소. */
 .timeRange {
   display: flex;
   align-items: center;
@@ -187,12 +434,15 @@
 }
 
 .timeInput {
-  /* 한국어 로케일의 네이티브 time 입력은 "오전 09:00" 을 표시하므로 넉넉히 잡되,
-     좁은 폭에서는 flex 로 줄어들 수 있게 한다. */
   flex: 1 1 0;
   width: auto;
   min-width: 0;
   font-variant-numeric: tabular-nums;
+}
+
+.slotTime {
+  color: var(--text-muted);
+  font-size: 13px;
 }
 
 .select {
@@ -208,7 +458,11 @@
 .formActions {
   display: flex;
   gap: 8px;
-  justify-content: flex-end;
+  align-items: center;
+}
+
+.spacer {
+  flex: 1;
 }
 
 .save {
@@ -218,6 +472,8 @@
   border-radius: 6px;
   padding: 7px 14px;
   font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
 }
 
 .cancel {
@@ -226,10 +482,16 @@
   border-radius: 6px;
   padding: 7px 14px;
   color: var(--text-muted);
+  cursor: pointer;
+  font-family: inherit;
 }
 
-.error {
+.danger {
+  background: none;
+  border: 1px solid color-mix(in srgb, var(--danger) 40%, var(--border));
   color: var(--danger);
-  font-size: 13px;
-  margin: 0;
+  border-radius: 6px;
+  padding: 7px 12px;
+  cursor: pointer;
+  font-family: inherit;
 }

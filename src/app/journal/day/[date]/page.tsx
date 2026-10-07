@@ -3,10 +3,11 @@ import { notFound } from "next/navigation";
 import { getSettingsStore, getStore, isStoreConfigured } from "@/lib/store/instance";
 import { DEFAULT_SETTINGS } from "@/lib/store/settings";
 import { isValidDate } from "@/lib/validation";
-import { formatKoreanDate, shiftDate } from "@/lib/time";
+import { formatKoreanDate, nowKstIso, shiftDate } from "@/lib/time";
 import { isoWeek } from "@/lib/calendar";
 import { holidayName } from "@/lib/holidays";
 import { canGenerate } from "@/lib/summary/summarizer";
+import { recentActivities, type RecentActivity } from "@/lib/timeline";
 import type { Entry, Summary } from "@/lib/store/types";
 import { SummaryPanel } from "@/app/summary-panel";
 import { JournalNav } from "../../journal-nav";
@@ -24,6 +25,7 @@ export default async function DayPage({ params }: { params: Promise<{ date: stri
   let daySummary: Summary | null = null;
   let stale = false;
   let settings = DEFAULT_SETTINGS;
+  let recent: RecentActivity[] = [];
 
   if (configured) {
     try {
@@ -34,12 +36,21 @@ export default async function DayPage({ params }: { params: Promise<{ date: stri
         entries = day.entries;
         daySummary = day.summary ?? null;
         stale = store.syncStatus().degraded;
+        // 반복 칩: 같은 달에서 날짜 이하의 최근 활동(원격 재조회 없이 캐시된 월에서 뽑는다)
+        const month = await store.getMonth(date.slice(0, 7));
+        recent = recentActivities(month.days, date);
       }
       if (settingsStore) settings = await settingsStore.get();
     } catch {
       stale = true;
     }
   }
+
+  const nowIso = nowKstIso();
+  const nowMinutes =
+    nowIso.slice(0, 10) === date
+      ? Number(nowIso.slice(11, 13)) * 60 + Number(nowIso.slice(14, 16))
+      : -1;
 
   const prev = shiftDate(date, -1);
   const next = shiftDate(date, 1);
@@ -96,6 +107,8 @@ export default async function DayPage({ params }: { params: Promise<{ date: stri
         initialEntries={entries}
         categories={settings.categories}
         recordingHours={settings.recordingHours}
+        recent={recent}
+        nowMinutes={nowMinutes}
       />
     </main>
   );
