@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useMemo, useState, type FormEvent } from "react";
 import { buildSlots } from "@/lib/slots";
 import type { Category, Entry, RecordingHours } from "@/lib/store/types";
@@ -16,6 +17,7 @@ interface Props {
 type Editing = { mode: "new"; start: string; end: string } | { mode: "edit"; entry: Entry } | null;
 
 export function DayGrid({ date, initialEntries, categories, recordingHours }: Props) {
+  const router = useRouter();
   const [entries, setEntries] = useState<Entry[]>(initialEntries);
   const [editing, setEditing] = useState<Editing>(null);
   const [error, setError] = useState<string | null>(null);
@@ -56,6 +58,8 @@ export function DayGrid({ date, initialEntries, categories, recordingHours }: Pr
     const { entry } = (await res.json()) as { entry: Entry };
     replaceEntry(entry);
     setEditing(null);
+    // 서버 컴포넌트(일/월/주/홈)의 RSC 캐시를 무효화해 네비게이션·새로고침 후에도 반영되게 한다.
+    router.refresh();
   }
 
   async function remove(entry: Entry) {
@@ -67,6 +71,7 @@ export function DayGrid({ date, initialEntries, categories, recordingHours }: Pr
       return;
     }
     setEntries((prev) => prev.filter((e) => e.id !== entry.id));
+    router.refresh();
   }
 
   return (

@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import type { Summary } from "@/lib/store/types";
 import styles from "./summary-panel.module.css";
@@ -14,6 +15,7 @@ interface Props {
 
 // 일/주/월 요약 패널. 조회·AI 생성·수동 편집을 한 컴포넌트로.
 export function SummaryPanel({ scope, summaryKey, title, initial, canGenerate }: Props) {
+  const router = useRouter();
   const [summary, setSummary] = useState<Summary | null>(initial);
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(initial?.text ?? "");
@@ -39,6 +41,7 @@ export function SummaryPanel({ scope, summaryKey, title, initial, canGenerate }:
       if (body.summary) {
         setSummary(body.summary);
         setDraft(body.summary.text);
+        router.refresh();
       } else {
         setError(
           body.reason === "no_key_or_empty"
@@ -67,6 +70,7 @@ export function SummaryPanel({ scope, summaryKey, title, initial, canGenerate }:
       }
       setSummary(body.summary);
       setEditing(false);
+      router.refresh();
     } finally {
       setBusy(null);
     }
