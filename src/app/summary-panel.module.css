@@ -46,7 +46,7 @@
 .btnPrimary {
   border-color: transparent;
   background: var(--accent);
-  color: #fff;
+  color: var(--accent-fg);
 }
 
 .btn:disabled {

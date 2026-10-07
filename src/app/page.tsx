@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { LogoutButton } from "./logout-button";
+import { ThemeToggle } from "@/app/components/theme-toggle";
 import { CalendarView } from "./calendar-view";
 import { getSettingsStore, getStore, isStoreConfigured } from "@/lib/store/instance";
 import { DEFAULT_SETTINGS } from "@/lib/store/settings";
@@ -76,6 +77,7 @@ export default async function HomePage({
           </Link>
         </div>
         <div className={styles.monthNav}>
+          <ThemeToggle variant="compact" />
           <Link className={styles.todayBtn} href="/settings">
             설정
           </Link>

@@ -5,6 +5,7 @@ import { isPushConfigured } from "@/lib/push";
 import { canGenerate } from "@/lib/summary/summarizer";
 import { NotificationSetup } from "./notification-setup";
 import { ReminderForm } from "./reminder-form";
+import { ThemeToggle } from "@/app/components/theme-toggle";
 import styles from "./settings.module.css";
 
 export const dynamic = "force-dynamic";
@@ -31,11 +32,25 @@ export default async function SettingsPage() {
       </div>
 
       {!configured ? (
-        <p className={styles.note}>
-          원격 저장소가 설정되지 않아 설정을 저장할 수 없습니다. <code>.env</code> 를 채우세요.
-        </p>
+        <>
+          <p className={styles.note}>
+            원격 저장소가 설정되지 않아 기록 설정은 저장할 수 없습니다. <code>.env</code> 를
+            채우세요.
+          </p>
+          <section className={styles.section}>
+            <h2 className={styles.sectionTitle}>테마</h2>
+            <ThemeToggle />
+            <p className={styles.note}>이 기기에만 적용됩니다.</p>
+          </section>
+        </>
       ) : (
         <>
+          <section className={styles.section}>
+            <h2 className={styles.sectionTitle}>테마</h2>
+            <ThemeToggle />
+            <p className={styles.note}>이 기기에만 적용됩니다. 시스템은 OS 설정을 따릅니다.</p>
+          </section>
+
           <section className={styles.section}>
             <h2 className={styles.sectionTitle}>기록 · 알림</h2>
             <ReminderForm

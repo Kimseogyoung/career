@@ -1,24 +1,47 @@
+/* 차분한 모노 — 무채색 바탕 + 인디고 한 점, 하이라인, 플랫(그림자 최소).
+   테마: :root(라이트) / prefers-color-scheme 다크(수동 라이트가 이김) / [data-theme] 수동 토글 */
+
 :root {
-  --bg: #fbfbfa;
+  --bg: #f7f7f6;
   --surface: #ffffff;
-  --border: #e4e4e1;
-  --text: #1c1c1a;
-  --text-muted: #6b6b66;
-  --accent: #2563eb;
+  --surface-2: #efefed;
+  --border: #e4e4e0;
+  --text: #17171a;
+  --text-muted: #6d6d68;
+  --accent: #3b43c4;
+  --accent-fg: #ffffff;
   --danger: #b91c1c;
   --radius: 10px;
+  --shadow: none;
+  color-scheme: light;
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #17171a;
-    --surface: #1f1f23;
-    --border: #32323a;
-    --text: #ececea;
+  :root:not([data-theme="light"]) {
+    --bg: #131316;
+    --surface: #1b1b1f;
+    --surface-2: #212127;
+    --border: #2c2c31;
+    --text: #ededf0;
     --text-muted: #9a9a95;
-    --accent: #6a9bff;
+    --accent: #8b93ff;
+    --accent-fg: #15131c;
     --danger: #f87171;
+    color-scheme: dark;
   }
+}
+
+:root[data-theme="dark"] {
+  --bg: #131316;
+  --surface: #1b1b1f;
+  --surface-2: #212127;
+  --border: #2c2c31;
+  --text: #ededf0;
+  --text-muted: #9a9a95;
+  --accent: #8b93ff;
+  --accent-fg: #15131c;
+  --danger: #f87171;
+  color-scheme: dark;
 }
 
 * {

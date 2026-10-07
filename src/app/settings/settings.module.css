@@ -72,12 +72,12 @@
 }
 .dayChip[data-on="true"] {
   background: var(--accent);
-  color: #fff;
+  color: var(--accent-fg);
   border-color: transparent;
 }
 .primary {
   background: var(--accent);
-  color: #fff;
+  color: var(--accent-fg);
   border: none;
   border-radius: 7px;
   padding: 8px 14px;

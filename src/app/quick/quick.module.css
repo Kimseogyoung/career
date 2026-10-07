@@ -70,7 +70,7 @@
   border: none;
   border-radius: 8px;
   background: var(--accent);
-  color: #fff;
+  color: var(--accent-fg);
   font-weight: 600;
 }
 .submit:disabled {
