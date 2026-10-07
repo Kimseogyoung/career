@@ -27,6 +27,14 @@ export async function POST(req: Request, ctx: { params: Promise<{ date: string }
 
   const entry = buildEntry(parsed.value, ulid(), nowKstIso());
   // 메모리 즉시 반영 + 큐 적재. 원격 반영은 백그라운드 디바운스 플러시가 한다.
-  await store.upsertEntry(date, entry);
+  try {
+    await store.upsertEntry(date, entry);
+  } catch (e) {
+    console.error("[journal] 엔트리 저장 실패:", e);
+    return NextResponse.json(
+      { error: "save_failed", message: (e as Error).message },
+      { status: 503 },
+    );
+  }
   return NextResponse.json({ entry }, { status: 201 });
 }

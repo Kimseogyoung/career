@@ -105,6 +105,26 @@ test("일시 오류(503): 플러시 실패해도 큐에 남고 데이터 보존,
   }
 });
 
+test("쓰기 내구성: 원격 읽기가 실패해도 upsert 는 던지지 않고 큐에 남는다", async () => {
+  const fake = new FakeGitHub();
+  const timer = manualTimer();
+  const { store, dir } = await makeStore(fake, timer);
+  try {
+    // 캐시 데우기용 원격 읽기(getMonth)가 저장 '도중' 실패하는 상황.
+    fake.injectFailures("transient");
+    // 과거엔 이 read 예외가 upsert 전체를 깨뜨려 기록이 유실됐다(버그). 이제는 큐에 남아야 한다.
+    await store.upsertEntry("2026-10-01", entry("01", "원격 끊긴 중 작성"));
+    assert.equal(store.syncStatus().pendingWrites, 1, "읽기 실패에도 큐에 적재됨");
+
+    // 원격 복구 후 플러시하면 반영된다.
+    await store.flush();
+    assert.equal(store.syncStatus().pendingWrites, 0, "복구 후 반영");
+    assert.ok(fake.get(monthFilePath("2026-10"))?.includes('"01"'), "원격에 기록됨");
+  } finally {
+    await rm(dir);
+  }
+});
+
 test("인증 오류(401): 큐 보존, 백오프 재예약 없이 수동 대기", async () => {
   const fake = new FakeGitHub();
   const timer = manualTimer();

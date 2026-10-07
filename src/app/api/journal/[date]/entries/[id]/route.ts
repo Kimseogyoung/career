@@ -31,7 +31,14 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ date: string;
   const now = nowKstIso();
   const updated = buildEntry(parsed.value, id, existing.createdAt);
   updated.updatedAt = now;
-  await store.upsertEntry(date, updated);
+  try {
+    await store.upsertEntry(date, updated);
+  } catch (e) {
+    return NextResponse.json(
+      { error: "save_failed", message: (e as Error).message },
+      { status: 503 },
+    );
+  }
   return NextResponse.json({ entry: updated });
 }
 
@@ -47,6 +54,13 @@ export async function DELETE(
   const store = await getStore();
   if (!store) return NextResponse.json({ error: "not_configured" }, { status: 409 });
 
-  await store.deleteEntry(date, id);
+  try {
+    await store.deleteEntry(date, id);
+  } catch (e) {
+    return NextResponse.json(
+      { error: "save_failed", message: (e as Error).message },
+      { status: 503 },
+    );
+  }
   return NextResponse.json({ ok: true });
 }

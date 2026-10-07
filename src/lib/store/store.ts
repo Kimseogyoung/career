@@ -244,17 +244,24 @@ export class Store {
     op.seq = this.queue.nextSeq();
     const month = this.opMonth(op);
 
-    // 1) 메모리 즉시 반영
-    await this.getMonth(month); // 캐시에 올림
-    const cached = this.months.get(month);
-    if (cached) cached.data = applyOpsToMonth(cached.data, [op]);
-    const index = await this.getIndex();
-    this.index = {
-      data: reindexMonth(index, cached?.data ?? parseMonth(null, month), this.iso()),
-      sha: this.index?.sha ?? null,
-    };
+    // 1) 메모리 즉시 반영 — 베스트에포트.
+    //    캐시를 데우려 원격을 읽지만, 그 읽기가 실패해도(레이트리밋·네트워크·5xx)
+    //    쓰기를 중단하지 않는다. 원격이 죽어도 기록은 큐에 안전하게 쌓여야 한다(ADR-006).
+    //    캐시를 못 데워도, 이후 getMonth/flush 가 pending 을 다시 적용하므로 데이터는 보인다.
+    try {
+      await this.getMonth(month);
+      const cached = this.months.get(month);
+      if (cached) cached.data = applyOpsToMonth(cached.data, [op]);
+      const index = await this.getIndex();
+      this.index = {
+        data: reindexMonth(index, cached?.data ?? parseMonth(null, month), this.iso()),
+        sha: this.index?.sha ?? null,
+      };
+    } catch {
+      // 원격 저하 — 낙관적 캐시 갱신은 건너뛴다. 큐 적재가 데이터를 지킨다.
+    }
 
-    // 2) 큐에 적재(내구성)
+    // 2) 큐에 적재(내구성) — 항상 수행. 여기서만 실패하면(로컬 FS 오류) 진짜 실패로 던진다.
     this.pending.push(op);
     await this.queue.append(op);
 
