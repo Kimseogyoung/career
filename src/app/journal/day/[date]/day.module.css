@@ -190,16 +190,45 @@
 .hr {
   position: absolute;
   left: 0;
-  width: 44px;
-  text-align: right;
+  width: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+}
+
+.hrTime {
   font-size: 11px;
   color: var(--text-muted);
   font-variant-numeric: tabular-nums;
 }
 
+.hrAdd {
+  width: 17px;
+  height: 17px;
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  background: var(--surface);
+  color: var(--text-muted);
+  font-size: 11px;
+  line-height: 1;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.hrAdd:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
 .tlTrack {
   position: absolute;
-  left: 52px;
+  left: 58px;
   right: 0;
   top: 0;
   bottom: 0;
@@ -259,6 +288,22 @@
   line-height: 1.35;
   margin-top: 2px;
   overflow: hidden;
+}
+
+.evActions {
+  display: flex;
+  gap: 12px;
+  margin-top: auto;
+  padding-top: 6px;
+}
+
+.evActions .miniBtn {
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.evActions .miniBtn:hover {
+  color: var(--text);
 }
 
 /* 좁아진(겹침) 카드: 작게, 세로 가운데. 시간은 자르지 않고 내용만 … */

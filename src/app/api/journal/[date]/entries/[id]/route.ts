@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getStore, isStoreConfigured } from "@/lib/store/instance";
 import { buildEntry, isValidDate, validateEntryInput } from "@/lib/validation";
 import { nowKstIso } from "@/lib/time";
+import { mergeEntries } from "@/lib/merge";
 
 export const runtime = "nodejs";
 
@@ -33,6 +34,14 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ date: string;
   updated.updatedAt = now;
   try {
     await store.upsertEntry(date, updated);
+    // 수정 후 같은 내용의 연속 기록이 생기면 하나로 합친다.
+    const day = await store.getDay(date);
+    const plan = mergeEntries(day.entries, id, nowKstIso());
+    if (plan) {
+      await store.upsertEntry(date, plan.merged);
+      for (const rid of plan.removeIds) await store.deleteEntry(date, rid);
+      return NextResponse.json({ entry: plan.merged });
+    }
   } catch (e) {
     return NextResponse.json(
       { error: "save_failed", message: (e as Error).message },

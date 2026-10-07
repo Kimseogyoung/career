@@ -229,8 +229,18 @@ export function DayGrid({
       {/* 타임라인 */}
       <div className={styles.tl} style={{ height: trackH }}>
         {hourMarks.map((m) => (
-          <div key={m} className={styles.hr} style={{ top: yOf(m) - 6 }}>
-            {fromMin(m)}
+          <div key={m} className={styles.hr} style={{ top: yOf(m) - 9 }}>
+            <span className={styles.hrTime}>{fromMin(m)}</span>
+            {m < layout.endMin ? (
+              <button
+                type="button"
+                className={styles.hrAdd}
+                onClick={() => openNew(m)}
+                aria-label={`${fromMin(m)}에 기록 추가`}
+              >
+                ＋
+              </button>
+            ) : null}
           </div>
         ))}
         <div
@@ -252,6 +262,7 @@ export function DayGrid({
               const top = yOf(it.top) + GAP / 2;
               const height = Math.max(yOf(it.top + it.height) - yOf(it.top) - GAP, MIN_CARD);
               const single = it.ncols <= 1;
+              const roomy = height >= 72;
               const style: CSSProperties = { top, height, ["--cat" as string]: cat?.color };
               if (single) {
                 style.left = 4;
@@ -265,12 +276,19 @@ export function DayGrid({
                 style.width = `${w}%`;
               }
               return (
-                <button
+                <div
                   key={it.entry.id}
-                  type="button"
                   className={`${styles.ev} ${single ? "" : styles.col}`}
                   style={style}
+                  role="button"
+                  tabIndex={0}
                   onClick={() => openEdit(it.entry)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      openEdit(it.entry);
+                    }
+                  }}
                 >
                   <span className={styles.evHead}>
                     <span className={styles.chip} style={{ ["--cat" as string]: cat?.color }}>
@@ -283,7 +301,31 @@ export function DayGrid({
                   {it.entry.content ? (
                     <span className={styles.evBody}>{it.entry.content}</span>
                   ) : null}
-                </button>
+                  {roomy ? (
+                    <span className={styles.evActions}>
+                      <button
+                        type="button"
+                        className={styles.miniBtn}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          openEdit(it.entry);
+                        }}
+                      >
+                        수정
+                      </button>
+                      <button
+                        type="button"
+                        className={styles.miniBtn}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          remove(it.entry);
+                        }}
+                      >
+                        삭제
+                      </button>
+                    </span>
+                  ) : null}
+                </div>
               );
             })}
 
