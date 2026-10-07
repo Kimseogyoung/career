@@ -5,6 +5,11 @@ export interface GitHubConfig {
   token: string;
   repo: string; // "owner/name"
   branch: string;
+  // 커밋 author/committer 신원. 계정에 등록되지 않은 이메일을 쓰면 그 커밋은
+  // 프로필 contribution graph(잔디)에 찍히지 않는다. 데이터 커밋이 코드 활동처럼
+  // 보이지 않게 하려는 의도. 미지정 시 PAT 소유자(=내 계정)로 커밋되어 잔디가 생긴다.
+  commitName?: string;
+  commitEmail?: string;
 }
 
 export type FetchLike = (url: string, init?: RequestInit) => Promise<Response>;
@@ -108,6 +113,12 @@ export class GitHubStore {
       branch: this.config.branch,
     };
     if (sha) payload.sha = sha;
+    // 전용 신원으로 커밋해 프로필 잔디에 찍히지 않게 한다(계정 미등록 이메일).
+    if (this.config.commitName && this.config.commitEmail) {
+      const identity = { name: this.config.commitName, email: this.config.commitEmail };
+      payload.author = identity;
+      payload.committer = identity;
+    }
 
     let res: Response;
     try {

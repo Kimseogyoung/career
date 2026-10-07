@@ -17,7 +17,14 @@ function buildGithub(): GitHubStore | null {
   const repo = process.env.STORE_GITHUB_REPO;
   const branch = process.env.STORE_GITHUB_BRANCH ?? "main";
   if (!token || !repo) return null;
-  return new GitHubStore({ token, repo, branch });
+  // 데이터 커밋이 프로필 잔디에 찍히지 않도록 전용(계정 미등록) 신원으로 커밋한다.
+  return new GitHubStore({
+    token,
+    repo,
+    branch,
+    commitName: process.env.STORE_COMMIT_NAME ?? "Career Log",
+    commitEmail: process.env.STORE_COMMIT_EMAIL ?? "career-log@users.noreply.invalid",
+  });
 }
 
 /** 설정돼 있으면 초기화된 Store 를, 아니면 null 을 돌려준다. init 은 1회만 수행한다. */
