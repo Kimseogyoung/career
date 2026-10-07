@@ -145,4 +145,84 @@ export class GitHubStore {
     const body = (await res.json()) as { content: { sha: string } };
     return body.content.sha;
   }
+
+  private async api(path: string, init?: RequestInit): Promise<Response> {
+    try {
+      return await this.fetchImpl(`${API}/repos/${this.config.repo}${path}`, {
+        ...init,
+        headers: { ...this.headers(), ...(init?.headers ?? {}) },
+      });
+    } catch (e) {
+      throw new TransientError(`네트워크 오류: ${(e as Error).message}`);
+    }
+  }
+
+  /** 브랜치의 최근 커밋 목록. 복원 UI 가 시점을 고르게 한다. */
+  async listCommits(limit = 50): Promise<CommitInfo[]> {
+    const res = await this.api(
+      `/commits?sha=${encodeURIComponent(this.config.branch)}&per_page=${limit}`,
+    );
+    if (res.status === 401 || res.status === 403) throw new AuthError(`인증 실패(${res.status}).`);
+    if (!res.ok) throw new TransientError(`커밋 조회 실패(${res.status})`, res.status);
+    const arr = (await res.json()) as Array<{
+      sha: string;
+      commit: { message: string; author: { date: string; name: string } };
+    }>;
+    return arr.map((c) => ({
+      sha: c.sha,
+      message: c.commit.message.split("\n")[0] ?? "",
+      date: c.commit.author.date,
+      author: c.commit.author.name,
+    }));
+  }
+
+  /**
+   * 브랜치를 과거 커밋 시점의 트리로 되돌린다(히스토리 재작성이 아니라 "그 트리로의 새 커밋").
+   * 복원도 하나의 순방향 커밋이라 이력이 보존된다.
+   */
+  async restoreToCommit(targetSha: string): Promise<string> {
+    // 1) 대상 커밋의 트리
+    const commitRes = await this.api(`/git/commits/${targetSha}`);
+    if (!commitRes.ok) throw new TransientError(`커밋 조회 실패(${commitRes.status})`);
+    const treeSha = ((await commitRes.json()) as { tree: { sha: string } }).tree.sha;
+
+    // 2) 현재 브랜치 head
+    const refRes = await this.api(`/git/ref/heads/${encodeURIComponent(this.config.branch)}`);
+    if (!refRes.ok) throw new TransientError(`ref 조회 실패(${refRes.status})`);
+    const headSha = ((await refRes.json()) as { object: { sha: string } }).object.sha;
+
+    // 3) 그 트리로 새 커밋 생성(부모 = 현재 head)
+    const identity =
+      this.config.commitName && this.config.commitEmail
+        ? { name: this.config.commitName, email: this.config.commitEmail }
+        : undefined;
+    const newCommitRes = await this.api(`/git/commits`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        message: `restore: ${targetSha.slice(0, 7)} 시점으로 복원`,
+        tree: treeSha,
+        parents: [headSha],
+        ...(identity ? { author: identity, committer: identity } : {}),
+      }),
+    });
+    if (!newCommitRes.ok) throw new TransientError(`복원 커밋 생성 실패(${newCommitRes.status})`);
+    const newSha = ((await newCommitRes.json()) as { sha: string }).sha;
+
+    // 4) 브랜치를 새 커밋으로 이동
+    const patchRes = await this.api(`/git/refs/heads/${encodeURIComponent(this.config.branch)}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ sha: newSha, force: false }),
+    });
+    if (!patchRes.ok) throw new TransientError(`ref 이동 실패(${patchRes.status})`);
+    return newSha;
+  }
+}
+
+export interface CommitInfo {
+  sha: string;
+  message: string;
+  date: string;
+  author: string;
 }

@@ -50,6 +50,18 @@ export default async function SettingsPage() {
           </section>
 
           <section className={styles.section}>
+            <h2 className={styles.sectionTitle}>데이터 · 복구</h2>
+            <p className={styles.note}>전체 JSON 내보내기와 과거 시점 복원.</p>
+            <Link
+              className={styles.backLink}
+              href="/settings/data"
+              style={{ display: "inline-block", marginTop: 4 }}
+            >
+              데이터 · 복구 열기
+            </Link>
+          </section>
+
+          <section className={styles.section}>
             <h2 className={styles.sectionTitle}>상태</h2>
             <p className={styles.note}>
               AI 요약:{" "}

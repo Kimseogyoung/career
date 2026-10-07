@@ -382,6 +382,63 @@ export class Store {
     }
   }
 
+  // ── 복구 (1-6) ────────────────────────────────────────────────────
+
+  /** 데이터 레포의 최근 커밋 목록. */
+  async listCommits(limit = 50) {
+    return this.github.listCommits(limit);
+  }
+
+  /**
+   * 과거 커밋 시점으로 복원한다. 미동기화 쓰기가 남아 있으면 먼저 반영을 시도하고,
+   * 그래도 남아 있으면(저하) 거부한다 — 복원이 미반영 편집을 삼키지 않도록.
+   * 복원 후 메모리 캐시를 비워 다음 읽기가 원격에서 새로 받게 한다.
+   */
+  async restoreTo(targetSha: string): Promise<void> {
+    if (this.pending.length > 0) {
+      await this.flush();
+      if (this.pending.length > 0) {
+        throw new Error("미동기화 기록이 남아 있어 복원할 수 없습니다. 동기화 후 다시 시도하세요.");
+      }
+    }
+    await this.github.restoreToCommit(targetSha);
+    // 캐시 무효화 — 복원된 원격 상태를 다시 읽는다.
+    this.months.clear();
+    this.index = null;
+  }
+
+  /** 전체 데이터를 하나의 JSON 으로 모은다(내보내기/로컬 2차 사본용). */
+  async exportAll(): Promise<{
+    exportedAt: string;
+    index: IndexFile;
+    months: Record<string, MonthFile>;
+    weeklySummaries: Record<string, unknown>;
+    monthlySummaries: Record<string, unknown>;
+  }> {
+    const index = await this.getIndex();
+    const months: Record<string, MonthFile> = {};
+    for (const month of Object.keys(index.months)) {
+      months[month] = await this.getMonth(month);
+    }
+    const weeklySummaries: Record<string, unknown> = {};
+    for (const wk of Object.keys(index.weeks)) {
+      const s = await this.getWeekSummary(wk);
+      if (s) weeklySummaries[wk] = s;
+    }
+    const monthlySummaries: Record<string, unknown> = {};
+    for (const ym of Object.keys(index.months)) {
+      const s = await this.getMonthSummary(ym);
+      if (s) monthlySummaries[ym] = s;
+    }
+    return {
+      exportedAt: this.iso(),
+      index,
+      months,
+      weeklySummaries,
+      monthlySummaries,
+    };
+  }
+
   // ── 상태 ──────────────────────────────────────────────────────────
 
   syncStatus() {
