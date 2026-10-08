@@ -225,6 +225,26 @@
   min-width: 0;
 }
 
+/* 빈 시각 행: 시간 눈금 유지 + 그 시각에 바로 추가 */
+.emptySlot {
+  align-self: start;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: 1px dashed var(--border);
+  border-radius: 8px;
+  color: var(--text-muted);
+  padding: 8px 11px;
+  font-size: 12.5px;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.emptySlot:hover {
+  color: var(--text);
+  border-color: var(--text-muted);
+}
+
 .card {
   border: 1px solid var(--border);
   border-left: 3px solid var(--cat, var(--border));

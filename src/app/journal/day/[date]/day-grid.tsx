@@ -263,16 +263,48 @@ export function DayGrid({
     );
   }
 
-  // 현재 시각선을 그룹 사이에 끼워 넣는다.
+  function emptyRow(h: number) {
+    return (
+      <div key={`empty-${h}`} className={styles.trow}>
+        <div className={styles.gut}>{fromMin(h * 60)}</div>
+        <button type="button" className={styles.emptySlot} onClick={() => openNew(h * 60)}>
+          + 기록 추가
+        </button>
+      </div>
+    );
+  }
+
+  // 시간 눈금 복원: 창(startMin~endMin) 안의 매 시각을 돌며, 그 시각에 시작하는 그룹은 카드로,
+  // 아무 기록도 없는 빈 시각은 "+ 기록 추가" 행으로 보여준다. 여러 시간에 걸친 기록이 덮는
+  // 시각은 그 카드가 대신하므로 빈 행을 넣지 않는다.
+  const startHour = Math.floor(layout.startMin / 60);
+  const endHour = Math.ceil(layout.endMin / 60);
+  const groupsByHour = new Map<number, Group[]>();
+  for (const g of groups) {
+    const h = Math.floor(g.startMin / 60);
+    const arr = groupsByHour.get(h);
+    if (arr) arr.push(g);
+    else groupsByHour.set(h, [g]);
+  }
+  const occupied = new Set<number>();
+  for (const e of entries) {
+    const sm = toMin(e.start);
+    const em = Math.max(toMin(e.end), sm + 1);
+    for (let h = Math.floor(sm / 60); h < Math.ceil(em / 60); h++) occupied.add(h);
+  }
+
   const showNow = nowMinutes >= layout.startMin && nowMinutes <= layout.endMin;
+  const nowHour = Math.floor(nowMinutes / 60);
   const rows: ReactNode[] = [];
   let nowPlaced = false;
-  for (const g of groups) {
-    if (showNow && !nowPlaced && g.startMin > nowMinutes) {
+  for (let h = startHour; h < endHour; h++) {
+    if (showNow && !nowPlaced && nowHour === h) {
       rows.push(nowRow(nowMinutes));
       nowPlaced = true;
     }
-    rows.push(groupRow(g));
+    const gs = groupsByHour.get(h);
+    if (gs && gs.length) for (const g of gs) rows.push(groupRow(g));
+    else if (!occupied.has(h)) rows.push(emptyRow(h));
   }
   if (showNow && !nowPlaced) rows.push(nowRow(nowMinutes));
 

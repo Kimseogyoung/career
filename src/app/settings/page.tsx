@@ -6,6 +6,7 @@ import { canGenerate } from "@/lib/summary/summarizer";
 import { NotificationSetup } from "./notification-setup";
 import { ReminderForm } from "./reminder-form";
 import { ThemeToggle } from "@/app/components/theme-toggle";
+import { LogoutButton } from "@/app/logout-button";
 import styles from "./settings.module.css";
 
 export const dynamic = "force-dynamic";
@@ -89,6 +90,11 @@ export default async function SettingsPage() {
           </section>
         </>
       )}
+
+      <section className={styles.section}>
+        <h2 className={styles.sectionTitle}>계정</h2>
+        <LogoutButton />
+      </section>
     </main>
   );
 }

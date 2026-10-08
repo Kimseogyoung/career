@@ -57,9 +57,10 @@ export async function sendPush(
         sent += 1;
       } catch (e) {
         const status = (e as { statusCode?: number }).statusCode;
-        // 410 Gone / 404 — 구독이 더 이상 유효하지 않음
-        if (status === 410 || status === 404) expired.push(sub.endpoint);
-        else console.error("[push] 발송 실패:", (e as Error).message);
+        // 404/410 = 구독 없어짐, 403 = VAPID 키 불일치(옛 키로 만든 구독). 모두 무효로 보고 정리한다.
+        // 정리되면 설정에서 다시 "알림 켜기"가 떠서 현재 키로 재구독을 유도한다.
+        if (status === 404 || status === 410 || status === 403) expired.push(sub.endpoint);
+        else console.error(`[push] 발송 실패 status=${status ?? "?"}:`, (e as Error).message);
       }
     }),
   );
