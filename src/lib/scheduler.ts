@@ -46,6 +46,9 @@ async function hourlyReminder(): Promise<void> {
   }
 
   const s = await settings.get();
+  // 구독이 없거나 알림이 꺼져 있으면 아무 시도도(로그도) 하지 않는다.
+  if (!s.reminder.enabled || s.pushSubscriptions.length === 0) return;
+
   const kstIso = nowKstIso(); // "YYYY-MM-DDTHH:MM:SS+09:00"
   const curHour = Number(kstIso.slice(11, 13));
   const slotHour = curHour - 1; // 방금 끝난 슬롯
@@ -54,17 +57,9 @@ async function hourlyReminder(): Promise<void> {
   const date = kstIso.slice(0, 10);
   const dow = new Date(date + "T00:00:00Z").getUTCDay();
   console.log(
-    `[reminder] tick now=${kstIso.slice(11, 16)} KST slot=${slotHour}시 enabled=${s.reminder.enabled} subs=${s.pushSubscriptions.length} hours=${startH}-${endH} days=[${s.reminder.days.join(",")}] dow=${dow}`,
+    `[reminder] tick now=${kstIso.slice(11, 16)} KST slot=${slotHour}시 subs=${s.pushSubscriptions.length} hours=${startH}-${endH} days=[${s.reminder.days.join(",")}] dow=${dow}`,
   );
 
-  if (!s.reminder.enabled) {
-    console.log("[reminder] skip: reminder.enabled=false (설정에서 알림 켜기)");
-    return;
-  }
-  if (s.pushSubscriptions.length === 0) {
-    console.log("[reminder] skip: 구독 0건 (기기 설정에서 '알림 켜기' 필요, 아이폰은 홈 화면 추가 후)");
-    return;
-  }
   if (slotHour < startH || slotHour >= endH) {
     console.log(`[reminder] skip: 슬롯 ${slotHour}시가 기록 시간대(${startH}-${endH}) 밖`);
     return;
