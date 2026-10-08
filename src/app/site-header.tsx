@@ -68,6 +68,26 @@ export function SiteHeader() {
           </nav>
 
           <div className={styles.actions}>
+            <Link
+              href="/search"
+              className={styles.iconBtn}
+              data-on={pathname.startsWith("/search")}
+              aria-label="검색"
+              title="검색"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <circle cx="11" cy="11" r="7" />
+                <path d="M21 21l-4.3-4.3" />
+              </svg>
+            </Link>
             <button
               className={styles.iconBtn}
               onClick={toggle}

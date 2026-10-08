@@ -124,6 +124,22 @@ export class Store {
     return month.days[date] ?? { entries: [] };
   }
 
+  /** 전체 기간의 모든 엔트리(날짜 주석 포함). 검색용 — 인덱스가 아는 월을 모두 읽는다(캐시 재사용). */
+  async getAllEntries(): Promise<Array<Entry & { date: string }>> {
+    const index = await this.getIndex();
+    const months = new Set<string>();
+    for (const d of Object.keys(index.days ?? {})) months.add(d.slice(0, 7));
+    for (const m of Object.keys(index.months ?? {})) months.add(m);
+    const files = await Promise.all([...months].map((m) => this.getMonth(m)));
+    const out: Array<Entry & { date: string }> = [];
+    for (const mf of files) {
+      for (const [date, rec] of Object.entries(mf.days)) {
+        for (const e of rec.entries) out.push({ ...e, date });
+      }
+    }
+    return out;
+  }
+
   // 원격 읽기 래퍼. 성공하면 저하 해제, 실패는 저하 표시 후 그대로 던진다.
   private async safeRead(path: string): Promise<RemoteFile | null> {
     try {
