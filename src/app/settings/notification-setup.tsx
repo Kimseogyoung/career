@@ -28,6 +28,7 @@ export function NotificationSetup({ pushConfigured }: { pushConfigured: boolean 
   const [state, setState] = useState<State>("loading");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [testMsg, setTestMsg] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -85,6 +86,35 @@ export function NotificationSetup({ pushConfigured }: { pushConfigured: boolean 
     }
   }
 
+  async function sendTest() {
+    setBusy(true);
+    setError(null);
+    setTestMsg(null);
+    try {
+      const res = await fetch("/api/push/test", { method: "POST" });
+      const body = (await res.json().catch(() => ({}))) as {
+        sent?: number;
+        expired?: number;
+        error?: string;
+      };
+      if (!res.ok) {
+        setError(
+          body.error === "no_subscription"
+            ? "등록된 기기가 없습니다. 먼저 이 기기에서 알림을 켜세요."
+            : "테스트 발송에 실패했습니다.",
+        );
+        return;
+      }
+      setTestMsg(
+        `발송됨: ${body.sent ?? 0}건${body.expired ? ` · 만료 구독 ${body.expired}건 정리` : ""}. 잠시 뒤 알림이 뜨는지 확인하세요.`,
+      );
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
   async function disable() {
     setBusy(true);
     setError(null);
@@ -133,11 +163,15 @@ export function NotificationSetup({ pushConfigured }: { pushConfigured: boolean 
       {state === "subscribed" ? (
         <div className={styles.row}>
           <span className={styles.ok}>✓ 이 기기에서 알림이 켜져 있습니다</span>
+          <button className={styles.secondary} onClick={sendTest} disabled={busy}>
+            {busy ? "보내는 중…" : "테스트 보내기"}
+          </button>
           <button className={styles.secondary} onClick={disable} disabled={busy}>
             끄기
           </button>
         </div>
       ) : null}
+      {testMsg ? <p className={styles.note}>{testMsg}</p> : null}
       {error ? <p className={styles.error}>{error}</p> : null}
 
       <p className={styles.note}>
