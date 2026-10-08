@@ -61,6 +61,31 @@
   display: flex;
   gap: 4px;
 }
+.promptField {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-bottom: 12px;
+}
+.promptField .label {
+  min-width: 0;
+}
+.textarea {
+  font: inherit;
+  font-size: 13px;
+  line-height: 1.5;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--text);
+  width: 100%;
+  resize: vertical;
+}
+.textarea::placeholder {
+  color: var(--text-muted);
+  opacity: 0.7;
+}
 .dayChip {
   font-size: 13px;
   border: 1px solid var(--border);

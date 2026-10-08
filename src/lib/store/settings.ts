@@ -1,7 +1,7 @@
 import "server-only";
 import { ConflictError, GitHubStore } from "./github";
 import { SETTINGS_PATH } from "./paths";
-import type { PushSubscriptionRecord, Settings } from "./types";
+import type { PushSubscriptionRecord, Settings, SummaryPrompts } from "./types";
 
 // 설정 저장. 저널(1-1)과 달리 변경이 드물고 유실돼도 치명적이지 않아,
 // 쓰기 큐를 거치지 않고 원격에 직접 쓴다(sha 충돌 시 재시도). 미설정/오프라인이면 기본값.
@@ -26,6 +26,17 @@ export const DEFAULT_SETTINGS: Settings = {
   pushSubscriptions: [],
 };
 
+/** summaryPrompts 는 system/day/week/month 의 문자열만 추린다. 없으면 undefined. */
+function sanitizePrompts(v: unknown): SummaryPrompts | undefined {
+  if (!v || typeof v !== "object") return undefined;
+  const o = v as Record<string, unknown>;
+  const out: SummaryPrompts = {};
+  for (const k of ["system", "day", "week", "month"] as const) {
+    if (typeof o[k] === "string") out[k] = o[k] as string;
+  }
+  return Object.keys(out).length ? out : undefined;
+}
+
 function parse(text: string | null): Settings {
   if (!text) return DEFAULT_SETTINGS;
   try {
@@ -40,6 +51,7 @@ function parse(text: string | null): Settings {
           : DEFAULT_SETTINGS.categories,
       reminder: parsed.reminder ?? DEFAULT_SETTINGS.reminder,
       pushSubscriptions: Array.isArray(parsed.pushSubscriptions) ? parsed.pushSubscriptions : [],
+      summaryPrompts: sanitizePrompts(parsed.summaryPrompts),
     };
   } catch {
     return DEFAULT_SETTINGS;

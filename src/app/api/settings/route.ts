@@ -39,6 +39,15 @@ export async function PUT(req: Request) {
   if (patch.recordingHours) allowed.recordingHours = patch.recordingHours;
   if (patch.categories) allowed.categories = patch.categories;
   if (patch.timezone) allowed.timezone = patch.timezone;
+  if (patch.reminder) allowed.reminder = patch.reminder;
+  if (patch.summaryPrompts && typeof patch.summaryPrompts === "object") {
+    const p = patch.summaryPrompts as Record<string, unknown>;
+    const sp: Record<string, string> = {};
+    for (const k of ["system", "day", "week", "month"]) {
+      if (typeof p[k] === "string" && (p[k] as string).trim()) sp[k] = (p[k] as string).trim();
+    }
+    allowed.summaryPrompts = sp;
+  }
 
   try {
     const next = await settings.update(allowed);

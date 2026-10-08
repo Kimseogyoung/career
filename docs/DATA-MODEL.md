@@ -139,9 +139,15 @@
   "pushSubscriptions": [
     { "id": "…", "label": "회사 PC", "endpoint": "…", "keys": { "p256dh": "…", "auth": "…" }, "createdAt": "…" }
   ],
-  "summary": { "autoGenerate": true, "model": "claude-opus-5" }
+  "summaryPrompts": {                   // 선택. AI 요약 프롬프트 커스텀(비면 코드 기본값 폴백)
+    "system": "…",                      // 시스템 프롬프트
+    "day": "…", "week": "…", "month": "…" // 범위별 지침
+  }
 }
 ```
+
+- `summaryPrompts` 는 선택 필드다. 각 값이 비거나 없으면 `src/lib/summary/prompts.ts` 의 기본값을 쓴다. 설정 화면에서 편집한다.
+- 요약 모델은 설정이 아니라 서버 env `ANTHROPIC_MODEL`(기본 `claude-opus-5-5`)로 정한다.
 
 ---
 

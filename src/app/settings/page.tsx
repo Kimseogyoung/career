@@ -3,8 +3,10 @@ import { getSettingsStore, isStoreConfigured } from "@/lib/store/instance";
 import { DEFAULT_SETTINGS } from "@/lib/store/settings";
 import { isPushConfigured } from "@/lib/push";
 import { canGenerate } from "@/lib/summary/summarizer";
+import { SCOPE_GUIDE, SUMMARY_SYSTEM } from "@/lib/summary/prompts";
 import { NotificationSetup } from "./notification-setup";
 import { ReminderForm } from "./reminder-form";
+import { SummaryPromptsForm } from "./summary-prompts-form";
 import { ThemeToggle } from "@/app/components/theme-toggle";
 import { LogoutButton } from "@/app/logout-button";
 import styles from "./settings.module.css";
@@ -63,6 +65,22 @@ export default async function SettingsPage() {
           <section className={styles.section}>
             <h2 className={styles.sectionTitle}>푸시 알림 (이 기기)</h2>
             <NotificationSetup pushConfigured={isPushConfigured()} />
+          </section>
+
+          <section className={styles.section}>
+            <h2 className={styles.sectionTitle}>요약 프롬프트</h2>
+            <p className={styles.note}>
+              AI 요약에 쓰는 지시문입니다. 비워 두면 기본값(placeholder)을 사용합니다.
+            </p>
+            <SummaryPromptsForm
+              initial={settings.summaryPrompts}
+              defaults={{
+                system: SUMMARY_SYSTEM,
+                day: SCOPE_GUIDE.day,
+                week: SCOPE_GUIDE.week,
+                month: SCOPE_GUIDE.month,
+              }}
+            />
           </section>
 
           <section className={styles.section}>

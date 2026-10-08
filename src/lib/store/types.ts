@@ -97,6 +97,14 @@ export interface Category {
   color: string;
 }
 
+/** 요약 프롬프트 사용자 커스텀. 비면(미지정/빈 문자열) prompts.ts 기본값을 쓴다. */
+export interface SummaryPrompts {
+  system?: string;
+  day?: string;
+  week?: string;
+  month?: string;
+}
+
 export interface Settings {
   version: 1;
   timezone: string;
@@ -104,6 +112,7 @@ export interface Settings {
   categories: Category[];
   reminder: ReminderSettings;
   pushSubscriptions: PushSubscriptionRecord[];
+  summaryPrompts?: SummaryPrompts;
 }
 
 export interface PushSubscriptionRecord {

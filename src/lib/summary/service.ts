@@ -73,7 +73,8 @@ export async function generateAndSave(
   key: string,
 ): Promise<Summary | null> {
   const { body, label } = await buildBody(store, settings, scope, key);
-  const text = await generateSummary(scope, label, body);
+  const s = await settings.get();
+  const text = await generateSummary(scope, label, body, s.summaryPrompts);
   if (text === null) return null;
 
   const now = new Date().toISOString();
