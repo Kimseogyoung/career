@@ -40,7 +40,7 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ date: string;
     if (plan) {
       await store.upsertEntry(date, plan.merged);
       for (const rid of plan.removeIds) await store.deleteEntry(date, rid);
-      return NextResponse.json({ entry: plan.merged });
+      return NextResponse.json({ entry: plan.merged, removed: plan.removeIds });
     }
   } catch (e) {
     return NextResponse.json(

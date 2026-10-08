@@ -36,39 +36,61 @@ async function generate(scope: "day" | "week" | "month", key: string): Promise<v
 }
 
 // 매 정시 호출. KST 기준 직전 1시간 슬롯을 기록하라고 알린다.
+// 왜 안 보냈는지 바로 알 수 있게 각 분기에서 사유를 로그로 남긴다.
 async function hourlyReminder(): Promise<void> {
   const store = await getStore();
   const settings = await getSettingsStore();
-  if (!store || !settings) return;
+  if (!store || !settings) {
+    console.log("[reminder] skip: store/settings 미구성");
+    return;
+  }
 
   const s = await settings.get();
-  if (!s.reminder.enabled || s.pushSubscriptions.length === 0) return;
-
-  // 현재 KST 시각.
   const kstIso = nowKstIso(); // "YYYY-MM-DDTHH:MM:SS+09:00"
   const curHour = Number(kstIso.slice(11, 13));
   const slotHour = curHour - 1; // 방금 끝난 슬롯
   const startH = Number(s.reminder.hours.start.slice(0, 2));
   const endH = Number(s.reminder.hours.end.slice(0, 2));
-  if (slotHour < startH || slotHour >= endH) return; // 기록 시간대 밖
-
   const date = kstIso.slice(0, 10);
   const dow = new Date(date + "T00:00:00Z").getUTCDay();
-  if (!s.reminder.days.includes(dow)) return; // 알림 요일 아님
+  console.log(
+    `[reminder] tick now=${kstIso.slice(11, 16)} KST slot=${slotHour}시 enabled=${s.reminder.enabled} subs=${s.pushSubscriptions.length} hours=${startH}-${endH} days=[${s.reminder.days.join(",")}] dow=${dow}`,
+  );
+
+  if (!s.reminder.enabled) {
+    console.log("[reminder] skip: reminder.enabled=false (설정에서 알림 켜기)");
+    return;
+  }
+  if (s.pushSubscriptions.length === 0) {
+    console.log("[reminder] skip: 구독 0건 (기기 설정에서 '알림 켜기' 필요, 아이폰은 홈 화면 추가 후)");
+    return;
+  }
+  if (slotHour < startH || slotHour >= endH) {
+    console.log(`[reminder] skip: 슬롯 ${slotHour}시가 기록 시간대(${startH}-${endH}) 밖`);
+    return;
+  }
+  if (!s.reminder.days.includes(dow)) {
+    console.log(`[reminder] skip: 요일 ${dow}(0=일) 이 알림 요일 아님`);
+    return;
+  }
 
   // 이미 기록된 슬롯이면 skip.
   if (s.reminder.skipIfRecorded) {
     const day = await store.getDay(date);
     const recorded = day.entries.some((e) => Number(e.start.slice(0, 2)) === slotHour);
-    if (recorded) return;
+    if (recorded) {
+      console.log(`[reminder] skip: ${slotHour}시 슬롯 이미 기록됨(skipIfRecorded)`);
+      return;
+    }
   }
 
   const hh = String(slotHour).padStart(2, "0");
-  const { expired } = await sendPush(s.pushSubscriptions, {
+  const { sent, expired } = await sendPush(s.pushSubscriptions, {
     title: "업무 일지",
     body: `${hh}:00 에 한 일을 기록하세요`,
     url: `/quick?slot=${date}T${hh}`,
   });
+  console.log(`[reminder] 발송 sent=${sent} expired=${expired.length} (구독 ${s.pushSubscriptions.length}건)`);
   // 만료된 구독 정리.
   for (const endpoint of expired) await settings.removeSubscription(endpoint);
 }

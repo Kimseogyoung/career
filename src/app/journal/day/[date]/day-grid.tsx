@@ -1,14 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import {
-  useMemo,
-  useRef,
-  useState,
-  type CSSProperties,
-  type FormEvent,
-  type MouseEvent as ReactMouseEvent,
-} from "react";
+import { useMemo, useState, type FormEvent, type ReactNode } from "react";
 import {
   computeDayLayout,
   fromMin,
@@ -28,16 +21,21 @@ interface Props {
   nowMinutes: number; // 오늘이 아니면 -1
 }
 
-// 시간당 높이(px). 눈금 그라데이션(.tlTrack)과 반드시 일치시킨다.
-const PX = 84;
-const GAP = 6;
-const MIN_CARD = 34;
-
 type Prefill = { category: Category["id"]; tags: string[]; content: string };
 type Editing =
   | { mode: "new"; start: string; end: string; prefill?: Prefill }
   | { mode: "edit"; entry: Entry }
   | null;
+
+interface Group {
+  startMin: number;
+  entries: Entry[];
+}
+
+// 내용이 3줄을 넘을 법하면 "더보기"를 노출(대략적 기준 — 넘치지 않으면 클램프가 표가 안 남).
+function likelyOverflows(content: string): boolean {
+  return content.length > 90 || content.split("\n").length > 3;
+}
 
 export function DayGrid({
   date,
@@ -54,26 +52,27 @@ export function DayGrid({
   const [error, setError] = useState<string | null>(null);
   const [dawnOpen, setDawnOpen] = useState(false);
   const [eveOpen, setEveOpen] = useState(false);
-  const [expanded, setExpanded] = useState<number | null>(null);
-  const trackRef = useRef<HTMLDivElement>(null);
+  const [expanded, setExpanded] = useState<Set<string>>(new Set());
 
   const catById = useMemo(() => new Map(categories.map((c) => [c.id, c])), [categories]);
   const layout = useMemo(() => computeDayLayout(entries, recordingHours), [entries, recordingHours]);
 
-  const trackH = ((layout.endMin - layout.startMin) / 60) * PX;
-  const yOf = (min: number) => ((min - layout.startMin) / 60) * PX;
-  const hourMarks: number[] = [];
-  for (let m = layout.startMin; m <= layout.endMin; m += 60) hourMarks.push(m);
-
-  // ── 저장/삭제 (기존 API 재사용) ──────────────────────────────────
-  function replaceEntry(next: Entry) {
-    setEntries((prev) => {
-      const i = prev.findIndex((e) => e.id === next.id);
-      const copy = i >= 0 ? prev.map((e) => (e.id === next.id ? next : e)) : [...prev, next];
-      return copy.sort((a, b) => (a.start < b.start ? -1 : a.start > b.start ? 1 : 0));
+  // 겹침 묶음(clusterId)으로 그룹핑 → 시간 순서로 흐르는 행.
+  const groups = useMemo<Group[]>(() => {
+    const byCluster = new Map<number, Entry[]>();
+    for (const it of layout.items) {
+      const arr = byCluster.get(it.clusterId) ?? [];
+      arr.push(it.entry);
+      byCluster.set(it.clusterId, arr);
+    }
+    const gs = [...byCluster.values()].map((es) => {
+      const sorted = [...es].sort((a, b) => (a.start < b.start ? -1 : 1));
+      return { startMin: toMin(sorted[0]!.start), entries: sorted };
     });
-  }
+    return gs.sort((a, b) => a.startMin - b.startMin);
+  }, [layout]);
 
+  // ── 저장/삭제 ────────────────────────────────────────────────────
   async function save(input: {
     start: string;
     end: string;
@@ -96,8 +95,14 @@ export function DayGrid({
       setError(body.message ?? body.error ?? "저장에 실패했습니다.");
       return;
     }
-    const { entry } = (await res.json()) as { entry: Entry };
-    replaceEntry(entry);
+    // 서버가 같은 내용 연속 기록을 합쳤을 수 있다. 흡수돼 삭제된 id 를 함께 받아 즉시 제거한다.
+    const { entry, removed } = (await res.json()) as { entry: Entry; removed?: string[] };
+    const drop = new Set(removed ?? []);
+    setEntries((prev) => {
+      const next = prev.filter((e) => !drop.has(e.id) && e.id !== entry.id);
+      next.push(entry);
+      return next.sort((a, b) => (a.start < b.start ? -1 : a.start > b.start ? 1 : 0));
+    });
     setEditing(null);
     router.refresh();
   }
@@ -115,18 +120,16 @@ export function DayGrid({
     router.refresh();
   }
 
-  // ── 새 기록 열기 ────────────────────────────────────────────────
+  // ── 열기/빠른 채우기 ────────────────────────────────────────────
   function openNew(atMin: number, prefill?: Prefill) {
     const s = Math.max(0, Math.min(1439, Math.round(atMin / 30) * 30));
     setEditing({ mode: "new", start: fromMin(s), end: fromMin(Math.min(s + 60, 1439)), prefill });
     setFormKey((k) => k + 1);
-    setExpanded(null);
   }
 
   function openEdit(entry: Entry) {
     setEditing({ mode: "edit", entry });
     setFormKey((k) => k + 1);
-    setExpanded(null);
   }
 
   function applyChip(a: RecentActivity) {
@@ -145,11 +148,13 @@ export function DayGrid({
     applyChip({ category: prev.category, tags: prev.tags, content: prev.content });
   }
 
-  function onTrackClick(e: ReactMouseEvent<HTMLDivElement>) {
-    if (e.target !== trackRef.current) return; // 카드가 아니라 빈 바탕을 눌렀을 때만
-    const rect = trackRef.current.getBoundingClientRect();
-    const min = layout.startMin + ((e.clientY - rect.top) / PX) * 60;
-    openNew(min);
+  function toggleExpand(id: string) {
+    setExpanded((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
   }
 
   function defaultNewMin() {
@@ -157,13 +162,119 @@ export function DayGrid({
     return layout.startMin;
   }
 
-  // 편집 폼 초기값
   const formInitial: Partial<Entry> & { start: string; end: string } =
     editing?.mode === "edit"
       ? editing.entry
       : editing
         ? { start: editing.start, end: editing.end, ...editing.prefill }
         : { start: "", end: "" };
+
+  // 카드 1장
+  function card(entry: Entry, withActions: boolean) {
+    const cat = catById.get(entry.category);
+    const isOpen = expanded.has(entry.id);
+    const showMore = Boolean(entry.content) && (isOpen || likelyOverflows(entry.content));
+    return (
+      <div
+        className={styles.card}
+        style={{ ["--cat" as string]: cat?.color }}
+        role="button"
+        tabIndex={0}
+        onClick={() => openEdit(entry)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            openEdit(entry);
+          }
+        }}
+      >
+        <div className={styles.chead}>
+          <span className={styles.chip} style={{ ["--cat" as string]: cat?.color }}>
+            {cat?.label ?? entry.category}
+          </span>
+          <span className={styles.ctime}>
+            {entry.start}–{entry.end}
+          </span>
+          {withActions ? (
+            <span className={styles.cact}>
+              <button
+                type="button"
+                className={styles.miniBtn}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  openEdit(entry);
+                }}
+              >
+                수정
+              </button>
+              <button
+                type="button"
+                className={styles.miniBtn}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  remove(entry);
+                }}
+              >
+                삭제
+              </button>
+            </span>
+          ) : null}
+        </div>
+        {entry.content ? (
+          <div className={`${styles.cbody} ${isOpen ? "" : styles.clamp}`}>{entry.content}</div>
+        ) : null}
+        {showMore ? (
+          <button
+            type="button"
+            className={`${styles.more} ${isOpen ? styles.moreOpen : ""}`}
+            onClick={(e) => {
+              e.stopPropagation();
+              toggleExpand(entry.id);
+            }}
+          >
+            <svg className={styles.moreChev} viewBox="0 0 10 6" width="10" height="6" aria-hidden="true">
+              <path
+                d="M1 1l4 4 4-4"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+            {isOpen ? "접기" : "더보기"}
+          </button>
+        ) : null}
+      </div>
+    );
+  }
+
+  // 그룹(겹침 묶음) 1행
+  function groupRow(g: Group) {
+    return (
+      <div key={`g-${g.entries[0]!.id}`} className={styles.trow}>
+        <div className={styles.gut}>{fromMin(g.startMin)}</div>
+        {g.entries.length === 1 ? (
+          card(g.entries[0]!, true)
+        ) : (
+          <div className={styles.tcols}>{g.entries.map((e) => card(e, false))}</div>
+        )}
+      </div>
+    );
+  }
+
+  // 현재 시각선을 그룹 사이에 끼워 넣는다.
+  const showNow = nowMinutes >= layout.startMin && nowMinutes <= layout.endMin;
+  const rows: ReactNode[] = [];
+  let nowPlaced = false;
+  for (const g of groups) {
+    if (showNow && !nowPlaced && g.startMin > nowMinutes) {
+      rows.push(nowRow(nowMinutes));
+      nowPlaced = true;
+    }
+    rows.push(groupRow(g));
+  }
+  if (showNow && !nowPlaced) rows.push(nowRow(nowMinutes));
 
   return (
     <>
@@ -177,32 +288,28 @@ export function DayGrid({
 
       {editing ? (
         <div className={styles.panel}>
-          {editing.mode === "new" ? (
+          {editing.mode === "new" && recent.length ? (
             <div className={styles.quick}>
-              {recent.length ? (
-                <>
-                  <span className={styles.quickLabel}>빠르게 반복</span>
-                  <div className={styles.chips}>
-                    {recent.map((a, i) => (
-                      <button
-                        key={`${a.category}-${i}`}
-                        type="button"
-                        className={styles.reChip}
-                        style={{ ["--cat" as string]: catById.get(a.category)?.color }}
-                        onClick={() => applyChip(a)}
-                      >
-                        <span className={styles.dot} />
-                        {catById.get(a.category)?.label ?? a.category} · {a.content}
-                      </button>
-                    ))}
-                    {previousEntry(entries, toMin(editing.start)) ? (
-                      <button type="button" className={styles.reChip} onClick={sameAsPrev}>
-                        ↑ 직전과 동일
-                      </button>
-                    ) : null}
-                  </div>
-                </>
-              ) : null}
+              <span className={styles.quickLabel}>빠르게 반복</span>
+              <div className={styles.chips}>
+                {recent.map((a, i) => (
+                  <button
+                    key={`${a.category}-${i}`}
+                    type="button"
+                    className={styles.reChip}
+                    style={{ ["--cat" as string]: catById.get(a.category)?.color }}
+                    onClick={() => applyChip(a)}
+                  >
+                    <span className={styles.dot} />
+                    {catById.get(a.category)?.label ?? a.category} · {a.content}
+                  </button>
+                ))}
+                {previousEntry(entries, toMin(editing.start)) ? (
+                  <button type="button" className={styles.reChip} onClick={sameAsPrev}>
+                    ↑ 직전과 동일
+                  </button>
+                ) : null}
+              </div>
             </div>
           ) : null}
           <EntryForm
@@ -216,7 +323,6 @@ export function DayGrid({
         </div>
       ) : null}
 
-      {/* 접힌 새벽 */}
       {layout.dawn ? (
         <FoldBar
           open={dawnOpen}
@@ -226,163 +332,10 @@ export function DayGrid({
         />
       ) : null}
 
-      {/* 타임라인 */}
-      <div className={styles.tl} style={{ height: trackH }}>
-        {hourMarks.map((m) => (
-          <div key={m} className={styles.hr} style={{ top: yOf(m) - 9 }}>
-            <span className={styles.hrTime}>{fromMin(m)}</span>
-            {m < layout.endMin ? (
-              <button
-                type="button"
-                className={styles.hrAdd}
-                onClick={() => openNew(m)}
-                aria-label={`${fromMin(m)}에 기록 추가`}
-              >
-                ＋
-              </button>
-            ) : null}
-          </div>
-        ))}
-        <div
-          className={styles.tlTrack}
-          ref={trackRef}
-          onClick={onTrackClick}
-          role="presentation"
-        >
-          {nowMinutes >= layout.startMin && nowMinutes < layout.endMin ? (
-            <div className={styles.nowline} style={{ top: yOf(nowMinutes) }}>
-              <span>{fromMin(nowMinutes)}</span>
-            </div>
-          ) : null}
-
-          {layout.items
-            .filter((it) => !it.overflow)
-            .map((it) => {
-              const cat = catById.get(it.entry.category);
-              const top = yOf(it.top) + GAP / 2;
-              const height = Math.max(yOf(it.top + it.height) - yOf(it.top) - GAP, MIN_CARD);
-              const single = it.ncols <= 1;
-              const roomy = height >= 72;
-              const style: CSSProperties = { top, height, ["--cat" as string]: cat?.color };
-              if (single) {
-                style.left = 4;
-                style.right = 4;
-              } else {
-                const vis = Math.min(it.ncols, 3);
-                const M = 2;
-                const G = 2;
-                const w = (100 - 2 * M - (vis - 1) * G) / vis;
-                style.left = `${M + it.col * (w + G)}%`;
-                style.width = `${w}%`;
-              }
-              return (
-                <div
-                  key={it.entry.id}
-                  className={`${styles.ev} ${single ? "" : styles.col}`}
-                  style={style}
-                  role="button"
-                  tabIndex={0}
-                  onClick={() => openEdit(it.entry)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") {
-                      e.preventDefault();
-                      openEdit(it.entry);
-                    }
-                  }}
-                >
-                  <span className={styles.evHead}>
-                    <span className={styles.chip} style={{ ["--cat" as string]: cat?.color }}>
-                      {cat?.label ?? it.entry.category}
-                    </span>
-                    <span className={styles.etime}>
-                      {it.entry.start}–{it.entry.end}
-                    </span>
-                  </span>
-                  {it.entry.content ? (
-                    <span className={styles.evBody}>{it.entry.content}</span>
-                  ) : null}
-                  {roomy ? (
-                    <span className={styles.evActions}>
-                      <button
-                        type="button"
-                        className={styles.miniBtn}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          openEdit(it.entry);
-                        }}
-                      >
-                        수정
-                      </button>
-                      <button
-                        type="button"
-                        className={styles.miniBtn}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          remove(it.entry);
-                        }}
-                      >
-                        삭제
-                      </button>
-                    </span>
-                  ) : null}
-                </div>
-              );
-            })}
-
-          {/* 4개 이상 겹침: •••+N 배지 / 펼침 목록 */}
-          {layout.clusters
-            .filter((c) => c.overflowCount > 0)
-            .map((c) =>
-              expanded === c.id ? (
-                <div
-                  key={`exp-${c.id}`}
-                  className={styles.expand}
-                  style={{ top: yOf(c.top) + GAP / 2 }}
-                >
-                  {c.entries.map((e) => {
-                    const cat = catById.get(e.category);
-                    return (
-                      <button
-                        key={e.id}
-                        type="button"
-                        className={styles.exItem}
-                        style={{ ["--cat" as string]: cat?.color }}
-                        onClick={() => openEdit(e)}
-                      >
-                        <span className={styles.chip} style={{ ["--cat" as string]: cat?.color }}>
-                          {cat?.label ?? e.category}
-                        </span>
-                        <span className={styles.etime}>
-                          {e.start}–{e.end}
-                          {e.content ? ` · ${e.content}` : ""}
-                        </span>
-                      </button>
-                    );
-                  })}
-                  <button
-                    type="button"
-                    className={styles.lessPill}
-                    onClick={() => setExpanded(null)}
-                  >
-                    접기
-                  </button>
-                </div>
-              ) : (
-                <button
-                  key={`more-${c.id}`}
-                  type="button"
-                  className={styles.moreBadge}
-                  style={{ top: yOf(c.top) + GAP / 2 - 11 }}
-                  onClick={() => setExpanded(c.id)}
-                >
-                  •••<span>+{c.overflowCount}</span>
-                </button>
-              ),
-            )}
-        </div>
+      <div className={styles.tlList}>
+        {rows.length ? rows : <p className={styles.empty}>아직 기록이 없습니다. “+ 기록 추가”로 시작하세요.</p>}
       </div>
 
-      {/* 접힌 저녁·밤 */}
       {layout.eve ? (
         <FoldBar
           open={eveOpen}
@@ -392,6 +345,15 @@ export function DayGrid({
         />
       ) : null}
     </>
+  );
+}
+
+function nowRow(min: number) {
+  return (
+    <div key="now" className={styles.nowRow}>
+      <span className={styles.nowLbl}>{fromMin(min)}</span>
+      <span className={styles.nowLn} />
+    </div>
   );
 }
 
@@ -408,8 +370,12 @@ function FoldBar({
 }) {
   return (
     <div className={styles.foldWrap}>
-      <button type="button" className={`${styles.fold} ${open ? styles.foldOpen : ""}`} onClick={onToggle}>
-        <span className={styles.chev}>▸</span> {label}
+      <button
+        type="button"
+        className={`${styles.fold} ${open ? styles.foldOpen : ""}`}
+        onClick={onToggle}
+      >
+        <span className={styles.foldChev}>▸</span> {label}
       </button>
       {open ? (
         <div className={styles.foldBody}>
