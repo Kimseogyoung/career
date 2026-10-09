@@ -3,10 +3,11 @@ import { getSettingsStore, isStoreConfigured } from "@/lib/store/instance";
 import { DEFAULT_SETTINGS } from "@/lib/store/settings";
 import { isPushConfigured } from "@/lib/push";
 import { canGenerate } from "@/lib/summary/summarizer";
-import { SCOPE_GUIDE, SUMMARY_SYSTEM } from "@/lib/summary/prompts";
+import { ACHIEVEMENT_SYSTEM, SCOPE_GUIDE, SUMMARY_SYSTEM } from "@/lib/summary/prompts";
 import { NotificationSetup } from "./notification-setup";
 import { ReminderForm } from "./reminder-form";
 import { SummaryPromptsForm } from "./summary-prompts-form";
+import { AchievementPromptsForm } from "./achievement-prompts-form";
 import { ThemeToggle } from "@/app/components/theme-toggle";
 import { LogoutButton } from "@/app/logout-button";
 import styles from "./settings.module.css";
@@ -80,6 +81,15 @@ export default async function SettingsPage() {
                 week: SCOPE_GUIDE.week,
                 month: SCOPE_GUIDE.month,
               }}
+            />
+          </section>
+
+          <section className={styles.section}>
+            <h2 className={styles.sectionTitle}>성과 추출 프롬프트</h2>
+            <p className={styles.note}>커리어 › 성과 모음의 “성과 뽑기”에 쓰는 지시문입니다.</p>
+            <AchievementPromptsForm
+              initial={settings.achievementPrompts}
+              defaultSystem={ACHIEVEMENT_SYSTEM}
             />
           </section>
 

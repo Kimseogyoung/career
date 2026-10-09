@@ -146,8 +146,36 @@
 }
 ```
 
-- `summaryPrompts` 는 선택 필드다. 각 값이 비거나 없으면 `src/lib/summary/prompts.ts` 의 기본값을 쓴다. 설정 화면에서 편집한다.
+- `summaryPrompts`·`achievementPrompts` 는 선택 필드다. 비거나 없으면 `src/lib/summary/prompts.ts` 기본값. 설정 화면에서 편집한다. 단 성과 추출의 **JSON 출력 형식은 코드 고정**(파싱 때문)이라, 편집 가능한 건 `achievementPrompts.system`(성격·규칙)·`guide`(추가 지침)뿐이다.
 - 요약 모델은 설정이 아니라 서버 env `ANTHROPIC_MODEL`(기본 `claude-opus-5-5`)로 정한다.
+
+### 2.5 `meta/achievements.json` (커리어 · 성과 모음)
+
+기록(`journal/`)과 섞지 않도록 `meta/` 아래 둔다(ADR-012). 기록이 아니라 기록에서 뽑은 커리어 메타데이터.
+
+```jsonc
+{
+  "version": 1,
+  "achievements": [
+    {
+      "id": "01JB…",                 // ULID
+      "title": "DB·Cache 최적화로 RPS 개선",  // 한 줄 요약(필수)
+      "problem": "스트레스 테스트에서 RPS 부족·DB Timeout",  // 상세(선택)
+      "approach": "캐시 계층화 + 복합/부분 인덱스",            // 상세(선택)
+      "result": "DB 부하 대폭 감소",                          // 상세(선택)
+      "tech": ["Redis", "MySQL", "복합인덱스"],                // 선택
+      "theme": "성능·DB",                                     // 선택
+      "star": true,                   // 이력서·포트폴리오 후보
+      "sourceDates": ["2026-10-03"],  // 근거 기록 날짜
+      "createdBy": "ai",              // ai | manual
+      "createdAt": "…", "updatedAt": "…"
+    }
+  ]
+}
+```
+
+- 상세(problem·approach·result·tech)는 **뽑아낼 수 있을 때만**. 없으면 제목만(요약).
+- 추출은 **수동 버튼**(`POST /api/achievements/extract`)으로만 — 범위의 기록에서 후보를 뽑아 돌려주고(저장 안 함), 사용자가 고른 것만 저장한다.
 
 ---
 

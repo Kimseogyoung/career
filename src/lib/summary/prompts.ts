@@ -1,6 +1,6 @@
 // 요약 프롬프트 기본값. 코드(summarizer)에서 분리했다.
 // 설정(settings.summaryPrompts)에 값이 있으면 그걸 쓰고, 비면 이 기본값으로 폴백한다.
-import type { SummaryPrompts } from "@/lib/store/types";
+import type { AchievementPrompts, SummaryPrompts } from "@/lib/store/types";
 
 export type SummaryScope = "day" | "week" | "month";
 
@@ -27,4 +27,50 @@ export function resolveSystem(custom?: SummaryPrompts): string {
 /** 설정값(있으면)으로 범위별 지침을 대체. 공백이면 기본값. */
 export function resolveGuide(scope: SummaryScope, custom?: SummaryPrompts): string {
   return custom?.[scope]?.trim() || SCOPE_GUIDE[scope];
+}
+
+// ── 성과 추출 프롬프트 ──────────────────────────────────────────────
+// system 은 "무엇을 성과로 볼지·톤"이라 설정에서 편집 가능.
+// JSON 출력 형식(ACHIEVEMENT_FORMAT)은 앱이 파싱하므로 코드 고정(편집 불가).
+
+export const ACHIEVEMENT_SYSTEM = [
+  "너는 업무 일지에서 '성과'를 뽑아내는 도우미다. 이력서·포트폴리오의 근거가 될 성과만",
+  "골라, 기록에 있는 사실로만 정리한다.",
+  "- 기록에 없는 내용·수치를 지어내지 마라. 과장 금지.",
+  "- 단순 일과·회의·반복 작업은 성과가 아니다. 무엇을 개선·구축·해결했고 왜 의미 있는지가",
+  "  드러나는 것만 고른다.",
+  "- 성과마다 '가능한 만큼만' 상세를 채운다. 기록에서 문제·접근·결과·기술을 뽑을 수 있으면",
+  "  채우고(심화), 없으면 제목만 둔다(요약). 억지로 만들지 마라.",
+  "- 기술적 설명과 사용 기술(구체 기술명)을 살려라.",
+  "- 비슷한 기록은 하나의 성과로 묶어라.",
+].join("\n");
+
+export const ACHIEVEMENT_THEMES = [
+  "아키텍처",
+  "콘텐츠·기능",
+  "성능·DB",
+  "통신·네트워크",
+  "운영·모니터링",
+  "인프라·배포",
+  "보안·어뷰징",
+  "협업",
+] as const;
+
+/** JSON 출력 형식. 앱이 파싱하므로 고정. */
+export const ACHIEVEMENT_FORMAT = [
+  "아래 기록에서 성과 후보를 JSON 배열로만 출력하라. 각 항목:",
+  "{",
+  '  "title": 한 줄 요약(필수),',
+  '  "problem": 상황/문제(있을 때만),',
+  '  "approach": 접근·방법 — 어떤 기술을 왜(있을 때만),',
+  '  "result": 결과·효과, 수치 있으면 포함(있을 때만),',
+  '  "tech": 사용 기술 문자열 배열(있을 때만),',
+  `  "theme": 다음 중 가장 가까운 것 — ${ACHIEVEMENT_THEMES.join(" / ")},`,
+  '  "sourceDates": 근거가 된 날짜(YYYY-MM-DD) 배열',
+  "}",
+  "problem·approach·result·tech 는 기록에서 확인될 때만 넣는다. JSON 외 다른 말은 쓰지 마라.",
+].join("\n");
+
+export function resolveAchievementSystem(custom?: AchievementPrompts): string {
+  return custom?.system?.trim() || ACHIEVEMENT_SYSTEM;
 }

@@ -3,6 +3,7 @@ import { GitHubStore } from "./github";
 import { WriteQueue } from "./queue";
 import { Store } from "./store";
 import { SettingsStore } from "./settings";
+import { AchievementStore } from "./achievements";
 
 // Store·SettingsStore 싱글턴. 환경변수로 구성하며, 설정이 없으면 null 을 반환한다.
 // 원격 설정이 없어도 앱은 떠야 하므로(제약 6) 호출 측에서 null 을 "미설정"으로 처리한다.
@@ -17,6 +18,7 @@ import { SettingsStore } from "./settings";
 interface StoreGlobal {
   instance: Store | null;
   settings: SettingsStore | null;
+  achievements: AchievementStore | null;
   initPromise: Promise<void> | null;
   configured: boolean;
 }
@@ -25,6 +27,7 @@ const g = globalThis as typeof globalThis & { __careerStore?: StoreGlobal };
 const state: StoreGlobal = (g.__careerStore ??= {
   instance: null,
   settings: null,
+  achievements: null,
   initPromise: null,
   configured: false,
 });
@@ -64,6 +67,7 @@ export async function getStore(): Promise<Store | null> {
     flushDebounceMs: Number(process.env.STORE_FLUSH_DEBOUNCE_MS ?? 10_000),
   });
   state.settings = new SettingsStore(github);
+  state.achievements = new AchievementStore(github);
   state.initPromise = state.instance.init();
   await state.initPromise;
   return state.instance;
@@ -73,6 +77,12 @@ export async function getStore(): Promise<Store | null> {
 export async function getSettingsStore(): Promise<SettingsStore | null> {
   await getStore(); // settings 를 함께 구성
   return state.settings;
+}
+
+/** 성과 모음 저장소. */
+export async function getAchievementStore(): Promise<AchievementStore | null> {
+  await getStore();
+  return state.achievements;
 }
 
 /** 설정 여부만 빠르게 확인(네트워크 없음). */

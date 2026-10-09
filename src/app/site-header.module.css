@@ -48,6 +48,27 @@
   align-items: center;
   gap: 8px;
 }
+
+/* 좁은 폰: 메뉴가 늘어 가로 넘침 방지 — 브랜드 숨기고 간격 축소(홈 메뉴가 로고 역할). */
+@media (max-width: 520px) {
+  .inner {
+    gap: 8px;
+    padding: 10px 12px;
+  }
+  .brand {
+    display: none;
+  }
+  .nav {
+    margin-left: 0;
+  }
+  .navItem {
+    padding: 7px 9px;
+    font-size: 14px;
+  }
+  .actions {
+    gap: 6px;
+  }
+}
 .iconBtn {
   flex: none;
   width: 36px;

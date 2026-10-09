@@ -105,6 +105,12 @@ export interface SummaryPrompts {
   month?: string;
 }
 
+/** 성과 추출 프롬프트 커스텀. JSON 출력 형식은 코드 고정이고 여기선 성격(system)·추가지침(guide)만. */
+export interface AchievementPrompts {
+  system?: string;
+  guide?: string;
+}
+
 export interface Settings {
   version: 1;
   timezone: string;
@@ -113,6 +119,29 @@ export interface Settings {
   reminder: ReminderSettings;
   pushSubscriptions: PushSubscriptionRecord[];
   summaryPrompts?: SummaryPrompts;
+  achievementPrompts?: AchievementPrompts;
+}
+
+// ── 커리어: 성과 모음 (meta/achievements.json) ──────────────────────
+
+export interface Achievement {
+  id: string; // ULID
+  title: string; // 한 줄 요약(필수)
+  problem?: string; // 상황/문제
+  approach?: string; // 접근·방법(어떤 기술을 왜)
+  result?: string; // 결과·효과(수치)
+  tech: string[]; // 사용 기술
+  theme?: string; // 주제 그룹
+  star: boolean; // 이력서·포트폴리오 후보
+  sourceDates: string[]; // 근거 날짜 "YYYY-MM-DD"
+  createdBy: GeneratedBy; // ai | manual
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface AchievementsFile {
+  version: 1;
+  achievements: Achievement[];
 }
 
 export interface PushSubscriptionRecord {

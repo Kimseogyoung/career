@@ -11,6 +11,7 @@ import styles from "./site-header.module.css";
 const NAV = [
   { href: "/", label: "홈", match: (p: string) => p === "/" },
   { href: "/journal", label: "일지", match: (p: string) => p.startsWith("/journal") },
+  { href: "/career", label: "커리어", match: (p: string) => p.startsWith("/career") },
 ];
 
 export function SiteHeader() {

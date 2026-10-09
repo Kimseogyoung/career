@@ -24,3 +24,5 @@ export function monthlySummaryPath(month: string): string {
 
 export const INDEX_PATH = "index.json";
 export const SETTINGS_PATH = "settings.json";
+// 커리어 메타데이터(성과 모음). 기록(journal/)과 섞지 않도록 meta/ 아래 둔다.
+export const ACHIEVEMENTS_PATH = "meta/achievements.json";

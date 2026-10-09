@@ -1,7 +1,12 @@
 import "server-only";
 import { ConflictError, GitHubStore } from "./github";
 import { SETTINGS_PATH } from "./paths";
-import type { PushSubscriptionRecord, Settings, SummaryPrompts } from "./types";
+import type {
+  AchievementPrompts,
+  PushSubscriptionRecord,
+  Settings,
+  SummaryPrompts,
+} from "./types";
 
 // 설정 저장. 저널(1-1)과 달리 변경이 드물고 유실돼도 치명적이지 않아,
 // 쓰기 큐를 거치지 않고 원격에 직접 쓴다(sha 충돌 시 재시도). 미설정/오프라인이면 기본값.
@@ -37,6 +42,16 @@ function sanitizePrompts(v: unknown): SummaryPrompts | undefined {
   return Object.keys(out).length ? out : undefined;
 }
 
+function sanitizeAchievementPrompts(v: unknown): AchievementPrompts | undefined {
+  if (!v || typeof v !== "object") return undefined;
+  const o = v as Record<string, unknown>;
+  const out: AchievementPrompts = {};
+  for (const k of ["system", "guide"] as const) {
+    if (typeof o[k] === "string") out[k] = o[k] as string;
+  }
+  return Object.keys(out).length ? out : undefined;
+}
+
 function parse(text: string | null): Settings {
   if (!text) return DEFAULT_SETTINGS;
   try {
@@ -52,6 +67,7 @@ function parse(text: string | null): Settings {
       reminder: parsed.reminder ?? DEFAULT_SETTINGS.reminder,
       pushSubscriptions: Array.isArray(parsed.pushSubscriptions) ? parsed.pushSubscriptions : [],
       summaryPrompts: sanitizePrompts(parsed.summaryPrompts),
+      achievementPrompts: sanitizeAchievementPrompts(parsed.achievementPrompts),
     };
   } catch {
     return DEFAULT_SETTINGS;
