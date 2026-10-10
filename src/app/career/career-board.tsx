@@ -35,6 +35,54 @@ function lastDayOfMonth(y: number, m: number) {
   return new Date(Date.UTC(y, m, 0)).getUTCDate(); // m: 1-12
 }
 
+// 제목 정규화(중복 판정용): 소문자화, 괄호·상태어·기호 제거.
+function normKey(t: string): string {
+  return t
+    .toLowerCase()
+    .replace(/\(.*?\)|\[.*?\]/g, "")
+    .replace(/(리뷰\s*중|진행\s*중|실무\s*완료|완료|머지|mr)/g, "")
+    .replace(/[\s·,.\/\-_:()[\]]/g, "");
+}
+// 근거 날짜에서 대략 진행 분기 라벨(예: "2026 3분기", 걸치면 "2026 2분기~2026 3분기").
+function quarterLabel(dates?: string[]): string | null {
+  if (!dates || !dates.length) return null;
+  const q = (d: string) => `${d.slice(0, 4)} ${Math.floor((Number(d.slice(5, 7)) - 1) / 3) + 1}분기`;
+  const sorted = [...dates].sort();
+  const a = q(sorted[0]!);
+  const b = q(sorted[sorted.length - 1]!);
+  return a === b ? a : `${a}~${b}`;
+}
+function detailScore(c: Candidate): number {
+  return (c.problem ? 1 : 0) + (c.approach ? 1 : 0) + (c.result ? 1 : 0) + ((c.tech?.length ?? 0) > 0 ? 1 : 0);
+}
+// 월별로 쪼개 추출하면 장기 작업이 여러 달에 중복으로 나온다. 비슷한 제목을 하나로 병합한다.
+function dedupeCandidates(cands: Candidate[]): Candidate[] {
+  const kept: Candidate[] = [];
+  for (const c of cands) {
+    const k = normKey(c.title);
+    const idx = kept.findIndex((x) => {
+      const xk = normKey(x.title);
+      return xk === k || (k.length >= 6 && (xk.includes(k) || k.includes(xk)));
+    });
+    if (idx === -1) {
+      kept.push({ ...c, tech: [...(c.tech ?? [])], sourceDates: [...(c.sourceDates ?? [])] });
+      continue;
+    }
+    const base = kept[idx]!;
+    const better = detailScore(c) > detailScore(base) ? c : base;
+    kept[idx] = {
+      title: better.title,
+      problem: better.problem,
+      approach: better.approach,
+      result: better.result,
+      theme: better.theme ?? base.theme ?? c.theme,
+      tech: [...new Set([...(base.tech ?? []), ...(c.tech ?? [])])],
+      sourceDates: [...new Set([...(base.sourceDates ?? []), ...(c.sourceDates ?? [])])].sort(),
+    };
+  }
+  return kept;
+}
+
 // [from, to] 를 월 단위 구간으로 쪼갠다(긴 추출을 월별로 나눠 타임아웃 방지 + 진행률 표시).
 function monthsBetween(from: string, to: string): { from: string; to: string }[] {
   const out: { from: string; to: string }[] = [];
@@ -140,8 +188,11 @@ export function CareerBoard({
       setError("AI 키가 없어 추출할 수 없습니다. 직접 추가는 가능합니다.");
       return;
     }
-    setCandidates(all);
-    setPicked(new Set(all.map((_, i) => i)));
+    // 월별 중복 병합 + 이미 저장된 성과와 겹치는 후보 제외.
+    const savedKeys = new Set(items.map((a) => normKey(a.title)));
+    const unique = dedupeCandidates(all).filter((c) => !savedKeys.has(normKey(c.title)));
+    setCandidates(unique);
+    setPicked(new Set(unique.map((_, i) => i)));
     if (failed) setError(`${failed}개 구간 추출에 실패해 건너뛰었습니다. 다시 시도해 보세요.`);
   }
 
@@ -317,6 +368,9 @@ export function CareerBoard({
                   <span className={`${styles.kind} ${hasDetail(c) ? styles.detailK : styles.briefK}`}>
                     {hasDetail(c) ? "상세 추출" : "요약"}
                   </span>
+                  {quarterLabel(c.sourceDates) ? (
+                    <span className={styles.period}>{quarterLabel(c.sourceDates)}</span>
+                  ) : null}
                   {c.theme ? <span className={styles.topic}>{c.theme}</span> : null}
                   {c.sourceDates?.length ? <span>근거 {c.sourceDates.length}건</span> : null}
                 </span>
@@ -419,6 +473,9 @@ export function CareerBoard({
                       </div>
                     ) : null}
                     <div className={styles.imeta}>
+                      {quarterLabel(a.sourceDates) ? (
+                        <span className={styles.period}>{quarterLabel(a.sourceDates)}</span>
+                      ) : null}
                       {a.theme ? <span className={styles.topic}>{a.theme}</span> : null}
                       {a.sourceDates.length ? (
                         <span className={styles.srcs}>근거 {a.sourceDates.length}건</span>
