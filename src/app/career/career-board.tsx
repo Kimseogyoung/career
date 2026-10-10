@@ -83,25 +83,34 @@ function dedupeCandidates(cands: Candidate[]): Candidate[] {
   return kept;
 }
 
-// [from, to] 를 월 단위 구간으로 쪼갠다(긴 추출을 월별로 나눠 타임아웃 방지 + 진행률 표시).
-function monthsBetween(from: string, to: string): { from: string; to: string }[] {
+// [from, to] 를 분기 단위로 쪼갠다. 월보다 넓어, 한 요청 안에서 작업의 전체 흐름
+// (분석→구현→리뷰)을 모델이 보고 하나로 합치게 한다. 진행률(n/m분기)도 보여준다.
+function quartersBetween(from: string, to: string): { from: string; to: string }[] {
   const out: { from: string; to: string }[] = [];
   let y = Number(from.slice(0, 4));
-  let m = Number(from.slice(5, 7));
+  let q = Math.floor((Number(from.slice(5, 7)) - 1) / 3); // 0~3
   const ty = Number(to.slice(0, 4));
-  const tm = Number(to.slice(5, 7));
-  while (y < ty || (y === ty && m <= tm)) {
-    const mm = pad(m);
-    const start = `${y}-${mm}-01`;
-    const end = `${y}-${mm}-${pad(lastDayOfMonth(y, m))}`;
+  const tq = Math.floor((Number(to.slice(5, 7)) - 1) / 3);
+  while (y < ty || (y === ty && q <= tq)) {
+    const sm = q * 3 + 1; // 1,4,7,10
+    const em = q * 3 + 3; // 3,6,9,12
+    const start = `${y}-${pad(sm)}-01`;
+    const end = `${y}-${pad(em)}-${pad(lastDayOfMonth(y, em))}`;
     out.push({ from: start < from ? from : start, to: end > to ? to : end });
-    m++;
-    if (m > 12) {
-      m = 1;
+    q++;
+    if (q > 3) {
+      q = 0;
       y++;
     }
   }
   return out;
+}
+
+// result 가 '진행 중/검토/리뷰 중' 같은 상태뿐이면 결과로 보지 않고 비운다.
+const STATUS_ONLY = /^(진행\s*중|진행중|검토\s*중?|리뷰\s*중|리뷰중)$/;
+function sanitizeCand(c: Candidate): Candidate {
+  const result = c.result && STATUS_ONLY.test(c.result.trim()) ? undefined : c.result;
+  return { ...c, result };
 }
 
 function hasDetail(a: {
@@ -156,23 +165,23 @@ export function CareerBoard({
     setError(null);
     setCandidates(null);
     // 긴 기간은 월 단위로 쪼개 순차 추출 → 각 요청이 짧아 타임아웃을 피하고 진행률을 보여준다.
-    const months = monthsBetween(from, to);
-    setProgress({ done: 0, total: months.length });
+    const chunks = quartersBetween(from, to);
+    setProgress({ done: 0, total: chunks.length });
     const all: Candidate[] = [];
     let failed = 0;
     let noKey = false;
-    for (let i = 0; i < months.length; i++) {
+    for (let i = 0; i < chunks.length; i++) {
       try {
         const res = await fetch("/api/achievements/extract", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(months[i]),
+          body: JSON.stringify(chunks[i]),
         });
         const body = (await res.json().catch(() => ({}))) as {
           candidates?: Candidate[];
           error?: string;
         };
-        if (res.ok) all.push(...(body.candidates ?? []));
+        if (res.ok) all.push(...(body.candidates ?? []).map(sanitizeCand));
         else if (body.error === "no_api_key") {
           noKey = true;
           break;
@@ -180,7 +189,7 @@ export function CareerBoard({
       } catch {
         failed++;
       }
-      setProgress({ done: i + 1, total: months.length });
+      setProgress({ done: i + 1, total: chunks.length });
     }
     setProgress(null);
     setBusy(false);
@@ -332,7 +341,7 @@ export function CareerBoard({
         >
           {busy
             ? progress
-              ? `뽑는 중… ${progress.done}/${progress.total}개월`
+              ? `뽑는 중… ${progress.done}/${progress.total}분기`
               : "뽑는 중…"
             : "✨ 성과 뽑기"}
         </button>
