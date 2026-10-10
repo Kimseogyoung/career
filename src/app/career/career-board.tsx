@@ -35,6 +35,27 @@ function lastDayOfMonth(y: number, m: number) {
   return new Date(Date.UTC(y, m, 0)).getUTCDate(); // m: 1-12
 }
 
+// [from, to] 를 월 단위 구간으로 쪼갠다(긴 추출을 월별로 나눠 타임아웃 방지 + 진행률 표시).
+function monthsBetween(from: string, to: string): { from: string; to: string }[] {
+  const out: { from: string; to: string }[] = [];
+  let y = Number(from.slice(0, 4));
+  let m = Number(from.slice(5, 7));
+  const ty = Number(to.slice(0, 4));
+  const tm = Number(to.slice(5, 7));
+  while (y < ty || (y === ty && m <= tm)) {
+    const mm = pad(m);
+    const start = `${y}-${mm}-01`;
+    const end = `${y}-${mm}-${pad(lastDayOfMonth(y, m))}`;
+    out.push({ from: start < from ? from : start, to: end > to ? to : end });
+    m++;
+    if (m > 12) {
+      m = 1;
+      y++;
+    }
+  }
+  return out;
+}
+
 function hasDetail(a: {
   problem?: string;
   approach?: string;
@@ -60,6 +81,7 @@ export function CareerBoard({
   const [starOnly, setStarOnly] = useState(false);
 
   const [busy, setBusy] = useState(false);
+  const [progress, setProgress] = useState<{ done: number; total: number } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [candidates, setCandidates] = useState<Candidate[] | null>(null);
   const [picked, setPicked] = useState<Set<number>>(new Set());
@@ -85,32 +107,42 @@ export function CareerBoard({
     setBusy(true);
     setError(null);
     setCandidates(null);
-    try {
-      const res = await fetch("/api/achievements/extract", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ from, to }),
-      });
-      const body = (await res.json().catch(() => ({}))) as {
-        candidates?: Candidate[];
-        error?: string;
-      };
-      if (!res.ok) {
-        setError(
-          body.error === "no_api_key"
-            ? "AI 키가 없어 추출할 수 없습니다. 직접 추가는 가능합니다."
-            : "성과 추출에 실패했습니다.",
-        );
-        return;
+    // 긴 기간은 월 단위로 쪼개 순차 추출 → 각 요청이 짧아 타임아웃을 피하고 진행률을 보여준다.
+    const months = monthsBetween(from, to);
+    setProgress({ done: 0, total: months.length });
+    const all: Candidate[] = [];
+    let failed = 0;
+    let noKey = false;
+    for (let i = 0; i < months.length; i++) {
+      try {
+        const res = await fetch("/api/achievements/extract", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(months[i]),
+        });
+        const body = (await res.json().catch(() => ({}))) as {
+          candidates?: Candidate[];
+          error?: string;
+        };
+        if (res.ok) all.push(...(body.candidates ?? []));
+        else if (body.error === "no_api_key") {
+          noKey = true;
+          break;
+        } else failed++;
+      } catch {
+        failed++;
       }
-      const cands = body.candidates ?? [];
-      setCandidates(cands);
-      setPicked(new Set(cands.map((_, i) => i)));
-    } catch (e) {
-      setError((e as Error).message);
-    } finally {
-      setBusy(false);
+      setProgress({ done: i + 1, total: months.length });
     }
+    setProgress(null);
+    setBusy(false);
+    if (noKey) {
+      setError("AI 키가 없어 추출할 수 없습니다. 직접 추가는 가능합니다.");
+      return;
+    }
+    setCandidates(all);
+    setPicked(new Set(all.map((_, i) => i)));
+    if (failed) setError(`${failed}개 구간 추출에 실패해 건너뛰었습니다. 다시 시도해 보세요.`);
   }
 
   async function saveSelected() {
@@ -247,7 +279,11 @@ export function CareerBoard({
           disabled={busy || !canGenerate}
           title={canGenerate ? "" : "AI 키가 없어 비활성"}
         >
-          {busy ? "뽑는 중…" : "✨ 성과 뽑기"}
+          {busy
+            ? progress
+              ? `뽑는 중… ${progress.done}/${progress.total}개월`
+              : "뽑는 중…"
+            : "✨ 성과 뽑기"}
         </button>
       </div>
 

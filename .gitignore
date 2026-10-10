@@ -49,3 +49,6 @@ coverage/
 
 # claude local overrides
 .claude/settings.local.json
+
+# 개인 업무일지 백필 소스(커밋 금지)
+scripts/journal-source*.txt
