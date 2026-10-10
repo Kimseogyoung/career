@@ -50,6 +50,10 @@ function quarterKey(d: string): string {
 function quartersOf(dates?: string[]): Set<string> {
   return new Set((dates ?? []).map(quarterKey));
 }
+// 정렬 기준 날짜: 근거 날짜 중 가장 최근(없으면 빈 문자열 → 끝으로).
+function sortDate(a: Achievement): string {
+  return (a.sourceDates ?? []).reduce((m, d) => (d > m ? d : m), "");
+}
 // 근거 날짜에서 대략 진행 분기 라벨(예: "2026 3분기", 걸치면 "2026 2분기~2026 3분기").
 function quarterLabel(dates?: string[]): string | null {
   if (!dates || !dates.length) return null;
@@ -143,6 +147,7 @@ export function CareerBoard({
   const [to, setTo] = useState(today);
   const [starOnly, setStarOnly] = useState(false);
   const [quarterFilter, setQuarterFilter] = useState("");
+  const [sortBy, setSortBy] = useState<"new" | "old">("new");
   const [sel, setSel] = useState<Set<string>>(new Set());
 
   const [busy, setBusy] = useState(false);
@@ -297,14 +302,14 @@ export function CareerBoard({
     return [...s].sort().reverse();
   }, [items]);
 
-  const shown = useMemo(
-    () =>
-      items.filter(
-        (a) =>
-          (!starOnly || a.star) && (!quarterFilter || quartersOf(a.sourceDates).has(quarterFilter)),
-      ),
-    [items, starOnly, quarterFilter],
-  );
+  const shown = useMemo(() => {
+    const list = items.filter(
+      (a) =>
+        (!starOnly || a.star) && (!quarterFilter || quartersOf(a.sourceDates).has(quarterFilter)),
+    );
+    const dir = sortBy === "old" ? 1 : -1;
+    return [...list].sort((a, b) => dir * sortDate(a).localeCompare(sortDate(b)));
+  }, [items, starOnly, quarterFilter, sortBy]);
   const starCount = items.filter((a) => a.star).length;
 
   function toggleSel(id: string) {
@@ -483,6 +488,15 @@ export function CareerBoard({
             {items.length}건{starCount ? ` · ⭐ ${starCount}` : ""}
           </span>
           <span className={styles.headRight}>
+            <select
+              className={styles.qFilter}
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as "new" | "old")}
+              aria-label="정렬"
+            >
+              <option value="new">최신순</option>
+              <option value="old">오래된순</option>
+            </select>
             {shown.length ? (
               <button
                 type="button"
