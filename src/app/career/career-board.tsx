@@ -43,13 +43,19 @@ function normKey(t: string): string {
     .replace(/(리뷰\s*중|진행\s*중|실무\s*완료|완료|머지|mr)/g, "")
     .replace(/[\s·,.\/\-_:()[\]]/g, "");
 }
+// "YYYY N분기" 한 날짜의 분기 키.
+function quarterKey(d: string): string {
+  return `${d.slice(0, 4)} ${Math.floor((Number(d.slice(5, 7)) - 1) / 3) + 1}분기`;
+}
+function quartersOf(dates?: string[]): Set<string> {
+  return new Set((dates ?? []).map(quarterKey));
+}
 // 근거 날짜에서 대략 진행 분기 라벨(예: "2026 3분기", 걸치면 "2026 2분기~2026 3분기").
 function quarterLabel(dates?: string[]): string | null {
   if (!dates || !dates.length) return null;
-  const q = (d: string) => `${d.slice(0, 4)} ${Math.floor((Number(d.slice(5, 7)) - 1) / 3) + 1}분기`;
   const sorted = [...dates].sort();
-  const a = q(sorted[0]!);
-  const b = q(sorted[sorted.length - 1]!);
+  const a = quarterKey(sorted[0]!);
+  const b = quarterKey(sorted[sorted.length - 1]!);
   return a === b ? a : `${a}~${b}`;
 }
 function detailScore(c: Candidate): number {
@@ -136,6 +142,8 @@ export function CareerBoard({
   const [from, setFrom] = useState(today.slice(0, 7) + "-01");
   const [to, setTo] = useState(today);
   const [starOnly, setStarOnly] = useState(false);
+  const [quarterFilter, setQuarterFilter] = useState("");
+  const [sel, setSel] = useState<Set<string>>(new Set());
 
   const [busy, setBusy] = useState(false);
   const [progress, setProgress] = useState<{ done: number; total: number } | null>(null);
@@ -283,11 +291,40 @@ export function CareerBoard({
     }
   }
 
+  const allQuarters = useMemo(() => {
+    const s = new Set<string>();
+    for (const a of items) for (const q of quartersOf(a.sourceDates)) s.add(q);
+    return [...s].sort().reverse();
+  }, [items]);
+
   const shown = useMemo(
-    () => (starOnly ? items.filter((a) => a.star) : items),
-    [items, starOnly],
+    () =>
+      items.filter(
+        (a) =>
+          (!starOnly || a.star) && (!quarterFilter || quartersOf(a.sourceDates).has(quarterFilter)),
+      ),
+    [items, starOnly, quarterFilter],
   );
   const starCount = items.filter((a) => a.star).length;
+
+  function toggleSel(id: string) {
+    setSel((p) => {
+      const n = new Set(p);
+      if (n.has(id)) n.delete(id);
+      else n.add(id);
+      return n;
+    });
+  }
+  async function deleteSelected() {
+    if (!sel.size) return;
+    if (!confirm(`선택한 ${sel.size}개 성과를 삭제할까요?`)) return;
+    const ids = [...sel];
+    setItems((prev) => prev.filter((a) => !sel.has(a.id)));
+    setSel(new Set());
+    await Promise.all(
+      ids.map((id) => fetch(`/api/achievements/${id}`, { method: "DELETE" }).catch(() => {})),
+    );
+  }
 
   return (
     <>
@@ -332,6 +369,21 @@ export function CareerBoard({
         >
           ⭐ 후보만
         </button>
+        {allQuarters.length ? (
+          <select
+            className={styles.qFilter}
+            value={quarterFilter}
+            onChange={(e) => setQuarterFilter(e.target.value)}
+            aria-label="분기 필터"
+          >
+            <option value="">전체 분기</option>
+            {allQuarters.map((q) => (
+              <option key={q} value={q}>
+                {q}
+              </option>
+            ))}
+          </select>
+        ) : null}
         <button
           type="button"
           className={styles.pull}
@@ -387,6 +439,22 @@ export function CareerBoard({
             </label>
           ))}
           <div className={styles.panelFoot}>
+            {candidates.length ? (
+              <button
+                type="button"
+                className={styles.ghost}
+                onClick={() =>
+                  setPicked(
+                    picked.size === candidates.length
+                      ? new Set()
+                      : new Set(candidates.map((_, i) => i)),
+                  )
+                }
+              >
+                {picked.size === candidates.length ? "전체 해제" : "전체 선택"}
+              </button>
+            ) : null}
+            <span className={styles.spacer} />
             <button type="button" className={styles.ghost} onClick={() => setCandidates(null)}>
               닫기
             </button>
@@ -414,15 +482,35 @@ export function CareerBoard({
           <span className={styles.n}>
             {items.length}건{starCount ? ` · ⭐ ${starCount}` : ""}
           </span>
-          {!editing ? (
-            <button
-              type="button"
-              className={styles.addBtn}
-              onClick={() => setEditing({ mode: "new" })}
-            >
-              + 직접 추가
-            </button>
-          ) : null}
+          <span className={styles.headRight}>
+            {shown.length ? (
+              <button
+                type="button"
+                className={styles.mini}
+                onClick={() =>
+                  sel.size >= shown.length
+                    ? setSel(new Set())
+                    : setSel(new Set(shown.map((a) => a.id)))
+                }
+              >
+                {sel.size >= shown.length && shown.length > 0 ? "선택 해제" : "전체 선택"}
+              </button>
+            ) : null}
+            {sel.size > 0 ? (
+              <button type="button" className={styles.bulkDel} onClick={deleteSelected}>
+                선택 {sel.size} 삭제
+              </button>
+            ) : null}
+            {!editing ? (
+              <button
+                type="button"
+                className={styles.addBtn}
+                onClick={() => setEditing({ mode: "new" })}
+              >
+                + 직접 추가
+              </button>
+            ) : null}
+          </span>
         </div>
 
         {shown.length === 0 ? (
@@ -436,6 +524,13 @@ export function CareerBoard({
               const open = expanded.has(a.id);
               return (
                 <li key={a.id} className={`${styles.item} ${open ? styles.open : ""}`}>
+                  <input
+                    type="checkbox"
+                    className={styles.selBox}
+                    checked={sel.has(a.id)}
+                    onChange={() => toggleSel(a.id)}
+                    aria-label="선택"
+                  />
                   <button
                     type="button"
                     className={styles.starBtn}
