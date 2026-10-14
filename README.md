@@ -16,6 +16,7 @@
 | | |
 |---|---|
 | ![홈 화면](docs/images/home.png)<br>**홈 — 달력과 주간 요약** | ![일 상세](docs/images/day.png)<br>**일 상세 — 시간 단위 타임라인** |
+| ![월 보기](docs/images/month.png)<br>**월 — 한 달 요약(큰 줄기·성과)** | ![연 보기](docs/images/year.png)<br>**연 — 열두 달 한눈에** |
 | ![검색](docs/images/search.png)<br>**검색 — 전체 기간 부분일치** | ![커리어](docs/images/career.png)<br>**커리어 — 성과 모음** |
 
 ## 상태
