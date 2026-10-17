@@ -312,3 +312,14 @@
   text-align: center;
   padding: 40px 0;
 }
+
+/* 빈 섹션 자리 — 섹션 구성은 보이되 내용이 없음을 알린다 */
+.emptyBox {
+  margin: 0;
+  border: 1px dashed var(--border);
+  border-radius: 11px;
+  padding: 14px;
+  color: var(--text-muted);
+  font-size: 13px;
+  background: var(--surface-2);
+}
