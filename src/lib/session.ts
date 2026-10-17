@@ -7,6 +7,28 @@ export const SESSION_COOKIE = "career_session";
 const ALG = "HS256";
 const TTL_SECONDS = 60 * 60 * 24 * 30; // 30일
 const RENEW_THRESHOLD_SECONDS = 60 * 60 * 24 * 20; // 남은 기간이 20일 미만이면 갱신
+// 슬라이딩 갱신과 무관한 최대 수명. 로그인한 지 이만큼 지나면 다시 로그인해야 한다(탈취 쿠키의 수명 상한).
+export const ABSOLUTE_MAX_SECONDS = 60 * 60 * 24 * 90; // 90일
+
+export interface Session {
+  exp: number;
+  authTime: number; // 실제로 비밀번호로 로그인한 시각(갱신해도 유지)
+}
+
+function nowSeconds(): number {
+  return Math.floor(Date.now() / 1000);
+}
+
+/**
+ * 현재 비밀번호 해시의 짧은 지문. 토큰에 넣어 두고 검증 때 비교한다 —
+ * 비밀번호를 바꾸면(AUTH_PASSWORD_HASH 교체) 그 전에 발급된 세션이 모두 무효가 된다("전체 로그아웃").
+ * Web Crypto 만 써서 edge(미들웨어)에서도 돈다.
+ */
+async function passwordFingerprint(): Promise<string> {
+  const source = process.env.AUTH_PASSWORD_HASH ?? "";
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(source));
+  return Array.from(new Uint8Array(digest).slice(0, 8), (b) => b.toString(16).padStart(2, "0")).join("");
+}
 
 /**
  * edge 런타임은 process.env 를 정적 참조로만 인라인한다.
@@ -22,9 +44,12 @@ function sessionSecret(): Uint8Array {
   return new TextEncoder().encode(secret);
 }
 
-export async function issueSessionToken(): Promise<string> {
-  const now = Math.floor(Date.now() / 1000);
-  return new SignJWT({})
+/**
+ * 세션 토큰 발급. authTime 을 넘기면(갱신) 원래 로그인 시각을 유지하고, 없으면(새 로그인) 지금.
+ */
+export async function issueSessionToken(authTime?: number): Promise<string> {
+  const now = nowSeconds();
+  return new SignJWT({ pv: await passwordFingerprint(), at: authTime ?? now })
     .setProtectedHeader({ alg: ALG })
     .setSubject("owner")
     .setIssuedAt(now)
@@ -32,11 +57,16 @@ export async function issueSessionToken(): Promise<string> {
     .sign(sessionSecret());
 }
 
-export async function verifySessionToken(token: string): Promise<{ exp: number } | null> {
+export async function verifySessionToken(token: string): Promise<Session | null> {
   try {
     const { payload } = await jwtVerify(token, sessionSecret(), { algorithms: [ALG] });
     if (payload.sub !== "owner" || typeof payload.exp !== "number") return null;
-    return { exp: payload.exp };
+    // 비밀번호가 바뀌었으면 이전 세션은 무효.
+    if (payload.pv !== (await passwordFingerprint())) return null;
+    // 최대 수명 초과(또는 인증 시각이 없는 구버전 토큰)면 무효.
+    const at = payload.at;
+    if (typeof at !== "number" || nowSeconds() - at > ABSOLUTE_MAX_SECONDS) return null;
+    return { exp: payload.exp, authTime: at };
   } catch {
     return null;
   }

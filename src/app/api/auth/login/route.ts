@@ -1,20 +1,19 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { verifyPassword } from "@/lib/password";
 import { rateLimit, resetRateLimit, sweepRateLimit } from "@/lib/rate-limit";
+import { clientIp } from "@/lib/request-security";
 import { issueSessionToken, sessionCookie } from "@/lib/session";
 
 export const runtime = "nodejs";
 
-function clientKey(request: NextRequest): string {
-  // nginx가 앞단에 있으므로 원격 주소는 항상 프록시의 것이다. 전달 헤더를 본다.
-  const forwarded = request.headers.get("x-forwarded-for");
-  return forwarded?.split(",")[0]?.trim() || request.headers.get("x-real-ip") || "unknown";
-}
+// 비밀번호 최대 길이. 비정상적으로 긴 입력으로 argon2 검증 비용을 키우는 걸 막는다.
+const MAX_PASSWORD_LENGTH = 256;
 
 export async function POST(request: NextRequest) {
   sweepRateLimit();
 
-  const key = clientKey(request);
+  // X-Forwarded-For 첫 값은 위조 가능하므로 쓰지 않는다(ADR-014).
+  const key = clientIp(request.headers);
   const limit = rateLimit(key);
   if (!limit.allowed) {
     return NextResponse.json(
@@ -32,6 +31,10 @@ export async function POST(request: NextRequest) {
   if (typeof password !== "string" || password.length === 0) {
     return NextResponse.json({ error: "invalid_body" }, { status: 400 });
   }
+  if (password.length > MAX_PASSWORD_LENGTH) {
+    // 검증 없이 실패 처리(이미 레이트리밋에 1회로 집계됨).
+    return NextResponse.json({ error: "invalid_credentials" }, { status: 401 });
+  }
 
   let ok: boolean;
   try {
@@ -48,6 +51,6 @@ export async function POST(request: NextRequest) {
 
   resetRateLimit(key);
   const response = NextResponse.json({ ok: true });
-  response.cookies.set(sessionCookie(await issueSessionToken()));
+  response.cookies.set(sessionCookie(await issueSessionToken())); // 새 로그인 = 새 인증 시각
   return response;
 }

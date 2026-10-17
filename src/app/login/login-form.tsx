@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
+import { safeNextPath } from "@/lib/request-security";
 import { useState, type FormEvent } from "react";
 import styles from "./login.module.css";
 
@@ -32,7 +33,8 @@ export function LoginForm() {
       if (response.ok) {
         const next = searchParams.get("next");
         // 오픈 리다이렉트 방지 — 내부 경로만 허용한다.
-        router.replace(next?.startsWith("/") && !next.startsWith("//") ? next : "/");
+        // 같은 출처 경로만(`/\evil.com` 같은 우회 포함 차단). ADR-014
+        router.replace(safeNextPath(next));
         router.refresh();
         return;
       }
