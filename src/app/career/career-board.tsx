@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState, type FormEvent } from "react";
-import type { Achievement } from "@/lib/store/types";
+import type { Achievement, Project } from "@/lib/store/types";
 import styles from "./career.module.css";
 
 const THEMES = [
@@ -134,10 +134,12 @@ function hasDetail(a: {
 
 export function CareerBoard({
   initial,
+  projects,
   canGenerate,
   today,
 }: {
   initial: Achievement[];
+  projects: Project[];
   canGenerate: boolean;
   today: string; // YYYY-MM-DD (KST)
 }) {
@@ -261,7 +263,9 @@ export function CareerBoard({
     await fetch(`/api/achievements/${a.id}`, { method: "DELETE" }).catch(() => {});
   }
 
-  async function saveEdit(input: Omit<Candidate, "sourceDates">) {
+  async function saveEdit(
+    input: Omit<Candidate, "sourceDates"> & { projectId?: string; hidden?: boolean },
+  ) {
     setBusy(true);
     setError(null);
     try {
@@ -311,6 +315,7 @@ export function CareerBoard({
     return [...list].sort((a, b) => dir * sortDate(a).localeCompare(sortDate(b)));
   }, [items, starOnly, quarterFilter, sortBy]);
   const starCount = items.filter((a) => a.star).length;
+  const projById = useMemo(() => new Map(projects.map((p) => [p.id, p])), [projects]);
 
   function toggleSel(id: string) {
     setSel((p) => {
@@ -474,6 +479,7 @@ export function CareerBoard({
       {editing ? (
         <AchievementForm
           initial={editing.mode === "edit" ? editing.a : undefined}
+          projects={projects}
           busy={busy}
           onCancel={() => setEditing(null)}
           onSave={saveEdit}
@@ -595,6 +601,10 @@ export function CareerBoard({
                         <span className={styles.period}>{quarterLabel(a.sourceDates)}</span>
                       ) : null}
                       {a.theme ? <span className={styles.topic}>{a.theme}</span> : null}
+                      {a.projectId && projById.get(a.projectId) ? (
+                        <span className={styles.topic}>📁 {projById.get(a.projectId)!.name}</span>
+                      ) : null}
+                      {a.hidden ? <span className={styles.hiddenChip}>숨김</span> : null}
                       {a.sourceDates.length ? (
                         <span className={styles.srcs}>근거 {a.sourceDates.length}건</span>
                       ) : null}
@@ -640,11 +650,13 @@ export function CareerBoard({
 
 function AchievementForm({
   initial,
+  projects,
   busy,
   onCancel,
   onSave,
 }: {
   initial?: Achievement;
+  projects: Project[];
   busy: boolean;
   onCancel: () => void;
   onSave: (input: {
@@ -654,6 +666,8 @@ function AchievementForm({
     result?: string;
     tech?: string[];
     theme?: string;
+    projectId?: string;
+    hidden?: boolean;
   }) => void | Promise<void>;
 }) {
   const [title, setTitle] = useState(initial?.title ?? "");
@@ -662,6 +676,11 @@ function AchievementForm({
   const [result, setResult] = useState(initial?.result ?? "");
   const [theme, setTheme] = useState(initial?.theme ?? "");
   const [tech, setTech] = useState((initial?.tech ?? []).join(", "));
+  // 삭제된 프로젝트를 가리키면 '미지정'으로 시작(저장 시 유령 id 가 다시 저장되지 않게).
+  const [projectId, setProjectId] = useState(
+    initial?.projectId && projects.some((p) => p.id === initial.projectId) ? initial.projectId : "",
+  );
+  const [hidden, setHidden] = useState(Boolean(initial?.hidden));
 
   function submit(e: FormEvent) {
     e.preventDefault();
@@ -672,6 +691,9 @@ function AchievementForm({
       approach,
       result,
       theme,
+      // 빈 문자열 = '미지정'. undefined 로 보내면 JSON 에서 빠져 서버가 기존 값을 유지한다.
+      projectId,
+      hidden,
       tech: tech
         .split(",")
         .map((t) => t.trim())
@@ -726,6 +748,24 @@ function AchievementForm({
           value={tech}
           onChange={(e) => setTech(e.target.value)}
         />
+      </div>
+      <div className={styles.frow}>
+        <select
+          className={styles.fSelect}
+          value={projectId}
+          onChange={(e) => setProjectId(e.target.value)}
+        >
+          <option value="">프로젝트 미지정</option>
+          {projects.map((p) => (
+            <option key={p.id} value={p.id}>
+              {p.name}
+            </option>
+          ))}
+        </select>
+        <label className={styles.hideToggle}>
+          <input type="checkbox" checked={hidden} onChange={(e) => setHidden(e.target.checked)} />
+          공개에서 숨김
+        </label>
       </div>
       <div className={styles.formActions}>
         <button type="button" className={styles.ghost} onClick={onCancel} disabled={busy}>
