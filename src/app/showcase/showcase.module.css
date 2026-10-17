@@ -1,0 +1,314 @@
+.shell {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 20px 20px 80px;
+}
+
+/* 공개 사이트 메뉴 */
+.nav {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+  padding-bottom: 14px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid var(--border);
+}
+.brand {
+  font-weight: 700;
+  font-size: 15px;
+  margin-right: 10px;
+}
+.navLink {
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  color: var(--text-muted);
+  padding: 5px 11px;
+  border-radius: 7px;
+}
+.navLink[aria-current="page"] {
+  background: var(--surface-2);
+  color: var(--text);
+}
+
+.pageTitle {
+  font-size: 20px;
+  margin: 0 0 14px;
+  letter-spacing: -0.01em;
+}
+
+/* 소개 */
+.hero {
+  margin-bottom: 10px;
+}
+.intro {
+  font-size: 18px;
+  line-height: 1.6;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  margin: 0;
+  max-width: 60ch;
+  white-space: pre-line;
+}
+
+/* 섹션 공통 */
+.sec {
+  margin-top: 26px;
+}
+.secRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+.secHead {
+  font-size: 15px;
+  margin: 0 0 12px;
+}
+.secRow .secHead {
+  margin-bottom: 0;
+}
+.seeall {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--accent);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+/* 기술 스택 */
+.stackGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 11px;
+}
+@media (max-width: 560px) {
+  .stackGrid {
+    grid-template-columns: 1fr;
+  }
+}
+.stackCol {
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  padding: 12px;
+  background: var(--surface);
+  min-width: 0;
+}
+.sk {
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 9px;
+}
+.techRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+.chip {
+  font-family: ui-monospace, Menlo, Consolas, monospace;
+  font-size: 11px;
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 1px 7px;
+  background: var(--surface-2);
+}
+
+/* 리스트 공통 */
+.plain {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.careerItem {
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 12px;
+}
+.careerItem:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+.careerTop {
+  display: flex;
+  align-items: baseline;
+  gap: 9px;
+  flex-wrap: wrap;
+}
+.careerName {
+  font-size: 14.5px;
+  font-weight: 600;
+}
+.period {
+  font-size: 11.5px;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+}
+.oneLine {
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.55;
+  margin-top: 5px;
+}
+
+/* 프로젝트 */
+.projGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 11px;
+}
+@media (max-width: 560px) {
+  .projGrid {
+    grid-template-columns: 1fr;
+  }
+}
+.projCard {
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  padding: 13px;
+  background: var(--surface);
+  min-width: 0;
+}
+
+/* 대표 성과(홈) */
+.featItem {
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 13px;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+.featItem:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+.featTop {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.ftitle {
+  font-size: 14.5px;
+  font-weight: 600;
+}
+.themeChip {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--accent);
+  border: 1px solid color-mix(in srgb, var(--accent) 45%, var(--border));
+  border-radius: 999px;
+  padding: 2px 9px;
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+}
+.projChip {
+  font-size: 11.5px;
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 1px 9px;
+}
+
+/* 성과 전체: 토글 + 그룹 + 풀카드 */
+.toggle {
+  display: inline-flex;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 18px;
+}
+.toggle button {
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  padding: 7px 15px;
+  border: none;
+  background: var(--surface);
+  color: var(--text-muted);
+  cursor: pointer;
+}
+.toggle button + button {
+  border-left: 1px solid var(--border);
+}
+.toggle button[aria-pressed="true"] {
+  background: var(--accent);
+  color: var(--accent-fg);
+}
+.group {
+  margin-bottom: 22px;
+}
+.groupHead {
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 11px;
+}
+.projHead {
+  display: flex;
+  align-items: baseline;
+  gap: 9px;
+  flex-wrap: wrap;
+  margin-bottom: 4px;
+}
+.projHead .groupHead {
+  margin-bottom: 0;
+  text-transform: none;
+  font-size: 14.5px;
+  color: var(--text);
+}
+.groupDesc {
+  font-size: 12.5px;
+  color: var(--text-muted);
+  margin-bottom: 11px;
+}
+.acard {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px;
+  background: var(--surface);
+}
+.acard + .acard {
+  margin-top: 11px;
+}
+.acardTitle {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+.detail {
+  margin-top: 11px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.drow {
+  display: grid;
+  grid-template-columns: 42px 1fr;
+  gap: 10px;
+  font-size: 13px;
+  line-height: 1.6;
+}
+.dlbl {
+  color: var(--text-muted);
+  font-size: 11.5px;
+  font-weight: 600;
+  padding-top: 3px;
+}
+.acard .techRow {
+  margin-top: 11px;
+}
+
+.empty {
+  color: var(--text-muted);
+  font-size: 14px;
+  text-align: center;
+  padding: 40px 0;
+}
