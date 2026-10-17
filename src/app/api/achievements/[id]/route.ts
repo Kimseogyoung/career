@@ -19,11 +19,12 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
 
   const p = body as Partial<Achievement>;
   const patch: Partial<Achievement> = {};
-  for (const k of ["title", "problem", "approach", "result", "theme"] as const) {
+  for (const k of ["title", "problem", "approach", "result", "theme", "projectId"] as const) {
     if (typeof p[k] === "string") patch[k] = p[k] as string;
   }
   if (Array.isArray(p.tech)) patch.tech = p.tech.filter((t): t is string => typeof t === "string");
   if (typeof p.star === "boolean") patch.star = p.star;
+  if (typeof p.hidden === "boolean") patch.hidden = p.hidden;
 
   try {
     const updated = await store.update(id, patch);

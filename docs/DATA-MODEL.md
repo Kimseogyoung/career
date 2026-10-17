@@ -165,7 +165,9 @@
       "result": "DB 부하 대폭 감소",                          // 상세(선택)
       "tech": ["Redis", "MySQL", "복합인덱스"],                // 선택
       "theme": "성능·DB",                                     // 선택
-      "star": true,                   // 이력서·포트폴리오 후보
+      "star": true,                   // ⭐ 공개 Showcase 홈의 대표 성과로 노출
+      "hidden": false,                // 선택. true면 공개 Showcase에서 제외(기본: 공개)
+      "projectId": "01JC…",           // 선택. 연결된 Project.id (미지정 가능)
       "sourceDates": ["2026-10-03"],  // 근거 기록 날짜
       "createdBy": "ai",              // ai | manual
       "createdAt": "…", "updatedAt": "…"
@@ -176,6 +178,50 @@
 
 - 상세(problem·approach·result·tech)는 **뽑아낼 수 있을 때만**. 없으면 제목만(요약).
 - 추출은 **수동 버튼**(`POST /api/achievements/extract`)으로만 — 범위의 기록에서 후보를 뽑아 돌려주고(저장 안 함), 사용자가 고른 것만 저장한다.
+- `star`·`hidden`·`projectId` 는 공개 Showcase(2-3)용. 성과는 **기본 공개**, `hidden`으로만 숨기고, `star`는 홈 대표 노출, `projectId`로 프로젝트에 묶인다.
+
+### 2.6 `meta/projects.json` (커리어 · 프로젝트)
+
+성과를 묶는 단위. 공개 Showcase에서 프로젝트별 보기로 묶인다.
+
+```jsonc
+{
+  "version": 1,
+  "projects": [
+    {
+      "id": "01JC…",                 // ULID
+      "name": "라이브 게임 서버",
+      "period": "2025 – 현재",        // 선택, 자유 문자열
+      "description": "C# 게임 서버 운영·개선", // 선택
+      "order": 0,                     // 표시 순서(작을수록 위)
+      "createdAt": "…", "updatedAt": "…"
+    }
+  ]
+}
+```
+
+- 프로젝트를 지우면 그 성과의 `projectId`는 그대로 남아, 프로젝트별 보기에서 '기타'로 묶인다(성과는 보존).
+
+### 2.7 `meta/profile.json` (커리어 · 내 정보)
+
+공개 Showcase 홈을 채우는 소개·기술 스택·경력. 전부 수동 입력.
+
+```jsonc
+{
+  "version": 1,
+  "profile": {
+    "intro": "문제의 원인을 측정으로 …",      // 2줄 소개(선택)
+    "techStack": [
+      { "label": "언어 · 런타임", "items": ["C#", ".NET"] }
+    ],
+    "career": [
+      { "id": "c_…", "org": "○○ 스튜디오", "role": "서버 개발", "period": "2021.03 – 현재", "note": "…" }
+    ]
+  }
+}
+```
+
+- 공개 홈 노출 순서: 2줄 소개 → 기술 스택 → 경력 → 프로젝트 → ⭐ 대표 성과.
 
 ---
 
@@ -226,6 +272,12 @@ tagIndex: Map<string, Set<string>>     // 태그 → 날짜 집합. index.json �
 | GET/PUT | `/api/summary/month/:ym` | 월간 요약 (`generate` 동일 패턴) |
 | GET | `/api/search?tag=&category=&from=&to=&q=` | 검색 |
 | GET/PUT | `/api/settings` | 설정 |
+| GET/POST | `/api/achievements` | 성과 목록 / 여러 건 저장 |
+| PATCH/DELETE | `/api/achievements/:id` | 성과 수정(⭐·숨김·프로젝트 포함. `projectId: ""` = 미지정) / 삭제 |
+| POST | `/api/achievements/extract` | 범위의 기록에서 성과 후보 추출(저장 안 함) |
+| GET/POST | `/api/projects` | 프로젝트 목록 / 추가 |
+| PATCH/DELETE | `/api/projects/:id` | 프로젝트 수정 / 삭제(연결된 성과는 '기타'로 남음) |
+| GET/PUT | `/api/profile` | 내 정보(소개·기술 스택·경력) 조회 / 전체 교체 |
 | POST | `/api/push/subscribe` | 푸시 구독 등록 |
 | DELETE | `/api/push/subscribe/:id` | 구독 해제 |
 | GET | `/api/sync/status` | 큐 길이, 마지막 성공 시각, 저하 여부 |
@@ -234,6 +286,9 @@ tagIndex: Map<string, Set<string>>     // 태그 → 날짜 집합. index.json �
 | POST | `/api/sync/restore` | 특정 커밋 시점으로 복원 |
 | GET | `/api/export` | 전체 JSON 내보내기 |
 | GET | `/api/health` | 헬스체크 (인증 불필요) |
+
+- 공개 Showcase(`/showcase`)는 **API 없이 SSR**로만 노출한다. 서버에서 `meta/`를 읽어 허용 필드만 담은 공개 DTO로 렌더한다(ADR-013). 위 API는 전부 인증 필요.
+- 인증 없이 열리는 경로는 `src/lib/public-paths.ts` 한 곳에서만 판정하고, 범위는 `public-paths.test.ts` 로 고정한다.
 
 ### 응답 규약
 

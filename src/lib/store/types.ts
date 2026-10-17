@@ -132,7 +132,9 @@ export interface Achievement {
   result?: string; // 결과·효과(수치)
   tech: string[]; // 사용 기술
   theme?: string; // 주제 그룹
-  star: boolean; // 이력서·포트폴리오 후보
+  star: boolean; // ⭐ 공개 Showcase 홈의 대표 성과로 노출
+  hidden?: boolean; // true면 공개 Showcase에서 제외(기본값: 공개)
+  projectId?: string; // 연결된 프로젝트(Project.id). 미지정 가능
   sourceDates: string[]; // 근거 날짜 "YYYY-MM-DD"
   createdBy: GeneratedBy; // ai | manual
   createdAt: string;
@@ -142,6 +144,50 @@ export interface Achievement {
 export interface AchievementsFile {
   version: 1;
   achievements: Achievement[];
+}
+
+// ── 커리어: 프로젝트 (meta/projects.json) ──────────────────────────
+
+export interface Project {
+  id: string; // ULID
+  name: string;
+  period?: string; // 자유 문자열 "2025 – 현재"
+  description?: string;
+  order: number; // 표시 순서(작을수록 위)
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ProjectsFile {
+  version: 1;
+  projects: Project[];
+}
+
+// ── 커리어: 내 정보 (meta/profile.json) ────────────────────────────
+
+export interface TechStackGroup {
+  label: string;
+  items: string[];
+}
+
+export interface CareerEntry {
+  id: string;
+  org?: string; // 회사/소속
+  role?: string; // 역할
+  period?: string;
+  note?: string;
+}
+
+/** 공개 Showcase 홈을 채우는 내 정보. */
+export interface Profile {
+  intro?: string; // 2줄 소개
+  techStack: TechStackGroup[];
+  career: CareerEntry[];
+}
+
+export interface ProfileFile {
+  version: 1;
+  profile: Profile;
 }
 
 export interface PushSubscriptionRecord {

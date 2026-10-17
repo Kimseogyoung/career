@@ -26,6 +26,8 @@ export interface NewAchievement {
   result?: string;
   tech?: string[];
   theme?: string;
+  projectId?: string;
+  hidden?: boolean;
   sourceDates?: string[];
   createdBy?: Achievement["createdBy"];
 }
@@ -39,6 +41,8 @@ function build(input: NewAchievement, now: string): Achievement {
     result: input.result?.trim() || undefined,
     tech: (input.tech ?? []).map((t) => t.trim()).filter(Boolean),
     theme: input.theme?.trim() || undefined,
+    projectId: typeof input.projectId === "string" ? input.projectId.trim() || undefined : undefined,
+    hidden: input.hidden === true ? true : undefined,
     star: false,
     sourceDates: (input.sourceDates ?? []).filter((d) => /^\d{4}-\d{2}-\d{2}$/.test(d)),
     createdBy: input.createdBy ?? "manual",
@@ -107,6 +111,9 @@ export class AchievementStore {
           result: patch.result !== undefined ? patch.result.trim() || undefined : a.result,
           tech: patch.tech !== undefined ? patch.tech.map((t) => t.trim()).filter(Boolean) : a.tech,
           theme: patch.theme !== undefined ? patch.theme.trim() || undefined : a.theme,
+          projectId:
+            patch.projectId !== undefined ? patch.projectId.trim() || undefined : a.projectId,
+          hidden: patch.hidden !== undefined ? patch.hidden || undefined : a.hidden,
           star: patch.star !== undefined ? patch.star : a.star,
           updatedAt: new Date().toISOString(),
         };
