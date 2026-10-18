@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
 import { getProjectStore, isStoreConfigured } from "@/lib/store/instance";
-import type { Project } from "@/lib/store/types";
+import type { ProjectPatch } from "@/lib/store/projects";
 
 export const runtime = "nodejs";
 
-// 프로젝트 한 건 수정.
+// 프로젝트 한 건 수정. 사진은 순서·설명만(추가·삭제는 /photos).
 export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }> }) {
   const { id } = await ctx.params;
   if (!isStoreConfigured()) return NextResponse.json({ error: "not_configured" }, { status: 409 });
@@ -17,12 +17,21 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
   const store = await getProjectStore();
   if (!store) return NextResponse.json({ error: "not_configured" }, { status: 409 });
 
-  const p = body as Partial<Project>;
-  const patch: Partial<Project> = {};
-  for (const k of ["name", "period", "description"] as const) {
-    if (typeof p[k] === "string") patch[k] = p[k] as string;
+  const b = body as Record<string, unknown>;
+  const patch: ProjectPatch = {};
+  if (typeof b.name === "string") patch.name = b.name;
+  if (typeof b.description === "string") patch.description = b.description;
+  if ("start" in b) patch.start = (b.start ?? null) as ProjectPatch["start"];
+  if ("end" in b) patch.end = (b.end ?? null) as ProjectPatch["end"];
+  if (Array.isArray(b.photos)) {
+    patch.photos = b.photos
+      .filter((p): p is Record<string, unknown> => !!p && typeof p === "object")
+      .filter((p) => typeof p.id === "string")
+      .map((p) => ({
+        id: p.id as string,
+        caption: typeof p.caption === "string" ? p.caption : undefined,
+      }));
   }
-  if (typeof p.order === "number") patch.order = p.order;
 
   try {
     const updated = await store.update(id, patch);
@@ -33,7 +42,7 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
   }
 }
 
-// 삭제. (연결된 성과의 projectId 는 그대로 — 프로젝트별 뷰에서 '기타'로 묶임)
+// 삭제. 사진 파일도 함께 지운다. 연결된 성과의 projectId 는 그대로('기타'로 묶임).
 export async function DELETE(_req: Request, ctx: { params: Promise<{ id: string }> }) {
   const { id } = await ctx.params;
   if (!isStoreConfigured()) return NextResponse.json({ error: "not_configured" }, { status: 409 });

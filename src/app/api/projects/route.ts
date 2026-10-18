@@ -4,7 +4,7 @@ import type { NewProject } from "@/lib/store/projects";
 
 export const runtime = "nodejs";
 
-// 프로젝트 목록.
+// 프로젝트 목록(최신순).
 export async function GET() {
   if (!isStoreConfigured()) return NextResponse.json({ projects: [] });
   const store = await getProjectStore();
@@ -19,7 +19,7 @@ export async function GET() {
   }
 }
 
-// 새 프로젝트 추가.
+// 새 프로젝트 추가. 기간(start/end)은 저장소에서 검증·정리한다.
 export async function POST(req: Request) {
   if (!isStoreConfigured()) return NextResponse.json({ error: "not_configured" }, { status: 409 });
   let body: unknown;
@@ -28,7 +28,7 @@ export async function POST(req: Request) {
   } catch {
     return NextResponse.json({ error: "invalid_body" }, { status: 400 });
   }
-  const b = body as { name?: unknown; period?: unknown; description?: unknown };
+  const b = body as Record<string, unknown>;
   if (typeof b.name !== "string" || !b.name.trim())
     return NextResponse.json({ error: "validation" }, { status: 400 });
 
@@ -37,8 +37,9 @@ export async function POST(req: Request) {
   try {
     const input: NewProject = {
       name: b.name,
-      period: typeof b.period === "string" ? b.period : undefined,
       description: typeof b.description === "string" ? b.description : undefined,
+      start: b.start as NewProject["start"],
+      end: b.end as NewProject["end"],
     };
     const project = await store.add(input);
     return NextResponse.json({ project }, { status: 201 });

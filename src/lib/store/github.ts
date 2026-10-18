@@ -107,9 +107,101 @@ export class GitHubStore {
     sha: string | undefined,
     message: string,
   ): Promise<string> {
+    return this.putBase64(path, Buffer.from(text, "utf8").toString("base64"), sha, message);
+  }
+
+  /** 바이너리 파일 쓰기(프로젝트 사진 등). 의미는 write 와 같다. */
+  async writeBytes(
+    path: string,
+    bytes: Uint8Array,
+    sha: string | undefined,
+    message: string,
+  ): Promise<string> {
+    return this.putBase64(path, Buffer.from(bytes).toString("base64"), sha, message);
+  }
+
+  /**
+   * 바이너리 파일 읽기. 없으면 null. raw 미디어 타입으로 받아 1MB 넘는 파일도 읽힌다.
+   */
+  async readBytes(path: string): Promise<Uint8Array | null> {
+    const url = `${this.contentsUrl(path)}?ref=${encodeURIComponent(this.config.branch)}`;
+    let res: Response;
+    try {
+      res = await this.fetchImpl(url, {
+        headers: { ...this.headers(), Accept: "application/vnd.github.raw" },
+      });
+    } catch (e) {
+      throw new TransientError(`네트워크 오류: ${(e as Error).message}`);
+    }
+    if (res.status === 404) return null;
+    this.throwForStatus(res, "읽기");
+    return new Uint8Array(await res.arrayBuffer());
+  }
+
+  /** 파일 삭제. 이미 없으면 조용히 끝낸다. sha 가 어긋나면 한 번 다시 읽어 재시도. */
+  async remove(path: string, message: string): Promise<void> {
+    for (let attempt = 0; attempt < 2; attempt++) {
+      const sha = await this.shaOf(path);
+      if (!sha) return;
+      const payload: Record<string, unknown> = { message, sha, branch: this.config.branch };
+      if (this.config.commitName && this.config.commitEmail) {
+        const identity = { name: this.config.commitName, email: this.config.commitEmail };
+        payload.author = identity;
+        payload.committer = identity;
+      }
+      let res: Response;
+      try {
+        res = await this.fetchImpl(this.contentsUrl(path), {
+          method: "DELETE",
+          headers: { ...this.headers(), "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+      } catch (e) {
+        throw new TransientError(`네트워크 오류: ${(e as Error).message}`);
+      }
+      if (res.status === 404) return;
+      if (res.status === 409 || res.status === 422) continue;
+      this.throwForStatus(res, "삭제");
+      return;
+    }
+    throw new ConflictError(path);
+  }
+
+  /** 파일의 현재 blob sha(내용은 받지 않음). 없으면 null. */
+  private async shaOf(path: string): Promise<string | null> {
+    const url = `${this.contentsUrl(path)}?ref=${encodeURIComponent(this.config.branch)}`;
+    let res: Response;
+    try {
+      res = await this.fetchImpl(url, { headers: this.headers() });
+    } catch (e) {
+      throw new TransientError(`네트워크 오류: ${(e as Error).message}`);
+    }
+    if (res.status === 404) return null;
+    this.throwForStatus(res, "읽기");
+    const body = (await res.json()) as { sha?: string };
+    return body.sha ?? null;
+  }
+
+  private throwForStatus(res: Response, what: string): void {
+    if (res.ok) return;
+    if (res.status === 401 || res.status === 403) {
+      if (res.status === 403 && res.headers.get("x-ratelimit-remaining") === "0") {
+        throw new TransientError("레이트 리밋", 403);
+      }
+      throw new AuthError(`인증 실패(${res.status}). 토큰 권한을 확인하세요.`);
+    }
+    throw new TransientError(`${what} 실패(${res.status})`, res.status);
+  }
+
+  private async putBase64(
+    path: string,
+    content: string,
+    sha: string | undefined,
+    message: string,
+  ): Promise<string> {
     const payload: Record<string, unknown> = {
       message,
-      content: Buffer.from(text, "utf8").toString("base64"),
+      content,
       branch: this.config.branch,
     };
     if (sha) payload.sha = sha;

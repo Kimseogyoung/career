@@ -18,6 +18,39 @@
   font-weight: 700;
   font-size: 15px;
   margin-right: 10px;
+  color: var(--text);
+  text-decoration: none;
+}
+.navPush {
+  flex: 1;
+}
+.navBtn {
+  font-size: 12.5px;
+  font-weight: 600;
+  text-decoration: none;
+  color: var(--text-muted);
+  padding: 5px 11px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+}
+.navBtn:hover {
+  color: var(--text);
+  border-color: var(--text-muted);
+}
+
+/* 이름·직함 */
+.who {
+  margin-bottom: 4px;
+}
+.whoName {
+  font-size: 22px;
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+.whoTitle {
+  margin: 3px 0 0;
+  color: var(--text-muted);
+  font-size: 14px;
 }
 .navLink {
   font-size: 13px;
@@ -43,9 +76,9 @@
   margin-bottom: 10px;
 }
 .intro {
-  font-size: 18px;
-  line-height: 1.6;
-  font-weight: 500;
+  font-size: 14px; /* 섹션 제목(15px)보다 작게 */
+  line-height: 1.7;
+  font-weight: 400;
   letter-spacing: -0.01em;
   margin: 0;
   max-width: 60ch;
@@ -68,6 +101,203 @@
 }
 .secRow .secHead {
   margin-bottom: 0;
+}
+.secSub {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-muted);
+  margin-left: 8px;
+}
+
+/* 경력 — 세로 타임라인(점 + 선) */
+.timeline {
+  list-style: none;
+  margin: 0;
+  padding: 0 0 0 22px;
+  position: relative;
+}
+.timeline::before {
+  content: "";
+  position: absolute;
+  left: 6px;
+  top: 7px;
+  bottom: 10px;
+  width: 2px;
+  background: var(--border);
+}
+.timeline li {
+  position: relative;
+  padding-bottom: 18px;
+}
+.timeline li:last-child {
+  padding-bottom: 0;
+}
+.timeline li::before {
+  content: "";
+  position: absolute;
+  left: -21px;
+  top: 5px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--surface);
+  border: 2px solid var(--accent);
+}
+.timeline li.tlCurrent::before {
+  background: var(--accent);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 20%, transparent);
+}
+.tlCurrent {
+  position: relative;
+}
+.tlWhen {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+}
+.tlDur {
+  color: var(--text-muted);
+  font-weight: 500;
+}
+.tlBadge {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: var(--accent-fg);
+  background: var(--accent);
+  border-radius: 999px;
+  padding: 1px 7px;
+  margin-left: 8px;
+  vertical-align: 1px;
+}
+.tlOrg {
+  font-size: 14.5px;
+  font-weight: 600;
+  margin-top: 3px;
+}
+.tlRole {
+  color: var(--text-muted);
+  font-weight: 500;
+}
+.tlNote {
+  margin: 5px 0 0;
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.6;
+  white-space: pre-line;
+  max-width: 64ch;
+}
+
+/* 프로젝트 — 한 줄에 하나, 최신순 */
+.projList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.projTop {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 12px;
+}
+.projName {
+  font-size: 15px;
+  margin: 0;
+}
+.per {
+  font-size: 12.5px;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+.per em {
+  font-style: normal;
+  color: var(--accent);
+  font-weight: 600;
+}
+.shots {
+  display: flex;
+  gap: 8px;
+  margin-top: 11px;
+  overflow-x: auto;
+  padding-bottom: 2px;
+}
+.shot {
+  flex: none;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--surface-2);
+  cursor: zoom-in;
+  width: 150px;
+  max-width: 100%;
+  aspect-ratio: 16 / 10;
+}
+.shot img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.shot:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.projCard .seeall {
+  display: inline-block;
+  margin-top: 10px;
+}
+
+/* 사진 크게 보기 */
+.viewer {
+  border: none;
+  padding: 0;
+  background: transparent;
+  max-width: min(96vw, 1400px);
+  max-height: 94vh;
+}
+.viewer::backdrop {
+  background: rgba(0, 0, 0, 0.82);
+}
+.viewerFig {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.viewerFig img {
+  max-width: min(96vw, 1400px);
+  max-height: 84vh;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  border-radius: 8px;
+  display: block;
+  margin: 0 auto;
+}
+.viewerCap {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  color: #f2f4f8;
+  font-size: 13px;
+}
+.viewerBtns {
+  display: flex;
+  gap: 6px;
+}
+.viewerBtns button {
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 7px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  background: rgba(255, 255, 255, 0.08);
+  color: #f2f4f8;
+  cursor: pointer;
 }
 .seeall {
   font-size: 12.5px;

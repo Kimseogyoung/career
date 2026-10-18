@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import type { PublicAchievement, PublicProject } from "./types";
+import { projectPeriodLabel, type PublicAchievement, type PublicProject } from "./types";
 import styles from "./showcase.module.css";
 
 function AchievementCard({ a, proj }: { a: PublicAchievement; proj?: PublicProject }) {
@@ -60,11 +60,13 @@ interface ProjectGroup {
 export function ShowcaseAchievements({
   achievements,
   projects,
+  initialView = "theme",
 }: {
   achievements: PublicAchievement[]; // 서버에서 hidden 제외·최신순 정렬·허용 필드만
-  projects: PublicProject[];
+  projects: PublicProject[]; // 최신순
+  initialView?: "theme" | "project";
 }) {
-  const [view, setView] = useState<"theme" | "project">("theme");
+  const [view, setView] = useState<"theme" | "project">(initialView);
   const projById = useMemo(() => new Map(projects.map((p) => [p.id, p])), [projects]);
 
   const themeGroups = useMemo(() => {
@@ -89,7 +91,8 @@ export function ShowcaseAchievements({
     const out: ProjectGroup[] = [];
     for (const p of projects) {
       const items = m.get(p.id);
-      if (items) out.push({ key: p.id, label: p.name, period: p.period, desc: p.description, items });
+      if (items)
+        out.push({ key: p.id, label: p.name, period: projectPeriodLabel(p), desc: p.description, items });
     }
     const none = m.get("__none");
     if (none) out.push({ key: "__none", label: "기타", items: none });
@@ -125,7 +128,7 @@ export function ShowcaseAchievements({
             </div>
           ))
         : projectGroups.map((g) => (
-            <div key={g.key} className={styles.group}>
+            <div key={g.key} id={`p-${g.key}`} className={styles.group}>
               <div className={styles.projHead}>
                 <span className={styles.groupHead}>{g.label}</span>
                 {g.period ? <span className={styles.period}>{g.period}</span> : null}

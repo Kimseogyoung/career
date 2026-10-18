@@ -65,6 +65,15 @@ export class FakeGitHub {
     return f ? Buffer.from(f.content, "base64").toString("utf8") : null;
   }
 
+  has(path: string): boolean {
+    return this.files.has(path);
+  }
+
+  /** prefix 로 시작하는 파일 경로 목록. */
+  paths(prefix = ""): string[] {
+    return [...this.files.keys()].filter((p) => p.startsWith(prefix));
+  }
+
   readonly fetch: FetchLike = async (url, init) => {
     const method = init?.method ?? "GET";
     const path = this.pathOf(url);
@@ -80,9 +89,23 @@ export class FakeGitHub {
       this.reads++;
       const f = this.files.get(path);
       if (!f) return new Response("not found", { status: 404 });
+      const accept = new Headers(init?.headers).get("accept") ?? "";
+      if (accept.includes("vnd.github.raw")) {
+        return new Response(Buffer.from(f.content, "base64"), { status: 200 });
+      }
       return new Response(JSON.stringify({ content: f.content, encoding: "base64", sha: f.sha }), {
         status: 200,
       });
+    }
+
+    if (method === "DELETE") {
+      this.writes++;
+      const body = JSON.parse(String(init?.body ?? "{}")) as { sha?: string };
+      const existing = this.files.get(path);
+      if (!existing) return new Response("not found", { status: 404 });
+      if (body.sha !== existing.sha) return new Response("conflict", { status: 409 });
+      this.files.delete(path);
+      return new Response(JSON.stringify({ commit: {} }), { status: 200 });
     }
 
     // PUT

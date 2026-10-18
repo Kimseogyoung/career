@@ -85,3 +85,40 @@ test("연도 라벨", () => {
   assert.equal(yearLabel(["2026-01-01", "2026-05-01"]), "2026");
   assert.equal(yearLabel(["2026-01-01", "2023-05-01"]), "2023–2026");
 });
+
+test("프로젝트 공개 DTO: 사진은 id·크기·설명만(저장 경로·형식·바이트 수 비노출), 관련 성과 수", () => {
+  const p: Project = {
+    ...proj,
+    start: { date: "2023-01", note: "합류" },
+    end: { date: "2024-05", note: "출시" },
+    photos: [{ id: "01PPPPPPPPPPPPPPPPPPPPPPPP", ext: "webp", width: 1600, height: 900, bytes: 12345, caption: "로비" }],
+  };
+  const out = buildShowcase([ach("a", { projectId: "p1" }), ach("b", { projectId: "p1", hidden: true })], [p], profile);
+  const pp = out.projects[0]!;
+  assert.deepEqual(pp.photos, [{ id: "01PPPPPPPPPPPPPPPPPPPPPPPP", width: 1600, height: 900, caption: "로비" }]);
+  assert.equal(pp.achievementCount, 1); // 숨김 성과는 세지 않음
+  assert.deepEqual(pp.start, { date: "2023.01", note: "합류" });
+  assert.deepEqual(pp.end, { ongoing: undefined, date: "2024.05", note: "출시" });
+});
+
+test("경력 공개 DTO: 재직 기간 계산, 재직 중은 기준 월까지, 총 경력은 겹침 없이", () => {
+  const out = buildShowcase(
+    [],
+    [],
+    {
+      techStack: [],
+      career: [
+        { id: "b", org: "파이드픽셀즈", start: "2024-01", current: true },
+        { id: "a", org: "엔픽셀", start: "2022-07", end: "2023-12" },
+      ],
+    },
+    "2026-10",
+  );
+  const [cur, prev] = out.profile.career;
+  assert.equal(cur!.start, "2024.01");
+  assert.equal(cur!.current, true);
+  assert.equal(cur!.duration, "2년 10개월");
+  assert.equal(prev!.end, "2023.12");
+  assert.equal(prev!.duration, "1년 6개월");
+  assert.equal(out.profile.totalCareer, "4년 4개월");
+});

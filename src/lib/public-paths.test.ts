@@ -5,7 +5,14 @@ import { isPublicPath, isShowcasePath } from "./public-paths";
 // 공개 범위는 보안 경계다. 여기 목록이 바뀌면 의도한 변경인지 ADR-013 과 함께 확인한다.
 
 test("공개: 로그인·헬스체크·Showcase 와 그 하위", () => {
-  for (const p of ["/login", "/api/auth/login", "/api/health", "/showcase", "/showcase/achievements"]) {
+  for (const p of [
+    "/login",
+    "/api/auth/login",
+    "/api/health",
+    "/showcase",
+    "/showcase/achievements",
+    "/showcase/media/01AAAAAAAAAAAAAAAAAAAAAAAA/01BBBBBBBBBBBBBBBBBBBBBBBB", // 공개 사진
+  ]) {
     assert.equal(isPublicPath(p), true, p);
   }
 });

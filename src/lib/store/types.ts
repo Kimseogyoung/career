@@ -148,12 +148,35 @@ export interface AchievementsFile {
 
 // ── 커리어: 프로젝트 (meta/projects.json) ──────────────────────────
 
+/** 프로젝트 시작·종료 시점. 날짜는 월 단위 "YYYY-MM", 코멘트는 "합류"·"출시" 같은 짧은 말. */
+export interface ProjectMark {
+  date?: string; // "YYYY-MM"
+  note?: string;
+}
+
+export interface ProjectEnd extends ProjectMark {
+  ongoing?: boolean; // 진행 중이면 date 없음(코멘트 기본 "개발 중")
+}
+
+/** 프로젝트 사진. 파일은 career-db `meta/media/<projectId>/<id>.<ext>` (ADR-015). */
+export interface ProjectPhoto {
+  id: string; // ULID — 파일명. 내용이 바뀌면 새 id(캐시 불변)
+  ext: "webp" | "jpg" | "png";
+  width: number;
+  height: number;
+  bytes: number;
+  caption?: string; // 대체 텍스트
+}
+
 export interface Project {
   id: string; // ULID
   name: string;
-  period?: string; // 자유 문자열 "2025 – 현재"
+  start?: ProjectMark;
+  end?: ProjectEnd;
+  period?: string; // 레거시 자유 문자열 — 날짜로 옮기지 못한 경우에만 남는다
   description?: string;
-  order: number; // 표시 순서(작을수록 위)
+  photos?: ProjectPhoto[]; // 최대 10장, 첫 장이 대표
+  order: number; // 같은 날짜일 때의 보조 순서
   createdAt: string;
   updatedAt: string;
 }
@@ -174,13 +197,18 @@ export interface CareerEntry {
   id: string;
   org?: string; // 회사/소속
   role?: string; // 역할
-  period?: string;
-  note?: string;
+  start?: string; // "YYYY-MM"
+  end?: string; // "YYYY-MM" (재직 중이면 없음)
+  current?: boolean; // 재직 중
+  period?: string; // 레거시 자유 문자열 — 날짜로 옮기지 못한 경우에만 남는다
+  note?: string; // 여러 줄, 최대 CAREER_NOTE_MAX 자
 }
 
 /** 공개 Showcase 홈을 채우는 내 정보. */
 export interface Profile {
-  intro?: string; // 2줄 소개
+  name?: string; // 이름(Showcase 제목·공유 미리보기)
+  headline?: string; // 직함 한 줄(예: 게임 서버 개발자)
+  intro?: string; // 한마디(2줄 소개)
   techStack: TechStackGroup[];
   career: CareerEntry[];
 }

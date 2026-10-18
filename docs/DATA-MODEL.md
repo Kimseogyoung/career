@@ -182,46 +182,71 @@
 
 ### 2.6 `meta/projects.json` (커리어 · 프로젝트)
 
-성과를 묶는 단위. 공개 Showcase에서 프로젝트별 보기로 묶인다.
+성과를 묶는 단위. 공개 Showcase에서 최신순 목록·프로젝트별 보기로 묶인다.
 
 ```jsonc
 {
   "version": 1,
   "projects": [
     {
-      "id": "01JC…",                 // ULID
-      "name": "라이브 게임 서버",
-      "period": "2025 – 현재",        // 선택, 자유 문자열
-      "description": "C# 게임 서버 운영·개선", // 선택
-      "order": 0,                     // 표시 순서(작을수록 위)
+      "id": "01JC…",                         // ULID
+      "name": "그랑사가 키우기",
+      "description": "모바일 수집·방치형 RPG",  // 선택
+      "start": { "date": "2023-01", "note": "합류" },  // 월 단위, 코멘트 선택
+      "end":   { "date": "2024-05", "note": "출시" },  // 또는 { "ongoing": true, "note": "개발 중" }
+      "photos": [                              // 최대 10장, 첫 장이 대표
+        { "id": "01JD…", "ext": "webp", "width": 1600, "height": 900, "bytes": 184320, "caption": "로비" }
+      ],
+      "order": 0,                              // 같은 날짜일 때의 보조 순서
       "createdAt": "…", "updatedAt": "…"
     }
   ]
 }
 ```
 
-- 프로젝트를 지우면 그 성과의 `projectId`는 그대로 남아, 프로젝트별 보기에서 '기타'로 묶인다(성과는 보존).
+- **정렬은 날짜로**(진행 중 → 종료 늦은 순 → 시작 늦은 순, 날짜 없으면 맨 아래). `src/lib/period.ts`.
+- 예전 자유 글자 `period`("2023.01 합류 – 2024.05 출시", "2026.07(합류일) – 개발중")는 **읽을 때 start/end 로 옮긴다**. 연도만 있는 등 옮기지 못하면 `period` 를 그대로 두고 화면에서 수정을 안내한다. 옮긴 결과는 다음 저장 때 영구화된다.
+- 프로젝트를 지우면 사진 파일도 지운다. 그 성과의 `projectId`는 그대로 남아 프로젝트별 보기에서 '기타'로 묶인다(성과는 보존).
+
+### 2.6.1 `meta/media/<projectId>/<photoId>.<ext>` (프로젝트 사진, ADR-015)
+
+- 브라우저에서 긴 변 1600px·WebP(안 되면 JPEG)로 다시 인코딩해 올린다 → 장당 수백 KB, EXIF(위치정보) 제거. 900KB 상한(nginx 기본 1MB 안쪽).
+- 서버는 **바이트 시그니처**로 webp·jpg·png 만 받는다(SVG 등 거부).
+- photoId 는 내용이 바뀌면 새로 발급(불변) → 공개 응답 `/showcase/media/<projectId>/<photoId>` 은 1년 `immutable` 캐시. **목록에 등록된 사진만** 응답한다(임의 레포 파일 읽기 방지).
+- `/api/export`(JSON 내보내기)에는 사진이 포함되지 않는다. 시점 복원은 같은 레포라 사진까지 되돌아간다.
 
 ### 2.7 `meta/profile.json` (커리어 · 내 정보)
 
-공개 Showcase 홈을 채우는 소개·기술 스택·경력. 전부 수동 입력.
+공개 Showcase 홈을 채우는 이름·직함·한마디·기술 스택·경력. 전부 수동 입력.
 
 ```jsonc
 {
   "version": 1,
   "profile": {
-    "intro": "문제의 원인을 측정으로 …",      // 2줄 소개(선택)
+    "name": "김서경",                       // 선택 — Showcase 제목·공유 미리보기
+    "headline": "게임 서버 개발자",          // 선택
+    "intro": "문제의 원인을 측정으로 …",     // 한마디(줄바꿈 유지)
     "techStack": [
-      { "label": "언어 · 런타임", "items": ["C#", ".NET"] }
+      { "label": "언어 · 런타임", "items": ["C#", ".NET", "AWS(EC2, ALB)"] }
     ],
     "career": [
-      { "id": "c_…", "org": "○○ 스튜디오", "role": "서버 개발", "period": "2021.03 – 현재", "note": "…" }
+      { "id": "…", "org": "파이드픽셀즈", "role": "서버 프로그래머",
+        "start": "2024-01", "current": true,         // 또는 "end": "2025-07"
+        "note": "여러 줄 가능" }
     ]
   }
 }
 ```
 
-- 공개 홈 노출 순서: 2줄 소개 → 기술 스택 → 경력 → 프로젝트 → ⭐ 대표 성과.
+- 경력은 **최신순으로 정렬해 저장**한다(재직 중 → 종료 늦은 순). 예전 `period` 글자("2024.01 – 현재", "2022.07 - 2023.12")는 읽을 때 start/end/current 로 옮긴다.
+- 공개 화면은 재직 기간("2년 10개월")과 겹침 없이 합친 총 경력을 계산해 보여준다.
+- 기술 목록은 쉼표로 나누되 **괄호 안 쉼표는 나누지 않는다**("AWS(EC2, ALB)" 는 한 칩).
+- 공개 홈 노출 순서: 한마디 → 기술 스택 → 경력 → 프로젝트 → ⭐ 대표 성과.
+
+### 2.8 입력 한도와 "기존 글은 자르지 않는다"
+
+- 화면 한도(`src/lib/career-limits.ts`): 한마디 500자, 경력 비고 500자(약 10줄), 프로젝트 소개 300자, 기간 코멘트 20자, 사진 설명 100자 — **새로 입력할 때만** 적용(maxLength·카운터).
+- 서버는 이미 저장된 글을 **읽을 때 절대 자르지 않고**, 저장 시에도 남용 방지 상한(4000자)으로만 막는다. 한도를 나중에 바꿔도 예전 글이 사라지지 않게 하기 위함이다.
 
 ---
 
@@ -276,8 +301,11 @@ tagIndex: Map<string, Set<string>>     // 태그 → 날짜 집합. index.json �
 | PATCH/DELETE | `/api/achievements/:id` | 성과 수정(⭐·숨김·프로젝트 포함. `projectId: ""` = 미지정) / 삭제 |
 | POST | `/api/achievements/extract` | 범위의 기록에서 성과 후보 추출(저장 안 함) |
 | GET/POST | `/api/projects` | 프로젝트 목록 / 추가 |
-| PATCH/DELETE | `/api/projects/:id` | 프로젝트 수정 / 삭제(연결된 성과는 '기타'로 남음) |
-| GET/PUT | `/api/profile` | 내 정보(소개·기술 스택·경력) 조회 / 전체 교체 |
+| PATCH/DELETE | `/api/projects/:id` | 프로젝트 수정(이름·소개·기간, 사진 순서·설명) / 삭제(사진 파일 포함, 연결된 성과는 '기타'로 남음) |
+| POST | `/api/projects/:id/photos?w=&h=` | 사진 추가(본문 = 이미지 바이트, 최대 10장·900KB) |
+| DELETE | `/api/projects/:id/photos/:photoId` | 사진 삭제(파일 포함) |
+| GET/PUT | `/api/profile` | 내 정보(이름·직함·한마디·기술 스택·경력) 조회 / 전체 교체 |
+| GET | `/showcase/media/:projectId/:photoId` | 공개 프로젝트 사진(인증 불필요, 등록된 사진만, immutable 캐시) |
 | POST | `/api/push/subscribe` | 푸시 구독 등록 |
 | DELETE | `/api/push/subscribe/:id` | 구독 해제 |
 | GET | `/api/sync/status` | 큐 길이, 마지막 성공 시각, 저하 여부 |

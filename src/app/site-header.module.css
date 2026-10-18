@@ -93,6 +93,39 @@
   width: 18px;
   height: 18px;
 }
+/* 공개 Showcase 바로가기 — 넓은 화면은 글자까지, 좁으면 아이콘만 */
+.showcaseBtn {
+  flex: none;
+  height: 36px;
+  padding: 0 11px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  border-radius: 9px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+}
+.showcaseBtn:hover {
+  border-color: var(--accent);
+}
+.showcaseBtn svg {
+  width: 17px;
+  height: 17px;
+}
+@media (max-width: 640px) {
+  .showcaseBtn {
+    width: 36px;
+    padding: 0;
+    justify-content: center;
+  }
+  .showcaseLabel {
+    display: none;
+  }
+}
 .q {
   font-size: 17px;
   font-weight: 700;

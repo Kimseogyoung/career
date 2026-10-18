@@ -1,19 +1,64 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import { loadShowcase } from "./data";
+import { PhotoStrip } from "./photo-strip";
+import { ShowcaseNav } from "./showcase-nav";
+import { mediaUrl, type PublicProject } from "./types";
 import styles from "./showcase.module.css";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = {
-  title: "Showcase",
-  description: "공개 포트폴리오",
-};
+/** 링크 공유 미리보기(카톡·슬랙 등). 이름·직함·한마디·대표 사진. */
+export async function generateMetadata(): Promise<Metadata> {
+  const { profile, projects } = await loadShowcase();
+  const h = await headers();
+  // nginx 가 Host 를 그대로 넘기고 X-Forwarded-Proto 를 덮어쓴다(X-Forwarded-Host 는 위조 가능해 쓰지 않음).
+  const base = new URL(`${h.get("x-forwarded-proto") ?? "https"}://${h.get("host") ?? "localhost"}`);
+  const title = profile.name
+    ? `${profile.name}${profile.headline ? ` · ${profile.headline}` : ""}`
+    : "Showcase";
+  const description = profile.intro?.split("\n")[0] || "공개 포트폴리오";
+  const cover = projects.find((p) => p.photos.length);
+  const images = cover
+    ? [{ url: mediaUrl(cover.id, cover.photos[0]!.id), width: cover.photos[0]!.width, height: cover.photos[0]!.height }]
+    : undefined;
+  return {
+    metadataBase: base,
+    title,
+    description,
+    openGraph: { title, description, type: "profile", url: "/showcase", images },
+    twitter: { card: images ? "summary_large_image" : "summary", title, description },
+  };
+}
 
 // 섹션 틀은 내용이 없어도 항상 보인다(내 정보를 아직 안 채웠어도 구성을 알 수 있게).
-// 빈 섹션은 방문자에게 보이는 중립 문구로 채운다.
 function Empty({ children }: { children: React.ReactNode }) {
   return <p className={styles.emptyBox}>{children}</p>;
+}
+
+function ProjectPeriod({ p }: { p: PublicProject }) {
+  if (!p.start?.date && p.legacyPeriod) return <span className={styles.per}>{p.legacyPeriod}</span>;
+  if (!p.start && !p.end) return null;
+  return (
+    <span className={styles.per}>
+      {p.start?.date}
+      {p.start?.note ? <em> {p.start.note}</em> : null}
+      {p.end ? (
+        <>
+          {" – "}
+          {p.end.ongoing ? (
+            <em>{p.end.note || "진행 중"}</em>
+          ) : (
+            <>
+              {p.end.date}
+              {p.end.note ? <em> {p.end.note}</em> : null}
+            </>
+          )}
+        </>
+      ) : null}
+    </span>
+  );
 }
 
 export default async function ShowcasePage() {
@@ -24,21 +69,21 @@ export default async function ShowcasePage() {
 
   return (
     <main className={styles.shell}>
-      <nav className={styles.nav}>
-        <span className={styles.brand}>Showcase</span>
-        <Link href="/showcase" className={styles.navLink} aria-current="page">
-          홈
-        </Link>
-        <Link href="/showcase/achievements" className={styles.navLink}>
-          성과
-        </Link>
-      </nav>
+      <ShowcaseNav current="home" brand={profile.name} />
 
-      <section className={styles.hero}>
+      {profile.name || profile.headline ? (
+        <header className={styles.who}>
+          {profile.name ? <h1 className={styles.whoName}>{profile.name}</h1> : null}
+          {profile.headline ? <p className={styles.whoTitle}>{profile.headline}</p> : null}
+        </header>
+      ) : null}
+
+      <section className={styles.sec}>
+        <h2 className={styles.secHead}>한마디</h2>
         {profile.intro ? (
           <p className={styles.intro}>{profile.intro}</p>
         ) : (
-          <Empty>소개가 아직 등록되지 않았습니다.</Empty>
+          <Empty>한마디가 아직 등록되지 않았습니다.</Empty>
         )}
       </section>
 
@@ -65,21 +110,33 @@ export default async function ShowcasePage() {
       </section>
 
       <section className={styles.sec}>
-        <h2 className={styles.secHead}>경력</h2>
+        <h2 className={styles.secHead}>
+          경력
+          {profile.totalCareer ? <small className={styles.secSub}>총 {profile.totalCareer}</small> : null}
+        </h2>
         {profile.career.length ? (
-          <ul className={styles.plain}>
+          <ol className={styles.timeline}>
             {profile.career.map((c) => (
-              <li key={c.id} className={styles.careerItem}>
-                <div className={styles.careerTop}>
-                  <span className={styles.careerName}>
-                    {[c.org, c.role].filter(Boolean).join(" · ")}
-                  </span>
-                  {c.period ? <span className={styles.period}>{c.period}</span> : null}
+              <li key={c.id} className={c.current ? styles.tlCurrent : undefined}>
+                <div className={styles.tlWhen}>
+                  {c.start ? (
+                    <>
+                      {c.start} – {c.current ? "현재" : (c.end ?? "")}
+                      {c.duration ? <span className={styles.tlDur}> · {c.duration}</span> : null}
+                    </>
+                  ) : (
+                    c.legacyPeriod
+                  )}
+                  {c.current ? <span className={styles.tlBadge}>재직 중</span> : null}
                 </div>
-                {c.note ? <div className={styles.oneLine}>{c.note}</div> : null}
+                <div className={styles.tlOrg}>
+                  {c.org}
+                  {c.role ? <span className={styles.tlRole}> · {c.role}</span> : null}
+                </div>
+                {c.note ? <p className={styles.tlNote}>{c.note}</p> : null}
               </li>
             ))}
-          </ul>
+          </ol>
         ) : (
           <Empty>등록된 경력이 없습니다.</Empty>
         )}
@@ -88,15 +145,24 @@ export default async function ShowcasePage() {
       <section className={styles.sec}>
         <h2 className={styles.secHead}>프로젝트</h2>
         {projects.length ? (
-          <div className={styles.projGrid}>
+          <div className={styles.projList}>
             {projects.map((p) => (
-              <div key={p.id} className={styles.projCard}>
-                <div className={styles.careerTop}>
-                  <span className={styles.careerName}>{p.name}</span>
-                  {p.period ? <span className={styles.period}>{p.period}</span> : null}
+              <article key={p.id} className={styles.projCard}>
+                <div className={styles.projTop}>
+                  <h3 className={styles.projName}>{p.name}</h3>
+                  <ProjectPeriod p={p} />
                 </div>
-                {p.description ? <div className={styles.oneLine}>{p.description}</div> : null}
-              </div>
+                {p.description ? <p className={styles.oneLine}>{p.description}</p> : null}
+                <PhotoStrip projectId={p.id} projectName={p.name} photos={p.photos} />
+                {p.achievementCount ? (
+                  <Link
+                    href={`/showcase/achievements?view=project#p-${p.id}`}
+                    className={styles.seeall}
+                  >
+                    관련 성과 {p.achievementCount}건 →
+                  </Link>
+                ) : null}
+              </article>
             ))}
           </div>
         ) : (

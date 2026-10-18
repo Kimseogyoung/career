@@ -70,6 +70,29 @@ export function SiteHeader() {
           </nav>
 
           <div className={styles.actions}>
+            {/* 공개 포트폴리오를 로그아웃 없이 바로 확인(새 탭). */}
+            <a
+              href="/showcase"
+              target="_blank"
+              rel="noopener"
+              className={styles.showcaseBtn}
+              aria-label="공개 Showcase 보기 (새 탭)"
+              title="공개 Showcase 보기 (새 탭)"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z" />
+                <circle cx="12" cy="12" r="3" />
+              </svg>
+              <span className={styles.showcaseLabel}>Showcase</span>
+            </a>
             <Link
               href="/search"
               className={styles.iconBtn}

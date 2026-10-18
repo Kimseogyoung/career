@@ -35,6 +35,8 @@ export async function PUT(req: Request) {
   const b = body as Partial<Profile>;
   try {
     const saved = await store.put({
+      name: typeof b.name === "string" ? b.name : undefined,
+      headline: typeof b.headline === "string" ? b.headline : undefined,
       intro: typeof b.intro === "string" ? b.intro : undefined,
       techStack: Array.isArray(b.techStack) ? b.techStack : [],
       career: Array.isArray(b.career) ? b.career : [],
