@@ -8,6 +8,7 @@ const TABS = [
   { href: "/career", label: "성과" },
   { href: "/career/projects", label: "프로젝트" },
   { href: "/career/me", label: "내 정보" },
+  { href: "/career/export", label: "내보내기" },
 ];
 
 export function CareerSubnav() {

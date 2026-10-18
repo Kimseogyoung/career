@@ -154,6 +154,7 @@ export default async function ShowcasePage() {
                   <h3 className={styles.projName}>{p.name}</h3>
                   <ProjectPeriod p={p} />
                 </div>
+                {p.org ? <div className={styles.projOrg}>{p.org}</div> : null}
                 {p.description ? <p className={styles.oneLine}>{p.description}</p> : null}
                 <PhotoStrip projectId={p.id} projectName={p.name} photos={p.photos} />
                 {p.achievementCount ? (

@@ -97,6 +97,18 @@ test("프로젝트: 수정 — 빈 이름은 무시, 기간은 null 로 지울 �
   assert.deepEqual(u?.start, { date: "2024-01" });
 });
 
+test("프로젝트: 소속 회사 — 지정·유지·빈 값/null 로 자동 복귀", async () => {
+  const { github } = setup();
+  const store = new ProjectStore(github);
+  const p = await store.add({ name: "A", careerId: " c1 " });
+  assert.equal(p?.careerId, "c1");
+  assert.equal((await store.update(p!.id, { name: "B" }))?.careerId, "c1"); // 안 보내면 유지
+  assert.equal((await store.update(p!.id, { careerId: "" }))?.careerId, undefined);
+  await store.update(p!.id, { careerId: "c2" });
+  assert.equal((await store.update(p!.id, { careerId: null }))?.careerId, undefined);
+  assert.equal((await new ProjectStore(github).list())[0]!.careerId, undefined); // 원격에서 복원
+});
+
 // ── 프로젝트 사진 ─────────────────────────────────────────────────
 
 const WEBP = new Uint8Array([0x52, 0x49, 0x46, 0x46, 0, 0, 0, 0, 0x57, 0x45, 0x42, 0x50, 1, 2, 3]);

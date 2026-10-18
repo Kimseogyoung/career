@@ -40,6 +40,7 @@ export async function POST(req: Request) {
       description: typeof b.description === "string" ? b.description : undefined,
       start: b.start as NewProject["start"],
       end: b.end as NewProject["end"],
+      careerId: typeof b.careerId === "string" ? b.careerId : undefined,
     };
     const project = await store.add(input);
     return NextResponse.json({ project }, { status: 201 });

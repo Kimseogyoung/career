@@ -1,16 +1,17 @@
 "use client";
 
-import { useMemo, useRef, useState, type FormEvent } from "react";
+import { useRef, useState, type FormEvent } from "react";
 import { MARK_NOTE_MAX, PHOTO_CAPTION_MAX, PHOTOS_MAX, PROJECT_DESC_MAX } from "@/lib/career-limits";
+import { resolveCareer, suggestCareer } from "@/lib/career-link";
 import {
   compareRecent,
   currentYearMonth,
-  formatYearMonth,
   parseYearMonth,
   validatePeriod,
   type PeriodError,
 } from "@/lib/period";
-import type { Project, ProjectEnd, ProjectMark, ProjectPhoto } from "@/lib/store/types";
+import { projectPeriodText as periodText } from "@/lib/project-period";
+import type { CareerEntry, Project, ProjectEnd, ProjectMark, ProjectPhoto } from "@/lib/store/types";
 import { todayKst } from "@/lib/time";
 import { mediaUrl } from "@/app/showcase/types";
 import { prepareImage } from "./image-prep";
@@ -23,6 +24,11 @@ interface Input {
   description?: string;
   start?: ProjectMark;
   end?: ProjectEnd;
+  careerId?: string; // "" = 자동
+}
+
+function careerLabel(c: CareerEntry): string {
+  return [c.org, c.role].filter(Boolean).join(" · ") || "(이름 없는 경력)";
 }
 
 const PERIOD_MSG: Record<PeriodError, string> = {
@@ -48,17 +54,8 @@ function sortProjects(list: Project[]): Project[] {
   );
 }
 
-function periodText(p: Project): string | undefined {
-  if (!p.start?.date) return p.period;
-  const start = [formatYearMonth(p.start.date), p.start.note].filter(Boolean).join(" ");
-  if (!p.end) return start;
-  const end = p.end.ongoing
-    ? p.end.note || "진행 중"
-    : [p.end.date ? formatYearMonth(p.end.date) : "", p.end.note].filter(Boolean).join(" ");
-  return end ? `${start} – ${end}` : start;
-}
-
-export function ProjectsBoard({ initial }: { initial: Project[] }) {
+export function ProjectsBoard({ initial, career }: { initial: Project[]; career: CareerEntry[] }) {
+  const now = currentYearMonth(todayKst());
   const [items, setItems] = useState<Project[]>(() => sortProjects(initial));
   const [editing, setEditing] = useState<Editing>(null);
   const [busy, setBusy] = useState(false);
@@ -124,6 +121,7 @@ export function ProjectsBoard({ initial }: { initial: Project[] }) {
         <ProjectForm
           key={editing.mode === "edit" ? editing.id : "new"}
           initial={editingProject}
+          career={career}
           busy={busy}
           onCancel={() => setEditing(null)}
           onSave={save}
@@ -143,6 +141,15 @@ export function ProjectsBoard({ initial }: { initial: Project[] }) {
                   <span className={styles.itemTitle}>{p.name}</span>
                   {periodText(p) ? <span className={styles.period}>{periodText(p)}</span> : null}
                 </div>
+                {(() => {
+                  const r = resolveCareer(p, career, now);
+                  return r ? (
+                    <div className={styles.srcs}>
+                      {r.entry.org || careerLabel(r.entry)}
+                      {r.auto ? " (기간으로 추정)" : ""}
+                    </div>
+                  ) : null;
+                })()}
                 {p.period && !p.start?.date ? (
                   <p className={styles.warn}>기간을 날짜로 옮기지 못했습니다 — 수정에서 시작·종료를 지정해 주세요.</p>
                 ) : null}
@@ -177,12 +184,14 @@ export function ProjectsBoard({ initial }: { initial: Project[] }) {
 
 function ProjectForm({
   initial,
+  career,
   busy,
   onCancel,
   onSave,
   onPhotosChange,
 }: {
   initial?: Project;
+  career: CareerEntry[];
   busy: boolean;
   onCancel: () => void;
   onSave: (input: Input) => void | Promise<void>;
@@ -198,19 +207,26 @@ function ProjectForm({
   );
   const [end, setEnd] = useState(initial?.end?.date ?? "");
   const [endNote, setEndNote] = useState(initial?.end?.note ?? (initial ? "" : "개발 중"));
+  const [careerId, setCareerId] = useState(
+    initial?.careerId && career.some((c) => c.id === initial.careerId) ? initial.careerId : "",
+  );
+  const suggested = suggestCareer(
+    {
+      start: { date: parseYearMonth(start) ?? undefined },
+      end: endMode === "ongoing" ? { ongoing: true } : { date: parseYearMonth(end) ?? undefined },
+    },
+    career,
+    now,
+  );
 
-  const err = useMemo(
-    () =>
-      validatePeriod(
-        {
-          start: parseYearMonth(start),
-          end: endMode === "date" ? parseYearMonth(end) : null,
-          current: endMode === "ongoing",
-        },
-        now,
-        { allowFutureEnd: true }, // "출시 예정" 같은 미래 종료는 허용
-      ),
-    [start, end, endMode, now],
+  const err = validatePeriod(
+    {
+      start: parseYearMonth(start),
+      end: endMode === "date" ? parseYearMonth(end) : null,
+      current: endMode === "ongoing",
+    },
+    now,
+    { allowFutureEnd: true }, // "출시 예정" 같은 미래 종료는 허용
   );
 
   function submit(e: FormEvent) {
@@ -224,6 +240,7 @@ function ProjectForm({
         endMode === "ongoing"
           ? { ongoing: true, note: endNote }
           : { date: parseYearMonth(end) ?? undefined, note: endNote },
+      careerId,
     });
   }
 
@@ -307,6 +324,22 @@ function ProjectForm({
         </label>
       </div>
       {err ? <p className={styles.warn}>{PERIOD_MSG[err]}</p> : null}
+
+      <div className={styles.fhint}>소속 회사 — 경력기술서·포트폴리오에서 회사별로 묶을 때 씁니다</div>
+      {career.length ? (
+        <select className={styles.fTech} value={careerId} onChange={(e) => setCareerId(e.target.value)}>
+          <option value="">
+            자동 (기간으로 추정{suggested ? `: ${suggested.org || careerLabel(suggested)}` : " — 겹치는 경력 없음"})
+          </option>
+          {career.map((c) => (
+            <option key={c.id} value={c.id}>
+              {careerLabel(c)}
+            </option>
+          ))}
+        </select>
+      ) : (
+        <p className={styles.fhint}>내 정보 탭에 경력을 넣으면 고를 수 있습니다.</p>
+      )}
 
       {initial ? (
         <PhotoManager project={initial} onChange={onPhotosChange} />

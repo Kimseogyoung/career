@@ -1,5 +1,5 @@
-import { getProjectStore, isStoreConfigured } from "@/lib/store/instance";
-import type { Project } from "@/lib/store/types";
+import { getProfileStore, getProjectStore, isStoreConfigured } from "@/lib/store/instance";
+import type { CareerEntry, Project } from "@/lib/store/types";
 import { CareerSubnav } from "../career-subnav";
 import { ProjectsBoard } from "./projects-board";
 import styles from "../career.module.css";
@@ -9,12 +9,15 @@ export const dynamic = "force-dynamic";
 export default async function ProjectsPage() {
   const configured = isStoreConfigured();
   let projects: Project[] = [];
+  let career: CareerEntry[] = [];
   let stale = false;
 
   if (configured) {
     try {
-      const store = await getProjectStore();
+      const [store, profileStore] = await Promise.all([getProjectStore(), getProfileStore()]);
       if (store) projects = await store.list();
+      // 소속 회사 고르기용. 실패해도 프로젝트 화면은 뜬다(자동 추정만 안 됨).
+      if (profileStore) career = (await profileStore.get().catch(() => null))?.career ?? [];
     } catch {
       stale = true;
     }
@@ -37,7 +40,7 @@ export default async function ProjectsPage() {
         <p className={styles.banner}>원격 저장소에 연결하지 못했습니다. 최신이 아닐 수 있습니다.</p>
       ) : null}
 
-      <ProjectsBoard initial={projects} />
+      <ProjectsBoard initial={projects} career={career} />
     </main>
   );
 }

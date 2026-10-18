@@ -1,4 +1,5 @@
 import "server-only";
+import { resolveCareer } from "@/lib/career-link";
 import { currentYearMonth, formatDuration, formatYearMonth, monthsInclusive, totalMonths } from "@/lib/period";
 import {
   getAchievementStore,
@@ -56,10 +57,11 @@ export function toPublicAchievement(a: Achievement, projectIds: Set<string>): Pu
   };
 }
 
-export function toPublicProject(p: Project, achievementCount: number): PublicProject {
+export function toPublicProject(p: Project, achievementCount: number, org?: string): PublicProject {
   return {
     id: p.id,
     name: p.name,
+    org,
     description: p.description,
     start: p.start?.date || p.start?.note
       ? { date: p.start.date ? formatYearMonth(p.start.date) : undefined, note: p.start.note }
@@ -130,7 +132,9 @@ export function buildShowcase(
   for (const a of visible) if (a.projectId) count.set(a.projectId, (count.get(a.projectId) ?? 0) + 1);
   return {
     profile: toPublicProfile(profile, now),
-    projects: sortProjects(projects).map((p) => toPublicProject(p, count.get(p.id) ?? 0)),
+    projects: sortProjects(projects).map((p) =>
+      toPublicProject(p, count.get(p.id) ?? 0, resolveCareer(p, profile.career, now)?.entry.org),
+    ),
     achievements: visible,
   };
 }

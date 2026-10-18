@@ -17,6 +17,11 @@ import type { Project, ProjectEnd, ProjectMark, ProjectPhoto, ProjectsFile } fro
 const MAX_RETRY = 3;
 const CURRENT_LIKE = /^(현재|now|present|current)$/i;
 
+/** 경력 항목 id. 존재 여부는 읽는 쪽(resolveCareer)이 판단 — 경력이 지워져도 프로젝트는 그대로. */
+function sanitizeCareerId(v: unknown): string | undefined {
+  return typeof v === "string" && v.trim() ? v.trim().slice(0, 40) : undefined;
+}
+
 function clip(v: unknown, max: number): string | undefined {
   return typeof v === "string" ? v.trim().slice(0, max) || undefined : undefined;
 }
@@ -80,11 +85,13 @@ export interface NewProject {
   description?: string;
   start?: ProjectMark;
   end?: ProjectEnd;
+  careerId?: string;
 }
 
 export interface ProjectPatch {
   name?: string;
   description?: string;
+  careerId?: string | null; // null·"" 이면 자동(기간으로 추정)으로 되돌린다
   start?: ProjectMark | null;
   end?: ProjectEnd | null;
   /** 사진 순서·설명만 바꾼다. 목록에 없는 id 는 무시(새 사진은 addPhoto 로만). */
@@ -145,6 +152,7 @@ export class ProjectStore {
         description: clip(input.description, TEXT_HARD_MAX),
         start: sanitizeMark(input.start),
         end: sanitizeEnd(input.end),
+        careerId: sanitizeCareerId(input.careerId),
         photos: [],
         order,
         createdAt: now,
@@ -170,6 +178,7 @@ export class ProjectStore {
             patch.description !== undefined ? clip(patch.description, TEXT_HARD_MAX) : p.description,
           start,
           end: patch.end !== undefined ? sanitizeEnd(patch.end) : p.end,
+          careerId: patch.careerId !== undefined ? sanitizeCareerId(patch.careerId) : p.careerId,
           period: start?.date ? undefined : p.period,
           photos: patch.photos ? reorderPhotos(p.photos ?? [], patch.photos) : p.photos,
           updatedAt: new Date().toISOString(),

@@ -30,6 +30,7 @@ export interface PublicPhoto {
 export interface PublicProject {
   id: string;
   name: string;
+  org?: string; // 소속 회사(직접 고른 것 또는 기간으로 추정)
   description?: string;
   start?: PublicMark;
   end?: PublicMark & { ongoing?: boolean };

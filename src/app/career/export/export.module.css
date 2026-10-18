@@ -1,0 +1,273 @@
+/* 내보내기 — 화면에선 종이 미리보기, 인쇄에선 종이 그 자체.
+   종이는 테마와 무관하게 흰 바탕·검은 글자(제출용 문서). */
+
+.wide {
+  max-width: 900px;
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 16px 0 18px;
+}
+.kind {
+  display: flex;
+  gap: 6px;
+}
+.kindOn,
+.kindOff {
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+}
+.kindOn {
+  background: var(--accent);
+  color: var(--accent-fg);
+}
+.kindOff {
+  border: 1px dashed var(--border);
+  color: var(--text-muted);
+  font-weight: 500;
+}
+.opts {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.seg {
+  display: inline-flex;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.seg a {
+  padding: 5px 10px;
+  font-size: 12.5px;
+  color: var(--text-muted);
+  text-decoration: none;
+}
+.seg a[aria-current="true"] {
+  background: var(--surface-2);
+  color: var(--text);
+  font-weight: 600;
+}
+.count {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.printBtn {
+  padding: 6px 14px;
+  border-radius: 8px;
+  border: 0;
+  background: var(--accent);
+  color: var(--accent-fg);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* ── 종이 ─────────────────────────────────────── */
+.paper {
+  --ink: #1b1d22;
+  --ink-2: #4a4f59;
+  --ink-3: #7a808b;
+  --rule: #d9dce2;
+  background: #fff;
+  color: var(--ink);
+  padding: 44px 48px;
+  border-radius: 6px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06), 0 8px 28px rgba(0, 0, 0, 0.08);
+  font-size: 13.5px;
+  line-height: 1.65;
+  color-scheme: light;
+}
+.head h1 {
+  font-size: 26px;
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+.headline {
+  margin: 2px 0 0;
+  color: var(--ink-2);
+  font-size: 15px;
+}
+.contacts {
+  margin: 8px 0 0;
+  color: var(--ink-2);
+  font-size: 12.5px;
+  overflow-wrap: anywhere;
+}
+.intro {
+  margin: 14px 0 0;
+  white-space: pre-line;
+}
+.stack {
+  margin: 14px 0 0;
+  display: grid;
+  gap: 3px;
+}
+.stack div,
+.achRows div {
+  display: grid;
+  grid-template-columns: 7.5em 1fr;
+  gap: 10px;
+}
+.stack dt,
+.achRows dt {
+  color: var(--ink-3);
+  font-size: 12px;
+  padding-top: 1px;
+}
+.stack dd,
+.achRows dd {
+  margin: 0;
+  min-width: 0;
+  white-space: pre-line;
+}
+
+.group {
+  margin-top: 30px;
+}
+.groupHead {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 4px 12px;
+  font-size: 18px;
+  margin: 0 0 4px;
+  padding-bottom: 6px;
+  border-bottom: 2px solid var(--ink);
+  break-after: avoid;
+}
+.when {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--ink-3);
+  font-variant-numeric: tabular-nums;
+}
+.proj {
+  margin-top: 18px;
+}
+.career {
+  margin-top: 10px;
+  break-inside: avoid;
+}
+.career .projHead {
+  font-size: 14.5px;
+  font-weight: 700;
+}
+.career small,
+.projHead small {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink-2);
+}
+.projHead {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 2px 12px;
+  font-size: 15.5px;
+  margin: 0;
+  break-after: avoid;
+}
+.desc {
+  margin: 3px 0 0;
+  color: var(--ink-2);
+  white-space: pre-line;
+}
+.photos {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+  margin: 10px 0 2px;
+}
+.photos figure {
+  margin: 0;
+  break-inside: avoid;
+}
+.photos img {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  border-radius: 3px;
+  border: 1px solid var(--rule);
+  display: block;
+}
+.photos figcaption {
+  font-size: 10.5px;
+  color: var(--ink-3);
+  margin-top: 2px;
+}
+.ach {
+  margin-top: 12px;
+  padding-left: 12px;
+  border-left: 2px solid var(--rule);
+  break-inside: avoid;
+}
+.achTitle {
+  font-size: 14px;
+  margin: 0 0 3px;
+}
+.achRows {
+  margin: 0;
+  display: grid;
+  gap: 2px;
+}
+.achRows div {
+  grid-template-columns: 3em 1fr;
+}
+.achTech {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: var(--ink-3);
+}
+
+@media (max-width: 640px) {
+  .paper {
+    padding: 24px 18px;
+  }
+  .photos {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .stack div {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+}
+
+@page {
+  size: A4;
+  margin: 14mm 14mm 16mm;
+}
+@media print {
+  .noPrint {
+    display: none !important;
+  }
+  :global(body) {
+    background: #fff !important;
+  }
+  .wide {
+    max-width: none;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  .paper {
+    box-shadow: none;
+    border-radius: 0;
+    padding: 0;
+    font-size: 10.5pt;
+  }
+  .paper * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}

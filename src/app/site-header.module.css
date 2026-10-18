@@ -224,3 +224,10 @@
 :root[data-theme="light"] .moon {
   display: none;
 }
+
+/* 내보내기 인쇄 시 앱 머리글은 종이에 찍지 않는다. */
+@media print {
+  .header {
+    display: none !important;
+  }
+}

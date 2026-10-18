@@ -174,6 +174,7 @@ export interface Project {
   start?: ProjectMark;
   end?: ProjectEnd;
   period?: string; // 레거시 자유 문자열 — 날짜로 옮기지 못한 경우에만 남는다
+  careerId?: string; // 소속 회사(경력 항목 id). 없으면 기간으로 추정 — lib/career-link.ts
   description?: string;
   photos?: ProjectPhoto[]; // 최대 10장, 첫 장이 대표
   order: number; // 같은 날짜일 때의 보조 순서

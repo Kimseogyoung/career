@@ -23,6 +23,7 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
   if (typeof b.description === "string") patch.description = b.description;
   if ("start" in b) patch.start = (b.start ?? null) as ProjectPatch["start"];
   if ("end" in b) patch.end = (b.end ?? null) as ProjectPatch["end"];
+  if ("careerId" in b) patch.careerId = typeof b.careerId === "string" ? b.careerId : null;
   if (Array.isArray(b.photos)) {
     patch.photos = b.photos
       .filter((p): p is Record<string, unknown> => !!p && typeof p === "object")
