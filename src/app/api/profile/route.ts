@@ -37,6 +37,8 @@ export async function PUT(req: Request) {
     const saved = await store.put({
       name: typeof b.name === "string" ? b.name : undefined,
       headline: typeof b.headline === "string" ? b.headline : undefined,
+      email: typeof b.email === "string" ? b.email : undefined,
+      links: Array.isArray(b.links) ? b.links : [],
       intro: typeof b.intro === "string" ? b.intro : undefined,
       techStack: Array.isArray(b.techStack) ? b.techStack : [],
       career: Array.isArray(b.career) ? b.career : [],

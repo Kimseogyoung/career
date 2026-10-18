@@ -122,3 +122,18 @@ test("경력 공개 DTO: 재직 기간 계산, 재직 중은 기준 월까지, �
   assert.equal(prev!.duration, "1년 6개월");
   assert.equal(out.profile.totalCareer, "4년 4개월");
 });
+
+test("연락처 공개 DTO: 이메일 원문은 내보내지 않고 base64 로만, 링크는 이름·주소만", () => {
+  const out = buildShowcase([], [], {
+    email: "me@example.com",
+    links: [{ label: "GitHub", url: "https://github.com/me" }],
+    techStack: [],
+    career: [],
+  });
+  assert.ok(!JSON.stringify(out).includes("me@example.com"));
+  assert.equal(Buffer.from(out.profile.emailEncoded!, "base64").toString("utf8"), "me@example.com");
+  assert.deepEqual(out.profile.links, [{ label: "GitHub", url: "https://github.com/me" }]);
+  const empty = buildShowcase([], [], { techStack: [], career: [] });
+  assert.equal(empty.profile.emailEncoded, undefined);
+  assert.deepEqual(empty.profile.links, []);
+});

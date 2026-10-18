@@ -1,10 +1,11 @@
 import "server-only";
 import { TEXT_HARD_MAX } from "@/lib/career-limits";
+import { LINKS_MAX, isEmail, linkLabel, safeUrl } from "@/lib/contact";
 import { compareRecent, isYearMonth, parseLegacyPeriod } from "@/lib/period";
 import { ConflictError, GitHubStore } from "./github";
 import { PROFILE_PATH } from "./paths";
 import { ulid } from "./ulid";
-import type { CareerEntry, Profile, ProfileFile, TechStackGroup } from "./types";
+import type { CareerEntry, Profile, ProfileFile, ProfileLink, TechStackGroup } from "./types";
 
 // 내 정보(이름·직함·한마디·기술 스택·경력) 저장. settings 와 동일하게 원격(meta/profile.json)에
 // 직접 쓴다(sha 충돌 시 재시도). 공개 Showcase 홈을 이 데이터로 채운다.
@@ -22,6 +23,24 @@ export function sortCareer(list: CareerEntry[]): CareerEntry[] {
 }
 
 const MAX_RETRY = 3;
+
+/** 링크: http(s) 만, 최대 LINKS_MAX. 잘못된 주소는 버린다(공개 화면 href — XSS 방지). */
+export function sanitizeLinks(v: unknown): ProfileLink[] {
+  if (!Array.isArray(v)) return [];
+  const out: ProfileLink[] = [];
+  for (const l of v) {
+    const o = (l ?? {}) as Record<string, unknown>;
+    const url = safeUrl(typeof o.url === "string" ? o.url : null);
+    if (!url) continue;
+    out.push({ label: linkLabel(typeof o.label === "string" ? o.label : undefined, url), url });
+    if (out.length >= LINKS_MAX) break;
+  }
+  return out;
+}
+
+function sanitizeEmail(v: unknown): string | undefined {
+  return typeof v === "string" && isEmail(v) ? v.trim() : undefined;
+}
 
 function sanitizeTechStack(v: unknown): TechStackGroup[] {
   if (!Array.isArray(v)) return [];
@@ -81,6 +100,8 @@ function parse(text: string | null): Profile {
     return {
       name: clip(p.name, TEXT_HARD_MAX),
       headline: clip(p.headline, TEXT_HARD_MAX),
+      email: sanitizeEmail(p.email),
+      links: sanitizeLinks(p.links),
       intro: clip(p.intro, TEXT_HARD_MAX),
       techStack: sanitizeTechStack(p.techStack),
       career: sanitizeCareer(p.career),
@@ -107,6 +128,8 @@ export class ProfileStore {
     const next: Profile = {
       name: clip(input.name, TEXT_HARD_MAX),
       headline: clip(input.headline, TEXT_HARD_MAX),
+      email: sanitizeEmail(input.email),
+      links: sanitizeLinks(input.links),
       intro: clip(input.intro, TEXT_HARD_MAX),
       techStack: sanitizeTechStack(input.techStack),
       career: sanitizeCareer(input.career),

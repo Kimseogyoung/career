@@ -204,10 +204,17 @@ export interface CareerEntry {
   note?: string; // 여러 줄, 최대 CAREER_NOTE_MAX 자
 }
 
+export interface ProfileLink {
+  label: string; // 비면 호스트명
+  url: string; // http(s) 만
+}
+
 /** 공개 Showcase 홈을 채우는 내 정보. */
 export interface Profile {
   name?: string; // 이름(Showcase 제목·공유 미리보기)
   headline?: string; // 직함 한 줄(예: 게임 서버 개발자)
+  email?: string; // 연락 이메일(공개 화면엔 "복사" 버튼으로만)
+  links?: ProfileLink[]; // GitHub·블로그 등, 최대 LINKS_MAX
   intro?: string; // 한마디(2줄 소개)
   techStack: TechStackGroup[];
   career: CareerEntry[];

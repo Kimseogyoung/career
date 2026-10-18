@@ -53,6 +53,9 @@ export interface PublicCareer {
 export interface PublicProfile {
   name?: string;
   headline?: string;
+  /** 이메일은 원문 대신 base64 로만 내보낸다 — HTML 을 긁는 단순 수집기 회피. "복사" 를 눌러야 풀린다. */
+  emailEncoded?: string;
+  links: { label: string; url: string }[];
   intro?: string;
   techStack: { label: string; items: string[] }[];
   career: PublicCareer[];

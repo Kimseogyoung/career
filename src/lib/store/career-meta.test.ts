@@ -212,6 +212,25 @@ test("내 정보: 저장 시 정리 — 빈 그룹·빈 경력 제거, 기술 tr
   assert.ok(p.career[0]!.id.length > 0);
 });
 
+test("내 정보 연락처: 잘못된 링크·이메일은 버리고, 링크는 최대 6개·이름 없으면 호스트명", async () => {
+  const { github } = setup();
+  await new ProfileStore(github).put({
+    email: "not-an-email",
+    links: [
+      { label: "x", url: "javascript:alert(1)" },
+      { label: "", url: "github.com/me" },
+      ...Array.from({ length: 8 }, (_, i) => ({ label: `L${i}`, url: `https://e${i}.com` })),
+    ],
+    techStack: [],
+    career: [],
+  });
+  const p = await new ProfileStore(github).get();
+  assert.equal(p.email, undefined);
+  assert.equal(p.links!.length, 6);
+  assert.deepEqual(p.links![0], { label: "github.com", url: "https://github.com/me" });
+  assert.ok(p.links!.every((l) => l.url.startsWith("https://")));
+});
+
 test("내 정보 경력: 최신순 정렬(재직 중 맨 위), 재직 중이면 종료 월 버림, 비고는 자르지 않음(남용 상한만)", async () => {
   const { github } = setup();
   const saved = await new ProfileStore(github).put({

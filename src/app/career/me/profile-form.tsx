@@ -13,7 +13,8 @@ import {
   validatePeriod,
   type PeriodError,
 } from "@/lib/period";
-import type { CareerEntry, Profile, TechStackGroup } from "@/lib/store/types";
+import { LINK_LABEL_MAX, LINKS_MAX, isEmail, safeUrl } from "@/lib/contact";
+import type { CareerEntry, Profile, ProfileLink, TechStackGroup } from "@/lib/store/types";
 import { todayKst } from "@/lib/time";
 import styles from "../career.module.css";
 
@@ -65,6 +66,8 @@ function normYm(v: string | undefined): string | undefined {
 function serialize(p: {
   name: string;
   headline: string;
+  email: string;
+  links: ProfileLink[];
   intro: string;
   groups: GroupDraft[];
   career: CareerEntry[];
@@ -75,6 +78,8 @@ function serialize(p: {
 export function ProfileForm({ initial }: { initial: Profile }) {
   const [name, setName] = useState(initial.name ?? "");
   const [headline, setHeadline] = useState(initial.headline ?? "");
+  const [email, setEmail] = useState(initial.email ?? "");
+  const [links, setLinks] = useState<ProfileLink[]>(initial.links ?? []);
   const [intro, setIntro] = useState(initial.intro ?? "");
   const [groups, setGroups] = useState<GroupDraft[]>(
     (initial.techStack ?? []).map((g) => ({ label: g.label, items: g.items.join(", ") })),
@@ -86,6 +91,8 @@ export function ProfileForm({ initial }: { initial: Profile }) {
     serialize({
       name: initial.name ?? "",
       headline: initial.headline ?? "",
+      email: initial.email ?? "",
+      links: initial.links ?? [],
       intro: initial.intro ?? "",
       groups: (initial.techStack ?? []).map((g) => ({ label: g.label, items: g.items.join(", ") })),
       career: initial.career ?? [],
@@ -93,7 +100,7 @@ export function ProfileForm({ initial }: { initial: Profile }) {
   );
 
   const now = currentYearMonth(todayKst());
-  const dirty = serialize({ name, headline, intro, groups, career }) !== saved;
+  const dirty = serialize({ name, headline, email, links, intro, groups, career }) !== saved;
 
   // 저장하지 않고 떠나면 경고(입력이 긴 화면이라 실수로 잃기 쉽다).
   useEffect(() => {
@@ -116,10 +123,15 @@ export function ProfileForm({ initial }: { initial: Profile }) {
       ),
     [career, now],
   );
-  const hasError = errors.some(Boolean);
+  const emailBad = email.trim() !== "" && !isEmail(email);
+  const linkBad = links.map((l) => !safeUrl(l.url));
+  const hasError = errors.some(Boolean) || emailBad || linkBad.some(Boolean);
 
   function patchGroup(i: number, patch: Partial<GroupDraft>) {
     setGroups((prev) => prev.map((g, idx) => (idx === i ? { ...g, ...patch } : g)));
+  }
+  function patchLink(i: number, patch: Partial<ProfileLink>) {
+    setLinks((prev) => prev.map((l, idx) => (idx === i ? { ...l, ...patch } : l)));
   }
   function patchCareer(i: number, patch: Partial<CareerEntry>) {
     setCareer((prev) => prev.map((c, idx) => (idx === i ? { ...c, ...patch } : c)));
@@ -127,7 +139,7 @@ export function ProfileForm({ initial }: { initial: Profile }) {
 
   async function save() {
     if (hasError) {
-      setMsg("경력 기간을 확인해 주세요.");
+      setMsg(emailBad || linkBad.some(Boolean) ? "연락처를 확인해 주세요." : "경력 기간을 확인해 주세요.");
       return;
     }
     setBusy(true);
@@ -144,7 +156,7 @@ export function ProfileForm({ initial }: { initial: Profile }) {
       const res = await fetch("/api/profile", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, headline, intro, techStack, career: careerOut }),
+        body: JSON.stringify({ name, headline, email, links, intro, techStack, career: careerOut }),
       });
       const body = (await res.json().catch(() => ({}))) as { profile?: Profile };
       if (!res.ok || !body.profile) {
@@ -156,6 +168,8 @@ export function ProfileForm({ initial }: { initial: Profile }) {
       const nextGroups = p.techStack.map((g) => ({ label: g.label, items: g.items.join(", ") }));
       setName(p.name ?? "");
       setHeadline(p.headline ?? "");
+      setEmail(p.email ?? "");
+      setLinks(p.links ?? []);
       setIntro(p.intro ?? "");
       setGroups(nextGroups);
       setCareer(p.career);
@@ -163,6 +177,8 @@ export function ProfileForm({ initial }: { initial: Profile }) {
         serialize({
           name: p.name ?? "",
           headline: p.headline ?? "",
+          email: p.email ?? "",
+          links: p.links ?? [],
           intro: p.intro ?? "",
           groups: nextGroups,
           career: p.career,
@@ -195,6 +211,54 @@ export function ProfileForm({ initial }: { initial: Profile }) {
           onChange={(e) => setHeadline(e.target.value)}
         />
       </div>
+
+      <div className={styles.seclbl2}>연락처 · 링크 (Showcase 상단에 표시)</div>
+      <input
+        className={styles.fTech}
+        style={{ width: "100%" }}
+        type="email"
+        placeholder="이메일 — 공개 화면에선 '복사' 를 눌러야 보입니다"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+      />
+      {emailBad ? <p className={styles.warn}>이메일 형식이 아닙니다.</p> : null}
+      {links.map((l, i) => (
+        <div key={i}>
+          <div className={styles.frow} style={{ marginTop: 8 }}>
+            <input
+              className={styles.fTech}
+              style={{ flex: "0 1 140px" }}
+              placeholder="이름 (예: GitHub)"
+              maxLength={LINK_LABEL_MAX}
+              value={l.label}
+              onChange={(e) => patchLink(i, { label: e.target.value })}
+            />
+            <input
+              className={styles.fTech}
+              placeholder="https://github.com/…"
+              value={l.url}
+              onChange={(e) => patchLink(i, { url: e.target.value })}
+            />
+            <button
+              type="button"
+              className={styles.mini}
+              onClick={() => setLinks((prev) => prev.filter((_, idx) => idx !== i))}
+            >
+              삭제
+            </button>
+          </div>
+          {linkBad[i] ? <p className={styles.warn}>http(s) 주소만 넣을 수 있습니다.</p> : null}
+        </div>
+      ))}
+      {links.length < LINKS_MAX ? (
+        <button
+          type="button"
+          className={styles.addBtn}
+          onClick={() => setLinks((prev) => [...prev, { label: "", url: "" }])}
+        >
+          + 링크 추가 ({links.length}/{LINKS_MAX})
+        </button>
+      ) : null}
 
       <div className={styles.seclbl2}>한마디</div>
       <textarea

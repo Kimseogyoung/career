@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { headers } from "next/headers";
+import { ContactRow } from "./contact-row";
 import { loadShowcase } from "./data";
 import { PhotoStrip } from "./photo-strip";
 import { ShowcaseNav } from "./showcase-nav";
@@ -77,6 +78,7 @@ export default async function ShowcasePage() {
           {profile.headline ? <p className={styles.whoTitle}>{profile.headline}</p> : null}
         </header>
       ) : null}
+      <ContactRow emailEncoded={profile.emailEncoded} links={profile.links} />
 
       <section className={styles.sec}>
         <h2 className={styles.secHead}>한마디</h2>

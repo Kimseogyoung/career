@@ -52,6 +52,41 @@
   color: var(--text-muted);
   font-size: 14px;
 }
+.contact {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 10px 0 4px;
+}
+.contactBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 11px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  font-size: 13px;
+  text-decoration: none;
+  cursor: pointer;
+  max-width: 100%;
+}
+.contactBtn:hover {
+  border-color: var(--accent);
+}
+.contactEmail {
+  user-select: all;
+  overflow-wrap: anywhere;
+}
+.contactHint {
+  color: var(--text-muted);
+  font-size: 12px;
+}
+.contactHint:empty {
+  display: none;
+}
 .navLink {
   font-size: 13px;
   font-weight: 600;
@@ -385,6 +420,7 @@
   color: var(--text-muted);
   line-height: 1.55;
   margin-top: 5px;
+  white-space: pre-line; /* 입력한 줄바꿈 유지 */
 }
 
 /* 프로젝트 */
@@ -498,6 +534,7 @@
   font-size: 12.5px;
   color: var(--text-muted);
   margin-bottom: 11px;
+  white-space: pre-line;
 }
 .acard {
   border: 1px solid var(--border);
@@ -525,6 +562,7 @@
   gap: 10px;
   font-size: 13px;
   line-height: 1.6;
+  white-space: pre-line; /* 일지에서 옮긴 "분석: …↵해결: …" 줄바꿈 */
 }
 .dlbl {
   color: var(--text-muted);

@@ -105,6 +105,8 @@ export function toPublicProfile(p: Profile, now: string): PublicProfile {
   return {
     name: p.name,
     headline: p.headline,
+    emailEncoded: p.email ? Buffer.from(p.email, "utf8").toString("base64") : undefined,
+    links: (p.links ?? []).map((l) => ({ label: l.label, url: l.url })),
     intro: p.intro,
     techStack: p.techStack,
     career: p.career.map((c) => toPublicCareer(c, now)),
