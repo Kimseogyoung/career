@@ -22,6 +22,7 @@
 └─ meta/                          # 커리어(2·3단계)
    ├─ achievements.json · projects.json · profile.json
    ├─ media/<projectId>/<photoId>.<ext>
+   ├─ positions.json              # 추천 포지션(직무·⭐숨김·공고 요약, ADR-017)
    └─ resumes/                    # 내보내기 저장본(3-2)
       ├─ index.json
       └─ <id>.json
@@ -276,6 +277,34 @@
 - **쓰기 순서로 일관성 유지("목록에 있으면 본문이 있다")**: 저장은 본문 → 목록(목록 쓰기가 실패하면 본문 삭제), 삭제는 목록 → 본문. 목록 sha 충돌은 다시 읽어 재시도.
 - 이름 60자(비면 "저장본"), 본문 900KB 상한(GitHub contents API 1MB 한계). id 는 영숫자 ULID 만 경로로 만든다.
 
+### 2.7.2 `meta/positions.json` (커리어 · 추천 포지션, ADR-017)
+
+```jsonc
+{
+  "version": 1,
+  "duties": [16, 18],                       // 게임잡 세부 직무 코드(16 서버, 18 엔진 …) — src/lib/positions/duties.ts
+  "marks": { "283937": "star", "282299": "hidden" },
+  "postings": [
+    { "gno": 283937, "company": "㈜이스트게임즈", "title": "[경력] 모바일 RTS 서버 프로그래머",
+      "career": "경력3년↑", "local": "서울 > 서초구", "genre": "모바일게임", "employ": "정규직",
+      "deadline": "~11/08",                 // 또는 "상시" · "채용시"
+      "registered": "2026-10-17",
+      "firstSeen": "2026-10-19T00:10:00Z", "baseline": true,   // 첫 수집분은 새 공고로 치지 않음
+      "detail": {                           // 본문은 저장하지 않고 구역별 기술 표기만
+        "fetchedAt": "…", "imageOnly": false,
+        "terms": { "duty": ["PvP"], "req": ["C#", "Redis"], "pref": ["MySQL", "MongoDB", "Go"], "etc": [] },
+        "summary": ["전략대전게임 서버 컨텐츠 개발", "…"]   // 담당업무 앞 3줄
+      } }
+  ],
+  "lastRun": { "at": "…", "ok": true, "listed": 72, "fetched": 3 }
+}
+```
+
+- **공고 원문은 저장하지 않는다.** 본문은 담당업무·자격요건·우대·기타로 나눈 뒤 각 구역에서 **기술 표기**(사전 이름 + 영문 토큰)만 남긴다. 영문 토큰을 남기는 이유: 나중에 내 기술에 새 이름이 생겨도 다시 받지 않고 맞춰 보려고.
+- **점수는 저장하지 않는다.** 화면을 열 때 지금의 내 정보·성과로 계산한다(`src/lib/positions/score.ts`).
+- 목록을 **끝까지 받은 수집**에서만 사라진 공고(마감·삭제)와 그 표시를 지운다. 직무를 바꾸면 공고·표시를 비우고 새로 받는다.
+- 한 수집당 커밋 1회(공고 수십 건 기준 수십 KB).
+
 ### 2.8 입력 한도와 "기존 글은 자르지 않는다"
 
 - 화면 한도(`src/lib/career-limits.ts`): 한마디 500자, 경력 비고 500자(약 10줄), 프로젝트 소개 300자, 기간 코멘트 20자, 사진 설명 100자 — **새로 입력할 때만** 적용(maxLength·카운터).
@@ -337,6 +366,10 @@ tagIndex: Map<string, Set<string>>     // 태그 → 날짜 집합. index.json �
 | PATCH/DELETE | `/api/projects/:id` | 프로젝트 수정(이름·소개·기간, 사진 순서·설명) / 삭제(사진 파일 포함, 연결된 성과는 '기타'로 남음) |
 | POST | `/api/projects/:id/photos?w=&h=` | 사진 추가(본문 = 이미지 바이트, 최대 10장·900KB) |
 | DELETE | `/api/projects/:id/photos/:photoId` | 사진 삭제(파일 포함) |
+| PUT | `/api/positions/duties` | 추천 포지션 직무 변경(`{ duties: number[] }`, 최대 6개). 바뀌면 바로 수집 시작 |
+| PATCH | `/api/positions/:gno` | 공고 표시 `{ mark: "star" \| "hidden" \| null }` |
+| POST | `/api/positions/collect` | 지금 수집(돌고 있거나 10분 안에 돌았으면 429). 기다리지 않음(202) |
+| GET | `/api/positions/status` | 수집 중 여부 + 마지막 실행 |
 | GET/POST | `/api/resumes` | 내보내기 저장본 목록 / 지금 조립 결과 저장(`{ name, kind:"portfolio", starOnly, photos }` — 본문은 서버가 조립) |
 | GET/DELETE | `/api/resumes/:id` | 저장본 한 건(본문 포함) / 삭제(원본 성과엔 영향 없음) |
 | GET/PUT | `/api/profile` | 내 정보(이름·직함·한마디·기술 스택·경력) 조회 / 전체 교체 |

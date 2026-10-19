@@ -28,5 +28,7 @@ export const SETTINGS_PATH = "settings.json";
 export const ACHIEVEMENTS_PATH = "meta/achievements.json";
 export const PROJECTS_PATH = "meta/projects.json";
 export const PROFILE_PATH = "meta/profile.json";
+// 추천 포지션: 고른 직무·관심 표시·수집한 공고 요약(ADR-017).
+export const POSITIONS_PATH = "meta/positions.json";
 // 내보내기 저장본: 목록(index) + 저장본마다 파일 하나(본문은 수십 KB라 한 파일에 몰지 않는다).
 export const RESUMES_INDEX_PATH = "meta/resumes/index.json";

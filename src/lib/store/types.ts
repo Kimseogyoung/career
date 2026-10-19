@@ -146,6 +146,55 @@ export interface AchievementsFile {
   achievements: Achievement[];
 }
 
+// ── 커리어: 추천 포지션 (meta/positions.json, ADR-017) ───────────────
+
+/** 공고 본문 구역별로 찾은 기술 표기(정식 이름 + 영문 토큰). 원문은 저장하지 않는다. */
+export interface PositionTerms {
+  duty: string[];
+  req: string[];
+  pref: string[];
+  etc: string[];
+}
+
+export interface Position {
+  gno: number; // 게임잡 공고 번호
+  company: string;
+  title: string;
+  career: string; // "경력3년↑" 등 원문
+  local?: string;
+  genre?: string;
+  employ?: string;
+  deadline: string; // "상시" · "채용시" · "~11/08"
+  registered?: string; // YYYY-MM-DD
+  firstSeen: string; // ISO — "새 공고" 판단
+  /** 처음 수집 때 이미 있던 공고(새 공고로 치지 않음) */
+  baseline?: boolean;
+  detail?: {
+    fetchedAt: string;
+    imageOnly: boolean;
+    terms: PositionTerms;
+    summary: string[]; // 담당업무 앞 몇 줄
+  };
+}
+
+export type PositionMark = "star" | "hidden";
+
+export interface PositionRun {
+  at: string;
+  ok: boolean;
+  listed: number;
+  fetched: number;
+  error?: string;
+}
+
+export interface PositionsFile {
+  version: 1;
+  duties: number[];
+  marks: Record<string, PositionMark>;
+  postings: Position[];
+  lastRun?: PositionRun;
+}
+
 // ── 커리어: 내보내기 저장본 (meta/resumes/) ─────────────────────────
 
 export type ResumeKind = "portfolio";
