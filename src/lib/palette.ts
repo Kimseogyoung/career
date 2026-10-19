@@ -275,6 +275,50 @@ const HIGH_CONTRAST: Palette = {
   },
 };
 
+type Partial6 = Pick<PaletteColors, "bg" | "surface" | "surface-2" | "border" | "text" | "text-muted" | "accent" | "accent-fg" | "holiday" | "satblue">;
+/** 기본 테마(T-3) 전용 팔레트. 위험·성공·주의·별은 기본 팔레트 값을 쓴다. */
+function themePalette(id: string, name: string, light: Partial6, dark: Partial6): Palette {
+  return { id, name, light: { ...DEFAULT_PALETTE.light, ...light }, dark: { ...DEFAULT_PALETTE.dark, ...dark } };
+}
+
+const THEME_PALETTES: Palette[] = [
+  themePalette(
+    "wc", "수채",
+    { bg: "#f8f6f3", surface: "#fffefc", "surface-2": "#f2eee9", border: "#e5ded6", text: "#2e2a2b", "text-muted": "#6f6866", accent: "#8c4a64", "accent-fg": "#ffffff", holiday: "#b4434f", satblue: "#3f62a8" },
+    { bg: "#1c1a1b", surface: "#262324", "surface-2": "#312d2e", border: "#433d3e", text: "#f0eaea", "text-muted": "#b3a9a9", accent: "#e3a6bd", "accent-fg": "#2a1520", holiday: "#f08f99", satblue: "#9fb6ea" },
+  ),
+  themePalette(
+    "sky", "하늘",
+    { bg: "#eaf4fb", surface: "#ffffff", "surface-2": "#eef5fb", border: "#d3e3f0", text: "#1f2d3a", "text-muted": "#4b5c6c", accent: "#2f6fa3", "accent-fg": "#ffffff", holiday: "#c2435a", satblue: "#2f6fa3" },
+    { bg: "#0f1a24", surface: "#172532", "surface-2": "#1e2f3e", border: "#2b3f51", text: "#e6f0f8", "text-muted": "#9fb2c3", accent: "#8cc8f0", "accent-fg": "#0a1a26", holiday: "#f591a3", satblue: "#8cc8f0" },
+  ),
+  themePalette(
+    "ceramic", "도자기",
+    { bg: "#f2f5f8", surface: "#ffffff", "surface-2": "#eef2f7", border: "#dde4ec", text: "#1d2433", "text-muted": "#525d70", accent: "#3b5aa6", "accent-fg": "#ffffff", holiday: "#c2435a", satblue: "#3b5aa6" },
+    { bg: "#121722", surface: "#1b2230", "surface-2": "#232c3d", border: "#323d52", text: "#e8edf6", "text-muted": "#a0abc0", accent: "#9fb8f0", "accent-fg": "#0e1730", holiday: "#f591a3", satblue: "#9fb8f0" },
+  ),
+  themePalette(
+    "modern", "모던",
+    { bg: "#eef0f3", surface: "#ffffff", "surface-2": "#eceff3", border: "#d9dce1", text: "#0f1115", "text-muted": "#555c69", accent: "#2b59c3", "accent-fg": "#ffffff", holiday: "#cc3333", satblue: "#2b59c3" },
+    { bg: "#0c0d10", surface: "#16181d", "surface-2": "#22252c", border: "#2a2d34", text: "#eceef2", "text-muted": "#9097a3", accent: "#8fb0ff", "accent-fg": "#0c1020", holiday: "#ff8080", satblue: "#8fb0ff" },
+  ),
+  themePalette(
+    "film", "필름",
+    { bg: "#f3f1ec", surface: "#fbfaf7", "surface-2": "#ebe7df", border: "#d6cfc2", text: "#24221e", "text-muted": "#6b665c", accent: "#4f5f2a", "accent-fg": "#ffffff", holiday: "#b0432c", satblue: "#3b5f8a" },
+    { bg: "#161513", surface: "#201f1c", "surface-2": "#2a2925", border: "#3d3a34", text: "#eeebe3", "text-muted": "#a9a396", accent: "#c5d38a", "accent-fg": "#1c2008", holiday: "#f09a80", satblue: "#9cbbe0" },
+  ),
+  themePalette(
+    "forest", "숲",
+    { bg: "#eef3ef", surface: "#ffffff", "surface-2": "#e8f0ea", border: "#d4dcd7", text: "#14231b", "text-muted": "#4c5e54", accent: "#2c6a4c", "accent-fg": "#ffffff", holiday: "#b8402f", satblue: "#2f5f9a" },
+    { bg: "#0d1410", surface: "#152019", "surface-2": "#1e2c23", border: "#2a3a30", text: "#e6efe9", "text-muted": "#98aa9f", accent: "#8fd3ad", "accent-fg": "#0b1f14", holiday: "#f39a88", satblue: "#9cc0f0" },
+  ),
+  themePalette(
+    "night", "밤하늘",
+    { bg: "#eceef5", surface: "#ffffff", "surface-2": "#eceef6", border: "#d0d2dd", text: "#141733", "text-muted": "#545a7a", accent: "#8a6416", "accent-fg": "#ffffff", holiday: "#b83a4a", satblue: "#3a4fb0" },
+    { bg: "#0a0c1a", surface: "#121530", "surface-2": "#1c2040", border: "#2c3050", text: "#e9ebf7", "text-muted": "#9aa0c0", accent: "#f0c870", "accent-fg": "#241a04", holiday: "#ff8f9c", satblue: "#9fb2ff" },
+  ),
+];
+
 /** 기본 제공 팔레트. id 는 사용자 팔레트("u-…")와 겹치지 않는다. */
 export const PRESET_PALETTES: Palette[] = [
   DEFAULT_PALETTE,
@@ -282,6 +326,7 @@ export const PRESET_PALETTES: Palette[] = [
   buildPalette({ id: "sea", name: "바다", accent: "#0f766e", tone: "cool" }),
   buildPalette({ id: "ink", name: "먹(OLED)", accent: DEFAULT_PALETTE.light.accent, tone: "pure" }),
   HIGH_CONTRAST,
+  ...THEME_PALETTES,
 ];
 
 export const MAX_USER_PALETTES = 6;

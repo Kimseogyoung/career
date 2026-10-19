@@ -3,13 +3,13 @@
   display: inline-flex;
   gap: 2px;
   padding: 3px;
-  border-radius: 9px;
+  border-radius: calc(9px * var(--rk-ctl));
   background: var(--surface-2);
 }
 .opt {
   appearance: none;
   border: none;
-  border-radius: 7px;
+  border-radius: calc(7px * var(--rk-ctl));
   background: transparent;
   color: var(--text-muted);
   padding: 5px 13px;

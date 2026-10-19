@@ -9,7 +9,7 @@
 .seg {
   display: inline-flex;
   border: 1px solid var(--border);
-  border-radius: 9px;
+  border-radius: calc(9px * var(--rk-ctl));
   overflow: hidden;
   background: var(--surface);
 }

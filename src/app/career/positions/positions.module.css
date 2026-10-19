@@ -19,7 +19,7 @@
   font-size: 13px;
   font-weight: 600;
   padding: 3px 4px 3px 11px;
-  border-radius: 999px;
+  border-radius: calc(999px * var(--rk-pill));
   background: var(--surface);
   border: 1px solid var(--accent);
   color: var(--text);
@@ -47,7 +47,7 @@
   font: inherit;
   font-size: 13px;
   font-weight: 600;
-  border-radius: 7px;
+  border-radius: calc(7px * var(--rk-ctl));
 }
 .chipAdd:hover {
   background: var(--surface-2);
@@ -65,7 +65,7 @@
 .primary {
   display: inline-block;
   padding: 5px 10px;
-  border-radius: 8px;
+  border-radius: calc(8px * var(--rk-ctl));
   border: 1px solid transparent;
   background: transparent;
   color: var(--text-muted);
@@ -80,9 +80,10 @@
   background: var(--surface-2);
 }
 .primary {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: var(--accent-fg);
+  background: var(--btn-bg);
+  border-color: transparent;
+  color: var(--btn-fg);
+  box-shadow: var(--btn-ring);
 }
 .btn:disabled,
 .primary:disabled {
@@ -91,12 +92,14 @@
 }
 
 .picker {
-  border: 1px solid var(--border);
-  background: var(--surface);
-  border-radius: 10px;
+  border: var(--card-bw) solid var(--card-bc);
+  background: var(--card-bg);
+  border-radius: calc(10px * var(--rk-card));
   padding: 12px 14px;
   margin: 0 0 12px;
   font-size: 13px;
+  box-shadow: var(--card-shadow);
+  backdrop-filter: var(--card-blur);
 }
 .pickerHead {
   display: flex;
@@ -141,12 +144,12 @@
   display: inline-flex;
   gap: 2px;
   padding: 3px;
-  border-radius: 9px;
+  border-radius: calc(9px * var(--rk-ctl));
   background: var(--surface-2);
 }
 .seg button {
   border: 0;
-  border-radius: 7px;
+  border-radius: calc(7px * var(--rk-ctl));
   background: transparent;
   padding: 4px 11px;
   font: inherit;
@@ -169,11 +172,13 @@
   width: 100%;
   border-collapse: separate;
   border-spacing: 0;
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  background: var(--surface);
+  border: var(--card-bw) solid var(--card-bc);
+  border-radius: calc(10px * var(--rk-card));
+  background: var(--card-bg);
   overflow: hidden;
   font-size: 13px;
+  box-shadow: var(--card-shadow);
+  backdrop-filter: var(--card-blur);
 }
 .tbl th {
   text-align: left;
@@ -249,7 +254,7 @@
   color: var(--accent-fg);
   background: var(--accent);
   padding: 0 5px;
-  border-radius: 4px;
+  border-radius: calc(4px * var(--rk-ctl));
   vertical-align: 1px;
 }
 .pos {
@@ -349,7 +354,7 @@
 .t {
   font-size: 12px;
   padding: 1px 8px;
-  border-radius: 6px;
+  border-radius: calc(6px * var(--rk-ctl));
 }
 .tOk {
   background: var(--success-soft);
@@ -369,7 +374,7 @@
   margin: 0;
   padding: 14px;
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: calc(10px * var(--rk-card));
   font-size: 13px;
   color: var(--text-muted);
 }

@@ -4,9 +4,14 @@
    2) 파생 토큰: 아래. 기본 토큰에서 계산하거나 팔레트와 무관하게 고정인 값.
    3) 화면 코드: 1·2층 토큰만 쓴다. 색 리터럴·화면별 다크 규칙을 두지 않는다(인쇄용 종이는 예외). */
 
+/* 테마(T-3)는 모양·이미지 토큰을 :root[data-tid] 에 넣는다(src/lib/themes.ts → layout <style>).
+   모서리 배율(--rk-*), 버튼(--btn-*), 카드(--card-*), 이미지(--app-*, --band-*, --show-*), 장식(--glass, --ink,
+   --sticker, --tape). 화면 코드는 border-radius 를 calc(Npx * var(--rk-…)) 로 쓴다 — 보통 배율 1 이라 겉모습 그대로. */
+
 :root {
-  --radius: 10px;
   --shadow: none;
+  --accent-ink: color-mix(in oklab, var(--accent) 82%, var(--text)); /* 옅은 바탕 위 강조 글자 */
+  --dk: 1; /* 다크에서 바탕 그림을 더 덮는 배율(아래) */
   --raise-shadow: 0 1px 2px rgb(0 0 0 / 0.1); /* 세그먼트에서 고른 칸 */
   --success-soft: color-mix(in srgb, var(--success) 12%, var(--surface));
   --on-color: #ffffff; /* 카테고리 색 등 진한 채움 위 글자 */
@@ -14,8 +19,103 @@
   --on-scrim: #f2f4f8;
 }
 
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --dk: 0.3;
+  }
+}
+:root[data-theme="dark"] {
+  --dk: 0.3;
+}
+
 * {
   box-sizing: border-box;
+}
+
+/* ── 테마 그림 ── 글자는 늘 카드·패널 위. 그림은 바탕에만 깔고 바탕색으로 덮어 대비를 맞춘다. */
+.app-bg {
+  position: fixed;
+  inset: calc(var(--app-blur, 0px) * -2);
+  z-index: -1;
+  pointer-events: none;
+  background-image: var(--app-img, none);
+  background-size: var(--app-size, auto);
+  background-repeat: var(--app-repeat, no-repeat);
+  background-position: center;
+  filter: blur(var(--app-blur, 0px));
+}
+.app-bg::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--bg);
+  opacity: calc(1 - (1 - var(--app-dim, 0)) * var(--dk));
+}
+/* 머리줄 그림: 앱 머리글 위 띠(스크롤하면 지나간다) */
+.theme-band {
+  position: relative;
+  height: calc(var(--band-on, 0) * 64px);
+  background: var(--band-img, none) center / cover no-repeat;
+}
+.theme-band::after,
+.showcase-hero::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--bg);
+  opacity: var(--band-wash, 0);
+}
+@media (max-width: 520px) {
+  .theme-band {
+    height: calc(var(--band-on, 0) * 44px);
+  }
+}
+/* Showcase 첫 화면 그림 */
+.showcase-hero {
+  position: relative;
+  height: calc(var(--show-on, 0) * 150px);
+  margin-bottom: calc(var(--show-on, 0) * 18px);
+  border-radius: calc(12px * var(--rk-card));
+  background: var(--show-img, none) center / cover no-repeat;
+}
+@media (max-width: 520px) {
+  .showcase-hero {
+    height: calc(var(--show-on, 0) * 110px);
+  }
+}
+/* 마스킹테이프 장식: 붙일 상자에 .tape-host */
+.tape-host {
+  position: relative;
+}
+.tape-host::before {
+  content: "";
+  display: var(--tape-display, none);
+  position: absolute;
+  z-index: 2;
+  top: -9px;
+  left: 50%;
+  width: 72px;
+  height: 17px;
+  transform: translateX(-50%) rotate(-3deg);
+  background: var(--tape);
+  border-radius: 1px;
+  pointer-events: none;
+}
+.showcase-hero.tape-host::before {
+  opacity: var(--show-on, 0); /* 첫 화면 그림이 없으면 테이프도 숨김 */
+}
+/* Showcase 에서는 앱 바탕·머리줄 그림을 쓰지 않는다(첫 화면 그림만). */
+:root[data-scope="showcase"] .app-bg,
+:root[data-scope="showcase"] .theme-band {
+  display: none;
+}
+@media print {
+  .app-bg,
+  .theme-band,
+  .showcase-hero {
+    display: none !important;
+  }
 }
 
 html,

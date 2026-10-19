@@ -16,7 +16,7 @@
 .backLink {
   color: var(--text-muted);
   text-decoration: none;
-  border-radius: 7px;
+  border-radius: calc(7px * var(--rk-ctl));
   padding: 4px 9px;
   font-size: 13px;
   font-weight: 600;
@@ -26,11 +26,13 @@
   background: var(--surface-2);
 }
 .section {
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  background: var(--surface);
+  border: var(--card-bw) solid var(--card-bc);
+  border-radius: calc(10px * var(--rk-card));
+  background: var(--card-bg);
   padding: 16px;
   margin-top: 16px;
+  box-shadow: var(--card-shadow);
+  backdrop-filter: var(--card-blur);
 }
 .sectionTitle {
   margin: 0 0 12px;
@@ -58,12 +60,13 @@
   min-width: 0; /* 폰 폭에서 시간 입력 두 칸이 줄어들 수 있게 */
   padding: 6px 9px;
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: calc(6px * var(--rk-ctl));
   background: var(--bg);
   color: var(--text);
 }
 .days {
   display: flex;
+  flex-wrap: wrap; /* 390px 폰에서 요일 칩이 5px 넘치던 것 */
   gap: 4px;
 }
 .promptField {
@@ -81,7 +84,7 @@
   line-height: 1.5;
   padding: 8px 10px;
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: calc(8px * var(--rk-ctl));
   background: var(--bg);
   color: var(--text);
   width: 100%;
@@ -96,7 +99,7 @@
   border: 1px solid var(--border);
   background: var(--bg);
   color: var(--text-muted);
-  border-radius: 999px;
+  border-radius: calc(999px * var(--rk-pill));
   width: 34px;
   height: 34px;
 }
@@ -106,17 +109,18 @@
   border-color: transparent;
 }
 .primary {
-  background: var(--accent);
-  color: var(--accent-fg);
+  background: var(--btn-bg);
+  color: var(--btn-fg);
   border: none;
-  border-radius: 7px;
+  border-radius: calc(7px * var(--rk-ctl));
   padding: 8px 14px;
   font-weight: 600;
+  box-shadow: var(--btn-ring);
 }
 .secondary {
   background: none;
   border: 0;
-  border-radius: 7px;
+  border-radius: calc(7px * var(--rk-ctl));
   padding: 7px 10px;
   color: var(--text-muted);
   font-weight: 600;

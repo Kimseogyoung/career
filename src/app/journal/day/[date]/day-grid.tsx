@@ -179,6 +179,9 @@ export function DayGrid({
         ? { start: editing.start, end: editing.end, ...editing.prefill }
         : { start: "", end: "" };
 
+  // 테마 장식(마스킹테이프)은 그날 첫 기록에만 붙인다.
+  const firstId = entries.reduce<Entry | null>((a, e) => (!a || e.start < a.start ? e : a), null)?.id;
+
   // 카드 1장
   function card(entry: Entry, withActions: boolean, place?: { gridRow: string; gridColumn: number; lines: number }) {
     const cat = catById.get(entry.category);
@@ -188,7 +191,7 @@ export function DayGrid({
     return (
       <div
         key={entry.id}
-        className={styles.card}
+        className={entry.id === firstId ? `${styles.card} tape-host` : styles.card}
         style={{
           ["--cat" as string]: cat?.color,
           ["--lines" as string]: lines,

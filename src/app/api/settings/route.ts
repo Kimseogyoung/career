@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { getSettingsStore, isStoreConfigured } from "@/lib/store/instance";
 import { DEFAULT_SETTINGS } from "@/lib/store/settings";
-import { resolvePaletteId, sanitizePaletteSpecs } from "@/lib/palette";
+import { sanitizePaletteSpecs } from "@/lib/palette";
+import { dropUnknownAssets, resolveThemeId, sanitizeThemeSpecs } from "@/lib/themes";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -50,13 +51,17 @@ export async function PUT(req: Request) {
     allowed.summaryPrompts = sp;
   }
 
-  // 팔레트: 형식 검증 후 저장. showcasePalette 는 (새) 팔레트 목록에 있는 id 만.
+  // 팔레트·테마: 형식 검증 후 저장(ADR-018). 이미지 목록(themeAssets)은 업로드·삭제 API 로만 바뀐다.
+  // 내 테마가 가리키는 올린 이미지는 실제로 등록된 것만, showcaseTheme 은 (새) 테마 목록에 있는 id 만.
   if (patch.palettes !== undefined) allowed.palettes = sanitizePaletteSpecs(patch.palettes);
-  if (patch.showcasePalette !== undefined || patch.palettes !== undefined) {
+  if (patch.themes !== undefined || patch.showcaseTheme !== undefined) {
     try {
       const cur = await settings.get();
-      const specs = (allowed.palettes as ReturnType<typeof sanitizePaletteSpecs> | undefined) ?? cur.palettes ?? [];
-      allowed.showcasePalette = resolvePaletteId(patch.showcasePalette ?? cur.showcasePalette, specs);
+      const assetIds = new Set((cur.themeAssets ?? []).map((a) => a.id));
+      const themes =
+        patch.themes !== undefined ? dropUnknownAssets(sanitizeThemeSpecs(patch.themes), assetIds) : (cur.themes ?? []);
+      if (patch.themes !== undefined) allowed.themes = themes;
+      allowed.showcaseTheme = resolveThemeId(patch.showcaseTheme ?? cur.showcaseTheme, themes);
     } catch (e) {
       return NextResponse.json({ error: "upstream", message: (e as Error).message }, { status: 503 });
     }

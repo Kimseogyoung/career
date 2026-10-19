@@ -13,7 +13,7 @@
 .banner {
   background: color-mix(in srgb, var(--danger) 12%, var(--surface));
   border: 1px solid color-mix(in srgb, var(--danger) 40%, var(--border));
-  border-radius: 8px;
+  border-radius: calc(8px * var(--rk-ctl));
   padding: 10px 12px;
   font-size: 13px;
   margin: 0 0 12px;
@@ -25,7 +25,7 @@
   flex-direction: column;
   gap: 10px;
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: calc(12px * var(--rk-card));
   background: var(--surface-2);
   padding: 14px;
 }
@@ -35,7 +35,7 @@
   font-size: 15px;
   padding: 10px 12px;
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: calc(8px * var(--rk-ctl));
   background: var(--bg);
   color: var(--text);
 }
@@ -55,7 +55,7 @@
   font: inherit;
   font-size: 12.5px;
   padding: 3px 8px;
-  border-radius: 7px;
+  border-radius: calc(7px * var(--rk-ctl));
   border: 0;
   background: none;
   color: var(--text-muted);
@@ -89,7 +89,7 @@
   font-size: 13px;
   padding: 8px 10px;
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: calc(8px * var(--rk-ctl));
   background: var(--bg);
   color: var(--text);
   flex: 1 1 180px;
@@ -108,7 +108,7 @@
   font-size: 13px;
   padding: 8px 10px;
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: calc(8px * var(--rk-ctl));
   background: var(--bg);
   color: var(--text);
   flex: 1 1 0;
@@ -132,7 +132,7 @@
   font-weight: 600;
   padding: 7px 10px;
   border: 0;
-  border-radius: 7px;
+  border-radius: calc(7px * var(--rk-ctl));
   background: none;
   color: var(--text-muted);
   cursor: pointer;
@@ -148,10 +148,11 @@
   font-weight: 600;
   padding: 7px 16px;
   border: none;
-  border-radius: 7px;
-  background: var(--accent);
-  color: var(--accent-fg);
+  border-radius: calc(7px * var(--rk-ctl));
+  background: var(--btn-bg);
+  color: var(--btn-fg);
   cursor: pointer;
+  box-shadow: var(--btn-ring);
 }
 
 /* ── 결과 ── */
@@ -180,11 +181,13 @@
   display: block;
   text-decoration: none;
   color: var(--text);
-  border: 1px solid var(--border);
+  border: var(--card-bw) solid var(--card-bc);
   border-left: 3px solid var(--cat, var(--border));
-  border-radius: 8px;
-  background: var(--surface);
+  border-radius: calc(8px * var(--rk-card));
+  background: var(--card-bg);
   padding: 10px 12px;
+  box-shadow: var(--card-shadow);
+  backdrop-filter: var(--card-blur);
 }
 
 .itemLink:hover {
@@ -243,6 +246,6 @@
 .hl {
   background: color-mix(in srgb, var(--accent) 28%, transparent);
   color: inherit;
-  border-radius: 3px;
+  border-radius: calc(3px * var(--rk-ctl));
   padding: 0 1px;
 }

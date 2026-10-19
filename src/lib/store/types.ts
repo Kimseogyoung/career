@@ -2,6 +2,7 @@
 // 날짜 키는 전부 문자열로 다룬다(일 YYYY-MM-DD, 월 YYYY-MM, 주 ISO YYYY-Www).
 
 import type { PaletteSpec } from "@/lib/palette";
+import type { ThemeAsset, ThemeSpec } from "@/lib/themes";
 
 export type CategoryId = "work" | "study" | "meeting" | "side" | "etc";
 
@@ -123,7 +124,9 @@ export interface Settings {
   summaryPrompts?: SummaryPrompts;
   achievementPrompts?: AchievementPrompts;
   palettes?: PaletteSpec[]; // 사용자 팔레트(재료만). 기기별 선택은 localStorage (ADR-018)
-  showcasePalette?: string; // 공개 Showcase 에 쓸 팔레트 id
+  themes?: ThemeSpec[]; // 내 테마(바탕 테마 + 바꾼 값). 기기별 선택은 localStorage
+  themeAssets?: ThemeAsset[]; // 올린 테마 이미지 목록. 파일은 meta/theme/ (ADR-019)
+  showcaseTheme?: string; // 공개 Showcase 에 쓸 테마 id
 }
 
 // ── 커리어: 성과 모음 (meta/achievements.json) ──────────────────────

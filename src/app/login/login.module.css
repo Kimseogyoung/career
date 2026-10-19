@@ -8,10 +8,12 @@
 .card {
   width: 100%;
   max-width: 340px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
+  background: var(--card-bg);
+  border: var(--card-bw) solid var(--card-bc);
+  border-radius: calc(10px * var(--rk-card));
   padding: 28px 24px;
+  box-shadow: var(--card-shadow);
+  backdrop-filter: var(--card-blur);
 }
 
 .title {
@@ -37,7 +39,7 @@
   width: 100%;
   padding: 9px 11px;
   border: 1px solid var(--border);
-  border-radius: 7px;
+  border-radius: calc(7px * var(--rk-ctl));
   background: var(--bg);
   color: var(--text);
 }
@@ -52,10 +54,11 @@
   margin-top: 16px;
   padding: 10px;
   border: none;
-  border-radius: 7px;
-  background: var(--accent);
-  color: var(--accent-fg);
+  border-radius: calc(7px * var(--rk-ctl));
+  background: var(--btn-bg);
+  color: var(--btn-fg);
   font-weight: 600;
+  box-shadow: var(--btn-ring);
 }
 
 .submit:disabled {
@@ -90,7 +93,7 @@
   text-align: center;
   padding: 9px;
   border: 1px solid var(--border);
-  border-radius: 7px;
+  border-radius: calc(7px * var(--rk-ctl));
   color: var(--text);
   font-size: 13px;
   font-weight: 600;

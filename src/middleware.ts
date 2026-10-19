@@ -53,7 +53,7 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    // 정적 자산과 PWA 관련 파일은 미들웨어를 타지 않는다.
-    "/((?!_next/static|_next/image|favicon.ico|icons/|manifest.webmanifest|sw.js).*)",
+    // 정적 자산과 PWA 관련 파일, 기본 테마 그림(public/themes)은 미들웨어를 타지 않는다.
+    "/((?!_next/static|_next/image|favicon.ico|icons/|themes/|manifest.webmanifest|sw.js).*)",
   ],
 };

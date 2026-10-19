@@ -12,6 +12,7 @@ test("공개: 로그인·헬스체크·Showcase 와 그 하위", () => {
     "/showcase",
     "/showcase/achievements",
     "/showcase/media/01AAAAAAAAAAAAAAAAAAAAAAAA/01BBBBBBBBBBBBBBBBBBBBBBBB", // 공개 사진
+    "/showcase/theme-assets/01AAAAAAAAAAAAAAAAAAAAAAAA", // 공개 테마 첫 화면 그림(ADR-019)
   ]) {
     assert.equal(isPublicPath(p), true, p);
   }
@@ -32,6 +33,7 @@ test("비공개: 기록·요약·설정·커리어·모든 데이터 API", () =>
     "/api/profile",
     "/api/journal/2026-10-01",
     "/api/settings",
+    "/api/theme-assets/01AAAAAAAAAAAAAAAAAAAAAAAA", // 앱 테마 이미지는 로그인 필요
     "/api/export",
     "/api/public/achievements", // 공개 JSON API 는 두지 않는다(ADR-013)
   ]) {

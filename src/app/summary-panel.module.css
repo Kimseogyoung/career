@@ -1,9 +1,11 @@
 .panel {
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  background: var(--surface);
+  border: var(--card-bw) solid var(--card-bc);
+  border-radius: calc(10px * var(--rk-card));
+  background: var(--card-bg);
   padding: 16px;
   margin: 18px 0;
+  box-shadow: var(--card-shadow);
+  backdrop-filter: var(--card-blur);
 }
 
 .head {
@@ -35,7 +37,7 @@
   border: 0;
   background: none;
   color: var(--text-muted);
-  border-radius: 7px;
+  border-radius: calc(7px * var(--rk-ctl));
   padding: 5px 9px;
   font-size: 13px;
   font-weight: 600;
@@ -49,8 +51,9 @@
 
 .btnPrimary,
 .btnPrimary:hover {
-  background: var(--accent);
-  color: var(--accent-fg);
+  background: var(--btn-bg);
+  color: var(--btn-fg);
+  box-shadow: var(--btn-ring);
 }
 
 .btn:disabled {
@@ -74,7 +77,7 @@
   font: inherit;
   padding: 10px;
   border: 1px solid var(--border);
-  border-radius: 7px;
+  border-radius: calc(7px * var(--rk-ctl));
   background: var(--bg);
   color: var(--text);
   resize: vertical;

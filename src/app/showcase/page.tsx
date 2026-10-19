@@ -71,6 +71,8 @@ export default async function ShowcasePage() {
   return (
     <main className={styles.shell}>
       <ShowcaseNav current="home" brand={profile.name} />
+      {/* 공개 테마의 첫 화면 그림(없으면 높이 0). 장식 테이프도 여기에. */}
+      <div className="showcase-hero tape-host" aria-hidden="true" />
 
       {profile.name || profile.headline ? (
         <header className={styles.who}>

@@ -8,6 +8,7 @@ import { ProjectStore } from "./projects";
 import { ProfileStore } from "./profile";
 import { ResumeStore } from "./resumes";
 import { PositionStore } from "./positions";
+import { ThemeAssetStore } from "./theme-assets";
 
 // Store·SettingsStore 싱글턴. 환경변수로 구성하며, 설정이 없으면 null 을 반환한다.
 // 원격 설정이 없어도 앱은 떠야 하므로(제약 6) 호출 측에서 null 을 "미설정"으로 처리한다.
@@ -27,6 +28,7 @@ interface StoreGlobal {
   profile: ProfileStore | null;
   resumes: ResumeStore | null;
   positions: PositionStore | null;
+  themeAssets: ThemeAssetStore | null;
   initPromise: Promise<void> | null;
   configured: boolean;
 }
@@ -40,6 +42,7 @@ const state: StoreGlobal = (g.__careerStore ??= {
   profile: null,
   resumes: null,
   positions: null,
+  themeAssets: null,
   initPromise: null,
   configured: false,
 });
@@ -84,6 +87,7 @@ export async function getStore(): Promise<Store | null> {
   state.profile = new ProfileStore(github);
   state.resumes = new ResumeStore(github);
   state.positions = new PositionStore(github);
+  state.themeAssets = new ThemeAssetStore(github, state.settings);
   state.initPromise = state.instance.init();
   await state.initPromise;
   return state.instance;
@@ -123,6 +127,12 @@ export async function getResumeStore(): Promise<ResumeStore | null> {
 export async function getPositionStore(): Promise<PositionStore | null> {
   await getStore();
   return state.positions;
+}
+
+/** 테마 이미지 저장소. */
+export async function getThemeAssetStore(): Promise<ThemeAssetStore | null> {
+  await getStore();
+  return state.themeAssets;
 }
 
 /** 설정 여부만 빠르게 확인(네트워크 없음). */

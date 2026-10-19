@@ -26,7 +26,7 @@
 .navLink {
   color: var(--text-muted);
   text-decoration: none;
-  border-radius: 7px;
+  border-radius: calc(7px * var(--rk-ctl));
   padding: 4px 9px;
   font-size: 13px;
   font-weight: 600;
@@ -41,7 +41,7 @@
   background: color-mix(in srgb, var(--danger) 12%, var(--surface));
   border: 1px solid color-mix(in srgb, var(--danger) 40%, var(--border));
   color: var(--text);
-  border-radius: 8px;
+  border-radius: calc(8px * var(--rk-ctl));
   padding: 10px 12px;
   font-size: 13px;
   margin: 12px 0;
@@ -70,7 +70,7 @@
 .addBtn {
   background: none;
   border: 0;
-  border-radius: 7px;
+  border-radius: calc(7px * var(--rk-ctl));
   color: var(--accent);
   font-weight: 600;
   padding: 6px 9px;
@@ -90,7 +90,7 @@
 /* ── 편집/추가 패널 ── */
 .panel {
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: calc(12px * var(--rk-card));
   background: var(--surface-2);
   padding: 12px;
   margin: 12px 0;
@@ -122,7 +122,7 @@
   gap: 6px;
   border: 1px solid var(--border);
   background: var(--surface);
-  border-radius: 999px;
+  border-radius: calc(999px * var(--rk-pill));
   padding: 5px 11px;
   font-size: 12.5px;
   color: var(--text);
@@ -137,7 +137,7 @@
 .dot {
   width: 8px;
   height: 8px;
-  border-radius: 999px;
+  border-radius: calc(999px * var(--rk-pill));
   background: var(--cat, var(--text-muted));
   flex: none;
 }
@@ -178,7 +178,7 @@
 
 .foldBody {
   border: 0;
-  border-radius: 8px;
+  border-radius: calc(8px * var(--rk-ctl));
   padding: 12px;
   color: var(--text-muted);
   font-size: 12.5px;
@@ -264,7 +264,7 @@
   text-align: left;
   background: none;
   border: 0;
-  border-radius: 7px;
+  border-radius: calc(7px * var(--rk-ctl));
   color: var(--text-muted);
   padding: 8px 11px;
   font-size: 12.5px;
@@ -290,16 +290,18 @@
 }
 
 .card {
-  border: 1px solid var(--border);
+  border: var(--card-bw) solid var(--card-bc);
   border-left: 3px solid var(--cat, var(--border));
-  border-radius: 8px;
-  background: var(--surface);
+  border-radius: calc(8px * var(--rk-card));
+  background: var(--card-bg);
   padding: 8px 11px;
   min-width: 0;
   cursor: pointer;
   text-align: left;
   color: var(--text);
   font: inherit;
+  box-shadow: var(--card-shadow);
+  backdrop-filter: var(--card-blur);
 }
 
 .chead {
@@ -312,7 +314,7 @@
 .chip {
   font-size: 12px;
   padding: 1px 8px;
-  border-radius: 999px;
+  border-radius: calc(999px * var(--rk-pill));
   color: var(--on-color);
   background: var(--cat, var(--text-muted));
   flex: none;
@@ -388,7 +390,7 @@
   font-weight: 700;
   color: var(--accent-fg);
   background: var(--accent);
-  border-radius: 4px;
+  border-radius: calc(4px * var(--rk-ctl));
   padding: 1px 5px;
   font-variant-numeric: tabular-nums;
 }
@@ -396,7 +398,7 @@
 .nowLn {
   height: 2px;
   background: var(--accent);
-  border-radius: 2px;
+  border-radius: calc(2px * var(--rk-ctl));
   position: relative;
 }
 
@@ -407,19 +409,21 @@
   top: -3px;
   width: 7px;
   height: 7px;
-  border-radius: 999px;
+  border-radius: calc(999px * var(--rk-pill));
   background: var(--accent);
 }
 
 /* ── 편집 폼 ── */
 .form {
   border: 1px solid var(--accent);
-  border-radius: 8px;
+  border-radius: calc(8px * var(--rk-card));
   padding: 12px;
-  background: var(--surface);
+  background: var(--card-bg);
   display: flex;
   flex-direction: column;
   gap: 10px;
+  box-shadow: var(--card-shadow);
+  backdrop-filter: var(--card-blur);
 }
 
 .row {
@@ -435,7 +439,7 @@
   font: inherit;
   padding: 7px 9px;
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: calc(6px * var(--rk-ctl));
   background: var(--bg);
   color: var(--text);
 }
@@ -488,20 +492,21 @@
 }
 
 .save {
-  background: var(--accent);
-  color: var(--accent-fg);
+  background: var(--btn-bg);
+  color: var(--btn-fg);
   border: none;
-  border-radius: 6px;
+  border-radius: calc(6px * var(--rk-ctl));
   padding: 7px 14px;
   font-weight: 600;
   cursor: pointer;
   font-family: inherit;
+  box-shadow: var(--btn-ring);
 }
 
 .cancel {
   background: none;
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: calc(6px * var(--rk-ctl));
   padding: 7px 14px;
   color: var(--text-muted);
   cursor: pointer;
@@ -512,7 +517,7 @@
   background: none;
   border: 1px solid color-mix(in srgb, var(--danger) 40%, var(--border));
   color: var(--danger);
-  border-radius: 6px;
+  border-radius: calc(6px * var(--rk-ctl));
   padding: 7px 12px;
   cursor: pointer;
   font-family: inherit;

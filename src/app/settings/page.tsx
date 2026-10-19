@@ -9,8 +9,8 @@ import { ReminderForm } from "./reminder-form";
 import { SummaryPromptsForm } from "./summary-prompts-form";
 import { AchievementPromptsForm } from "./achievement-prompts-form";
 import { ThemeToggle } from "@/app/components/theme-toggle";
-import { resolvePaletteId } from "@/lib/palette";
-import { PalettePicker } from "./palette-picker";
+import { resolveThemeId } from "@/lib/themes";
+import { ThemePicker } from "./theme-picker";
 import { LogoutButton } from "@/app/logout-button";
 import styles from "./settings.module.css";
 
@@ -47,7 +47,13 @@ export default async function SettingsPage() {
             <h2 className={styles.sectionTitle}>테마</h2>
             <ThemeToggle />
             <p className={styles.note}>이 기기에만 적용됩니다.</p>
-            <PalettePicker initialSpecs={[]} initialShowcase="default" configured={false} />
+            <ThemePicker
+              initialPaletteSpecs={[]}
+              initialThemeSpecs={[]}
+              initialAssets={[]}
+              initialShowcase="default"
+              configured={false}
+            />
           </section>
         </>
       ) : (
@@ -56,9 +62,11 @@ export default async function SettingsPage() {
             <h2 className={styles.sectionTitle}>테마</h2>
             <ThemeToggle />
             <p className={styles.note}>이 기기에만 적용됩니다. 시스템은 OS 설정을 따릅니다.</p>
-            <PalettePicker
-              initialSpecs={settings.palettes ?? []}
-              initialShowcase={resolvePaletteId(settings.showcasePalette, settings.palettes ?? [])}
+            <ThemePicker
+              initialPaletteSpecs={settings.palettes ?? []}
+              initialThemeSpecs={settings.themes ?? []}
+              initialAssets={settings.themeAssets ?? []}
+              initialShowcase={resolveThemeId(settings.showcaseTheme, settings.themes ?? [])}
               configured
             />
           </section>

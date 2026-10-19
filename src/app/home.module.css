@@ -23,11 +23,13 @@
   }
 }
 .card {
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  background: var(--surface);
+  border: var(--card-bw) solid var(--card-bc);
+  border-radius: calc(12px * var(--rk-card));
+  background: var(--card-bg);
   padding: 16px;
   min-width: 0;
+  box-shadow: var(--card-shadow);
+  backdrop-filter: var(--card-blur);
 }
 .card h2 {
   margin: 0 0 10px;
@@ -71,13 +73,13 @@
 .track {
   height: 8px;
   background: var(--surface-2);
-  border-radius: 999px;
+  border-radius: calc(999px * var(--rk-pill));
   overflow: hidden;
 }
 .fill {
   display: block;
   height: 100%;
-  border-radius: 999px;
+  border-radius: calc(999px * var(--rk-pill));
 }
 .barRow .val {
   text-align: right;
@@ -95,7 +97,7 @@
   border: 0;
   background: none;
   color: var(--accent);
-  border-radius: 8px;
+  border-radius: calc(8px * var(--rk-ctl));
   padding: 6px 9px;
   font-size: 13px;
   font-weight: 600;
@@ -105,14 +107,15 @@
   background: var(--surface-2);
 }
 .btn.primary {
-  background: var(--accent);
-  color: var(--accent-fg);
+  background: var(--btn-bg);
+  color: var(--btn-fg);
   padding: 9px 14px;
+  box-shadow: var(--btn-ring);
 }
 .banner {
   background: color-mix(in srgb, var(--danger) 12%, var(--surface));
   border: 1px solid color-mix(in srgb, var(--danger) 40%, var(--border));
-  border-radius: 8px;
+  border-radius: calc(8px * var(--rk-ctl));
   padding: 10px 12px;
   font-size: 13px;
   margin-bottom: 14px;

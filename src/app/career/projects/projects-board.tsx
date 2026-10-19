@@ -14,7 +14,7 @@ import { projectPeriodText as periodText } from "@/lib/project-period";
 import type { CareerEntry, Project, ProjectEnd, ProjectMark, ProjectPhoto } from "@/lib/store/types";
 import { todayKst } from "@/lib/time";
 import { mediaUrl } from "@/app/showcase/types";
-import { prepareImage } from "./image-prep";
+import { prepareImage } from "@/app/components/image-prep";
 import styles from "../career.module.css";
 
 type Editing = { mode: "new" } | { mode: "edit"; id: string } | null;

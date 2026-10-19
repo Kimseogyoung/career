@@ -28,7 +28,7 @@
   color: var(--text-muted);
   text-decoration: none;
   border: 1px solid var(--border);
-  border-radius: 7px;
+  border-radius: calc(7px * var(--rk-ctl));
   padding: 4px 10px;
   font-size: 13px;
 }
@@ -42,13 +42,15 @@
 }
 .item {
   display: block;
-  border: 1px solid var(--border);
-  border-radius: 8px;
+  border: var(--card-bw) solid var(--card-bc);
+  border-radius: calc(8px * var(--rk-card));
   padding: 10px 12px;
   margin-bottom: 6px;
   text-decoration: none;
   color: inherit;
-  background: var(--surface);
+  background: var(--card-bg);
+  box-shadow: var(--card-shadow);
+  backdrop-filter: var(--card-blur);
 }
 .item:hover {
   border-color: var(--text-muted);
@@ -65,7 +67,7 @@
 .banner {
   background: color-mix(in srgb, var(--danger) 12%, var(--surface));
   border: 1px solid color-mix(in srgb, var(--danger) 40%, var(--border));
-  border-radius: 8px;
+  border-radius: calc(8px * var(--rk-ctl));
   padding: 10px 12px;
   font-size: 13px;
   margin: 12px 0;

@@ -22,7 +22,7 @@
 .banner {
   background: color-mix(in srgb, var(--danger) 12%, var(--surface));
   border: 1px solid color-mix(in srgb, var(--danger) 40%, var(--border));
-  border-radius: 8px;
+  border-radius: calc(8px * var(--rk-ctl));
   padding: 10px 12px;
   font-size: 13px;
   margin: 0 0 12px;
@@ -45,7 +45,7 @@
   display: inline-flex;
   gap: 2px;
   padding: 3px;
-  border-radius: 9px;
+  border-radius: calc(9px * var(--rk-ctl));
   background: var(--surface-2);
 }
 .seg button {
@@ -53,7 +53,7 @@
   font-size: 12.5px;
   padding: 4px 11px;
   border: none;
-  border-radius: 7px;
+  border-radius: calc(7px * var(--rk-ctl));
   background: none;
   color: var(--text-muted);
   cursor: pointer;
@@ -77,7 +77,7 @@
   font-size: 13px;
   padding: 6px 9px;
   border: 1px solid var(--border);
-  border-radius: 7px;
+  border-radius: calc(7px * var(--rk-ctl));
   background: var(--bg);
   color: var(--text);
   font-variant-numeric: tabular-nums;
@@ -90,7 +90,7 @@
   font-size: 12.5px;
   padding: 7px 11px;
   border: 0;
-  border-radius: 9px;
+  border-radius: calc(9px * var(--rk-ctl));
   background: none;
   color: var(--text-muted);
   cursor: pointer;
@@ -110,10 +110,11 @@
   font-weight: 600;
   padding: 8px 16px;
   border: none;
-  border-radius: 8px;
-  background: var(--accent);
-  color: var(--accent-fg);
+  border-radius: calc(8px * var(--rk-ctl));
+  background: var(--btn-bg);
+  color: var(--btn-fg);
   cursor: pointer;
+  box-shadow: var(--btn-ring);
 }
 .pull:disabled {
   opacity: 0.5;
@@ -123,10 +124,12 @@
 /* 추출 후보 패널 */
 .panel {
   border: 1px solid var(--accent);
-  border-radius: 12px;
-  background: var(--surface);
+  border-radius: calc(12px * var(--rk-card));
+  background: var(--card-bg);
   margin: 16px 0;
   overflow: hidden;
+  box-shadow: var(--card-shadow);
+  backdrop-filter: var(--card-blur);
 }
 .panelHead {
   display: flex;
@@ -202,7 +205,7 @@
   font-weight: 600;
   padding: 7px 10px;
   border: 0;
-  border-radius: 7px;
+  border-radius: calc(7px * var(--rk-ctl));
   background: none;
   color: var(--text-muted);
   cursor: pointer;
@@ -217,10 +220,11 @@
   font-weight: 600;
   padding: 7px 14px;
   border: none;
-  border-radius: 7px;
-  background: var(--accent);
-  color: var(--accent-fg);
+  border-radius: calc(7px * var(--rk-ctl));
+  background: var(--btn-bg);
+  color: var(--btn-fg);
   cursor: pointer;
+  box-shadow: var(--btn-ring);
 }
 .saveBtn:disabled {
   opacity: 0.5;
@@ -258,7 +262,7 @@
   font-weight: 600;
   padding: 4px 9px;
   border: 0;
-  border-radius: 7px;
+  border-radius: calc(7px * var(--rk-ctl));
   background: none;
   color: var(--danger);
   cursor: pointer;
@@ -271,7 +275,7 @@
   font-size: 12.5px;
   padding: 6px 8px;
   border: 0;
-  border-radius: 8px;
+  border-radius: calc(8px * var(--rk-ctl));
   background: var(--surface-2);
   color: var(--text);
   cursor: pointer;
@@ -289,7 +293,7 @@
   font-weight: 600;
   padding: 5px 9px;
   border: 0;
-  border-radius: 7px;
+  border-radius: calc(7px * var(--rk-ctl));
   background: none;
   color: var(--accent);
   cursor: pointer;
@@ -312,12 +316,14 @@
   gap: 8px;
 }
 .item {
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  background: var(--surface);
+  border: var(--card-bw) solid var(--card-bc);
+  border-radius: calc(10px * var(--rk-card));
+  background: var(--card-bg);
   padding: 11px 13px;
   display: flex;
   gap: 10px;
+  box-shadow: var(--card-shadow);
+  backdrop-filter: var(--card-blur);
 }
 .starBtn {
   flex: none;
@@ -382,7 +388,7 @@
   font-size: 11px;
   color: var(--text-muted);
   border: 1px solid var(--border);
-  border-radius: 5px;
+  border-radius: calc(5px * var(--rk-ctl));
   padding: 1px 6px;
   background: var(--surface-2);
 }
@@ -436,20 +442,22 @@
 /* 편집/추가 폼 */
 .form {
   border: 1px solid var(--accent);
-  border-radius: 12px;
-  background: var(--surface);
+  border-radius: calc(12px * var(--rk-card));
+  background: var(--card-bg);
   padding: 12px;
   margin: 12px 0;
   display: flex;
   flex-direction: column;
   gap: 8px;
+  box-shadow: var(--card-shadow);
+  backdrop-filter: var(--card-blur);
 }
 .fTitle {
   font: inherit;
   font-size: 14px;
   padding: 9px 11px;
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: calc(8px * var(--rk-ctl));
   background: var(--bg);
   color: var(--text);
 }
@@ -462,7 +470,7 @@
   font-size: 13px;
   padding: 8px 10px;
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: calc(8px * var(--rk-ctl));
   background: var(--bg);
   color: var(--text);
   width: 100%;
@@ -478,7 +486,7 @@
   font-size: 13px;
   padding: 7px 9px;
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: calc(8px * var(--rk-ctl));
   background: var(--bg);
   color: var(--text);
   min-width: 120px;
@@ -488,7 +496,7 @@
   font-size: 13px;
   padding: 7px 10px;
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: calc(8px * var(--rk-ctl));
   background: var(--bg);
   color: var(--text);
   flex: 1;
@@ -522,11 +530,13 @@
   margin-top: 4px;
 }
 .subcard {
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  background: var(--surface);
+  border: var(--card-bw) solid var(--card-bc);
+  border-radius: calc(10px * var(--rk-card));
+  background: var(--card-bg);
   padding: 11px;
   margin-bottom: 9px;
+  box-shadow: var(--card-shadow);
+  backdrop-filter: var(--card-blur);
 }
 
 /* 성과 폼: 숨김 토글 */
@@ -600,7 +610,7 @@
   display: inline-flex;
   gap: 2px;
   padding: 3px;
-  border-radius: 9px;
+  border-radius: calc(9px * var(--rk-ctl));
   background: var(--surface-2);
   align-self: flex-end;
 }
@@ -609,7 +619,7 @@
   font-size: 12.5px;
   padding: 5px 11px;
   border: none;
-  border-radius: 7px;
+  border-radius: calc(7px * var(--rk-ctl));
   background: none;
   color: var(--text-muted);
   cursor: pointer;
@@ -632,7 +642,7 @@
   width: 64px;
   height: 40px;
   object-fit: cover;
-  border-radius: 5px;
+  border-radius: calc(5px * var(--rk-ctl));
   border: 1px solid var(--border);
 }
 
@@ -654,7 +664,7 @@
   width: 100%;
   aspect-ratio: 16 / 10;
   object-fit: cover;
-  border-radius: 8px;
+  border-radius: calc(8px * var(--rk-ctl));
   border: 1px solid var(--border);
   background: var(--surface-2);
 }
@@ -666,7 +676,7 @@
   font-weight: 700;
   color: var(--accent-fg);
   background: var(--accent);
-  border-radius: 999px;
+  border-radius: calc(999px * var(--rk-pill));
   padding: 1px 7px;
 }
 .photoBtns {
@@ -680,7 +690,7 @@
   width: 24px;
   height: 24px;
   border: none;
-  border-radius: 6px;
+  border-radius: calc(6px * var(--rk-ctl));
   background: color-mix(in srgb, var(--surface) 88%, transparent);
   color: var(--text);
   font-size: 12px;
@@ -695,7 +705,7 @@
   font-size: 12px;
   padding: 5px 7px;
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: calc(6px * var(--rk-ctl));
   background: var(--bg);
   color: var(--text);
   width: 100%;
@@ -703,7 +713,7 @@
 .photoAdd {
   aspect-ratio: 16 / 10;
   border: 1px dashed var(--border);
-  border-radius: 8px;
+  border-radius: calc(8px * var(--rk-ctl));
   display: grid;
   place-items: center;
   font-size: 12.5px;

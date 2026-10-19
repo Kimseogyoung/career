@@ -1,5 +1,6 @@
 import "server-only";
 import { sanitizePaletteSpecs } from "@/lib/palette";
+import { sanitizeThemeAssets, sanitizeThemeSpecs } from "@/lib/themes";
 import { ConflictError, GitHubStore } from "./github";
 import { SETTINGS_PATH } from "./paths";
 import type {
@@ -70,7 +71,9 @@ function parse(text: string | null): Settings {
       summaryPrompts: sanitizePrompts(parsed.summaryPrompts),
       achievementPrompts: sanitizeAchievementPrompts(parsed.achievementPrompts),
       palettes: sanitizePaletteSpecs(parsed.palettes),
-      showcasePalette: typeof parsed.showcasePalette === "string" ? parsed.showcasePalette : undefined,
+      themes: sanitizeThemeSpecs(parsed.themes),
+      themeAssets: sanitizeThemeAssets(parsed.themeAssets),
+      showcaseTheme: typeof parsed.showcaseTheme === "string" ? parsed.showcaseTheme : undefined,
     };
   } catch {
     return DEFAULT_SETTINGS;

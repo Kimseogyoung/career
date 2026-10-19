@@ -150,12 +150,28 @@
   "palettes": [                         // 선택. 사용자 팔레트(최대 6). 토큰이 아니라 만든 재료만(ADR-018)
     { "id": "u-k3x9a1", "name": "내 팔레트", "accent": "#ffd400", "tone": "cool" } // tone: neutral|warm|cool|pure
   ],
-  "showcasePalette": "sea"              // 선택. 공개 Showcase 팔레트 id(프리셋 default·paper·sea·ink·contrast 또는 사용자 id)
+  "themes": [                           // 선택. 내 테마(최대 8). 바탕 테마 + 바꾼 값만(ADR-018 T-3)
+    {
+      "id": "t-k3x9a1", "name": "내 숲", "base": "forest",   // base: default|wc|sky|ceramic|modern|film|forest|night
+      "palette": "u-k3x9a1",                                 // 선택. 없거나 지워진 팔레트면 바탕 테마 팔레트
+      "shape": { "radius": "none", "button": "outline" },   // 선택. radius none|small|medium|large|full, button solid|soft|outline|text, card line|float|sticker, panel solid|glass, tape bool
+      "images": {                                            // 선택. 칸마다 kind preset(바탕 그림)|none|upload(asset 필수)
+        "app": { "kind": "upload", "asset": "01M5…", "fit": "cover", "blur": 4, "dim": 0.3 }, // fit tile|cover, blur 0–16, dim 0–0.95
+        "show": { "kind": "none" }
+      }
+    }
+  ],
+  "themeAssets": [                      // 업로드 API 로만 바뀐다. 파일은 meta/theme/ (ADR-019)
+    { "id": "01M5…", "ext": "webp", "width": 1920, "height": 1080, "bytes": 240000, "lum": 0.27 } // lum: 평균 밝기 0–1
+  ],
+  "showcaseTheme": "forest"             // 선택. 공개 Showcase 테마 id(기본 테마 또는 내 테마). 없는 id 면 default
 }
 ```
 
 - `summaryPrompts`·`achievementPrompts` 는 선택 필드다. 비거나 없으면 `src/lib/summary/prompts.ts` 기본값. 설정 화면에서 편집한다. 단 성과 추출의 **JSON 출력 형식은 코드 고정**(파싱 때문)이라, 편집 가능한 건 `achievementPrompts.system`(성격·규칙)·`guide`(추가 지침)뿐이다.
-- `palettes` 는 저장·읽기 때 모두 검증한다(`sanitizePaletteSpecs`): id `u-` + 소문자·숫자, hex 색, 정해진 톤만. 팔레트 CSS 는 서버가 그릴 때 만들고(`buildPalette` — 강조색 대비가 4.5:1 미만이면 밝기만 보정) `<style>` 로 넣는다. `showcasePalette` 는 없는 id 면 `default`. **어떤 팔레트를 쓸지는 기기별 `localStorage`(`career-palette`)** 라 여기에 없다.
+- `palettes` 는 저장·읽기 때 모두 검증한다(`sanitizePaletteSpecs`): id `u-` + 소문자·숫자, hex 색, 정해진 톤만. 팔레트 CSS 는 서버가 그릴 때 만들고(`buildPalette` — 강조색 대비가 4.5:1 미만이면 밝기만 보정) `<style>` 로 넣는다. 팔레트는 테마에 딸려 쓰인다(테마 → `data-palette`).
+- `themes` 도 저장·읽기 때 모두 검증한다(`sanitizeThemeSpecs`): id `t-` + 소문자·숫자, base 는 기본 테마 id, 나머지는 열거값·범위 숫자만. 저장 시 등록되지 않은 이미지를 가리키는 칸은 바탕 그림으로 되돌린다. 자유 문자열(그라데이션 등)은 서버 코드의 기본 테마에서만 나온다 — 테마 값도 `<style>` 로 들어가기 때문. **어떤 테마를 쓸지는 기기별 `localStorage`(`career-theme-id`)** 라 여기에 없다.
+- 라이트에서 올린 바탕 이미지 위 글자가 읽히도록 `dim` 은 `lum` 으로 정한 최소값(`0.8 − lum`, 최대 0.85) 아래로 내려가지 않는다.
 - 요약 모델은 설정이 아니라 서버 env `ANTHROPIC_MODEL`(기본 `claude-opus-5-5`)로 정한다.
 
 ### 2.5 `meta/achievements.json` (커리어 · 성과 모음)
@@ -225,6 +241,14 @@
 - 서버는 **바이트 시그니처**로 webp·jpg·png 만 받는다(SVG 등 거부).
 - photoId 는 내용이 바뀌면 새로 발급(불변) → 공개 응답 `/showcase/media/<projectId>/<photoId>` 은 1년 `immutable` 캐시. **목록에 등록된 사진만** 응답한다(임의 레포 파일 읽기 방지).
 - `/api/export`(JSON 내보내기)에는 사진이 포함되지 않는다. 시점 복원은 같은 레포라 사진까지 되돌아간다.
+
+### 2.6.2 `meta/theme/<assetId>.<ext>` (테마 이미지, ADR-019)
+
+- 프로젝트 사진과 같은 규칙: 브라우저에서 긴 변 **1920px**·WebP 로 줄이고, **600KB** 상한, 바이트 시그니처로 webp·jpg·png 만. 최대 **12장**, 목록은 `settings.json` 의 `themeAssets`.
+- 쓰기 큐를 거치지 않고 원격에 바로 쓴다. 원격이 죽어 있으면 업로드가 실패할 뿐 기록 기능에는 영향이 없다.
+- 응답: 앱은 `/api/theme-assets/:id`(로그인, immutable), 공개는 `/showcase/theme-assets/:id`(**공개 Showcase 테마의 첫 화면 그림으로 쓰는 것만**, 5분 캐시 — 공개 테마에서 빠지면 곧 안 보인다). 서버는 프로젝트 사진과 같은 프로세스 메모리 LRU(32MB)를 쓴다.
+- 이미지를 지우면 그 이미지를 쓰던 내 테마 칸은 바탕 그림으로 돌아간다.
+- 기본 테마 그림은 레포가 아니라 앱 이미지(`public/themes/<테마>-<app|band|show>.webp`)에 들어 있다.
 
 ### 2.7 `meta/profile.json` (커리어 · 내 정보)
 
@@ -379,6 +403,9 @@ tagIndex: Map<string, Set<string>>     // 태그 → 날짜 집합. index.json �
 | GET/DELETE | `/api/resumes/:id` | 저장본 한 건(본문 포함) / 삭제(원본 성과엔 영향 없음) |
 | GET/PUT | `/api/profile` | 내 정보(이름·직함·한마디·기술 스택·경력) 조회 / 전체 교체 |
 | GET | `/showcase/media/:projectId/:photoId` | 공개 프로젝트 사진(인증 불필요, 등록된 사진만, immutable 캐시) |
+| POST | `/api/theme-assets?w=&h=&lum=` | 테마 이미지 추가(본문 = 이미지 바이트, 최대 12장·600KB) |
+| GET/DELETE | `/api/theme-assets/:id` | 테마 이미지(로그인) / 삭제(쓰던 내 테마 칸은 바탕 그림으로) |
+| GET | `/showcase/theme-assets/:id` | 공개 테마 이미지(인증 불필요, 공개 테마 첫 화면 그림만) |
 | POST | `/api/push/subscribe` | 푸시 구독 등록 |
 | DELETE | `/api/push/subscribe/:id` | 구독 해제 |
 | GET | `/api/sync/status` | 큐 길이, 마지막 성공 시각, 저하 여부 |
