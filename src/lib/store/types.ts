@@ -1,6 +1,8 @@
 // 원격 저장 계층의 데이터 형태. 전체 레이아웃은 docs/DATA-MODEL.md 참조.
 // 날짜 키는 전부 문자열로 다룬다(일 YYYY-MM-DD, 월 YYYY-MM, 주 ISO YYYY-Www).
 
+import type { PaletteSpec } from "@/lib/palette";
+
 export type CategoryId = "work" | "study" | "meeting" | "side" | "etc";
 
 export interface Entry {
@@ -120,6 +122,8 @@ export interface Settings {
   pushSubscriptions: PushSubscriptionRecord[];
   summaryPrompts?: SummaryPrompts;
   achievementPrompts?: AchievementPrompts;
+  palettes?: PaletteSpec[]; // 사용자 팔레트(재료만). 기기별 선택은 localStorage (ADR-018)
+  showcasePalette?: string; // 공개 Showcase 에 쓸 팔레트 id
 }
 
 // ── 커리어: 성과 모음 (meta/achievements.json) ──────────────────────

@@ -31,7 +31,7 @@
   background: var(--surface);
   color: var(--text);
   font-weight: 600;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--raise-shadow);
 }
 .kindOff {
   color: var(--text-muted);
@@ -64,7 +64,7 @@
   background: var(--surface);
   color: var(--text);
   font-weight: 600;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--raise-shadow);
 }
 .count {
   font-size: 12px;
@@ -270,6 +270,7 @@
 }
 
 /* ── 종이 ─────────────────────────────────────── */
+/* 종이는 테마(팔레트·다크)와 무관하게 항상 흰 바탕·검은 글자 — 인쇄·PDF 와 같은 모습. 색을 여기서 고정한다. */
 .paper {
   --ink: #1b1d22;
   --ink-2: #4a4f59;

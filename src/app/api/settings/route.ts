@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getSettingsStore, isStoreConfigured } from "@/lib/store/instance";
 import { DEFAULT_SETTINGS } from "@/lib/store/settings";
+import { resolvePaletteId, sanitizePaletteSpecs } from "@/lib/palette";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -47,6 +48,18 @@ export async function PUT(req: Request) {
       if (typeof p[k] === "string" && (p[k] as string).trim()) sp[k] = (p[k] as string).trim();
     }
     allowed.summaryPrompts = sp;
+  }
+
+  // 팔레트: 형식 검증 후 저장. showcasePalette 는 (새) 팔레트 목록에 있는 id 만.
+  if (patch.palettes !== undefined) allowed.palettes = sanitizePaletteSpecs(patch.palettes);
+  if (patch.showcasePalette !== undefined || patch.palettes !== undefined) {
+    try {
+      const cur = await settings.get();
+      const specs = (allowed.palettes as ReturnType<typeof sanitizePaletteSpecs> | undefined) ?? cur.palettes ?? [];
+      allowed.showcasePalette = resolvePaletteId(patch.showcasePalette ?? cur.showcasePalette, specs);
+    } catch (e) {
+      return NextResponse.json({ error: "upstream", message: (e as Error).message }, { status: 503 });
+    }
   }
 
   try {

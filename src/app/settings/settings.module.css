@@ -55,6 +55,7 @@
 }
 .input {
   font: inherit;
+  min-width: 0; /* 폰 폭에서 시간 입력 두 칸이 줄어들 수 있게 */
   padding: 6px 9px;
   border: 1px solid var(--border);
   border-radius: 6px;

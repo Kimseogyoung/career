@@ -1,53 +1,17 @@
-/* 차분한 모노 — 무채색 바탕 + 인디고 한 점, 하이라인, 플랫(그림자 최소).
-   테마: :root(라이트) / prefers-color-scheme 다크(수동 라이트가 이김) / [data-theme] 수동 토글 */
+/* 색 토큰은 세 층이다.
+   1) 기본 토큰(--bg, --surface, --text, --accent …): 팔레트가 정한다 — src/lib/palette.ts 가
+      라이트·다크판을 <style> 로 넣는다(layout.tsx). 여기서 정의하지 않는다.
+   2) 파생 토큰: 아래. 기본 토큰에서 계산하거나 팔레트와 무관하게 고정인 값.
+   3) 화면 코드: 1·2층 토큰만 쓴다. 색 리터럴·화면별 다크 규칙을 두지 않는다(인쇄용 종이는 예외). */
 
 :root {
-  --bg: #f7f7f6;
-  --surface: #ffffff;
-  --surface-2: #efefed;
-  --border: #e4e4e0;
-  --text: #17171a;
-  --text-muted: #6d6d68;
-  --accent: #3b43c4;
-  --accent-fg: #ffffff;
-  --danger: #b91c1c;
-  --holiday: #d23b3b;
-  --satblue: #2b6cb0;
   --radius: 10px;
   --shadow: none;
-  color-scheme: light;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --bg: #131316;
-    --surface: #1b1b1f;
-    --surface-2: #212127;
-    --border: #2c2c31;
-    --text: #ededf0;
-    --text-muted: #9a9a95;
-    --accent: #8b93ff;
-    --accent-fg: #15131c;
-    --danger: #f87171;
-    --holiday: #ff6b6b;
-    --satblue: #6aa6ff;
-    color-scheme: dark;
-  }
-}
-
-:root[data-theme="dark"] {
-  --bg: #131316;
-  --surface: #1b1b1f;
-  --surface-2: #212127;
-  --border: #2c2c31;
-  --text: #ededf0;
-  --text-muted: #9a9a95;
-  --accent: #8b93ff;
-  --accent-fg: #15131c;
-  --danger: #f87171;
-  --holiday: #ff6b6b;
-  --satblue: #6aa6ff;
-  color-scheme: dark;
+  --raise-shadow: 0 1px 2px rgb(0 0 0 / 0.1); /* 세그먼트에서 고른 칸 */
+  --success-soft: color-mix(in srgb, var(--success) 12%, var(--surface));
+  --on-color: #ffffff; /* 카테고리 색 등 진한 채움 위 글자 */
+  --scrim: #000000; /* 모달·사진 보기 뒤 가림막(투명도는 쓰는 곳에서) */
+  --on-scrim: #f2f4f8;
 }
 
 * {

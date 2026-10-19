@@ -313,7 +313,7 @@
   font-size: 12px;
   padding: 1px 8px;
   border-radius: 999px;
-  color: #fff;
+  color: var(--on-color);
   background: var(--cat, var(--text-muted));
   flex: none;
 }

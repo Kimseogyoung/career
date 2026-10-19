@@ -65,7 +65,7 @@
   background: var(--surface);
   color: var(--text);
   font-weight: 600;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--raise-shadow);
 }
 .rangeInputs {
   display: flex;
@@ -330,10 +330,7 @@
   color: var(--border);
 }
 .starBtn[data-on="true"] {
-  color: #e0a500;
-}
-:root[data-theme="dark"] .starBtn[data-on="true"] {
-  color: #e8b923;
+  color: var(--star);
 }
 .ibody {
   min-width: 0;
@@ -621,7 +618,7 @@
   background: var(--surface);
   color: var(--text);
   font-weight: 600;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--raise-shadow);
 }
 
 /* 프로젝트 목록 썸네일 */

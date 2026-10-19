@@ -146,11 +146,16 @@
   "summaryPrompts": {                   // 선택. AI 요약 프롬프트 커스텀(비면 코드 기본값 폴백)
     "system": "…",                      // 시스템 프롬프트
     "day": "…", "week": "…", "month": "…" // 범위별 지침
-  }
+  },
+  "palettes": [                         // 선택. 사용자 팔레트(최대 6). 토큰이 아니라 만든 재료만(ADR-018)
+    { "id": "u-k3x9a1", "name": "내 팔레트", "accent": "#ffd400", "tone": "cool" } // tone: neutral|warm|cool|pure
+  ],
+  "showcasePalette": "sea"              // 선택. 공개 Showcase 팔레트 id(프리셋 default·paper·sea·ink·contrast 또는 사용자 id)
 }
 ```
 
 - `summaryPrompts`·`achievementPrompts` 는 선택 필드다. 비거나 없으면 `src/lib/summary/prompts.ts` 기본값. 설정 화면에서 편집한다. 단 성과 추출의 **JSON 출력 형식은 코드 고정**(파싱 때문)이라, 편집 가능한 건 `achievementPrompts.system`(성격·규칙)·`guide`(추가 지침)뿐이다.
+- `palettes` 는 저장·읽기 때 모두 검증한다(`sanitizePaletteSpecs`): id `u-` + 소문자·숫자, hex 색, 정해진 톤만. 팔레트 CSS 는 서버가 그릴 때 만들고(`buildPalette` — 강조색 대비가 4.5:1 미만이면 밝기만 보정) `<style>` 로 넣는다. `showcasePalette` 는 없는 id 면 `default`. **어떤 팔레트를 쓸지는 기기별 `localStorage`(`career-palette`)** 라 여기에 없다.
 - 요약 모델은 설정이 아니라 서버 env `ANTHROPIC_MODEL`(기본 `claude-opus-5-5`)로 정한다.
 
 ### 2.5 `meta/achievements.json` (커리어 · 성과 모음)

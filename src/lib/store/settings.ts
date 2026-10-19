@@ -1,4 +1,5 @@
 import "server-only";
+import { sanitizePaletteSpecs } from "@/lib/palette";
 import { ConflictError, GitHubStore } from "./github";
 import { SETTINGS_PATH } from "./paths";
 import type {
@@ -68,6 +69,8 @@ function parse(text: string | null): Settings {
       pushSubscriptions: Array.isArray(parsed.pushSubscriptions) ? parsed.pushSubscriptions : [],
       summaryPrompts: sanitizePrompts(parsed.summaryPrompts),
       achievementPrompts: sanitizeAchievementPrompts(parsed.achievementPrompts),
+      palettes: sanitizePaletteSpecs(parsed.palettes),
+      showcasePalette: typeof parsed.showcasePalette === "string" ? parsed.showcasePalette : undefined,
     };
   } catch {
     return DEFAULT_SETTINGS;

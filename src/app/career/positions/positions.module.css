@@ -161,7 +161,7 @@
   background: var(--surface);
   color: var(--text);
   font-weight: 600;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--raise-shadow);
 }
 
 /* 표 */
@@ -221,7 +221,7 @@
   font-weight: 800;
 }
 .hi {
-  color: #1f7a4d;
+  color: var(--success);
 }
 .mid {
   color: var(--text);
@@ -271,11 +271,11 @@
   font-size: 12.5px;
 }
 .ok {
-  color: #1f7a4d;
+  color: var(--success);
   font-weight: 700;
 }
 .warn {
-  color: #a15c00;
+  color: var(--warning);
   font-weight: 700;
 }
 .no {
@@ -304,7 +304,7 @@
   padding: 2px 4px;
 }
 .starOn {
-  color: #e0a100;
+  color: var(--star);
 }
 
 .detailBox {
@@ -352,8 +352,8 @@
   border-radius: 6px;
 }
 .tOk {
-  background: color-mix(in srgb, #1f7a4d 12%, var(--surface));
-  color: #1f7a4d;
+  background: var(--success-soft);
+  color: var(--success);
 }
 .tNo {
   background: color-mix(in srgb, var(--danger) 10%, var(--surface));
@@ -372,25 +372,6 @@
   border-radius: 10px;
   font-size: 13px;
   color: var(--text-muted);
-}
-
-@media (prefers-color-scheme: dark) {
-  :global(:root:not([data-theme="light"])) .hi,
-  :global(:root:not([data-theme="light"])) .ok,
-  :global(:root:not([data-theme="light"])) .tOk {
-    color: #5fd39a;
-  }
-  :global(:root:not([data-theme="light"])) .warn {
-    color: #f0b35a;
-  }
-}
-:global(:root[data-theme="dark"]) .hi,
-:global(:root[data-theme="dark"]) .ok,
-:global(:root[data-theme="dark"]) .tOk {
-  color: #5fd39a;
-}
-:global(:root[data-theme="dark"]) .warn {
-  color: #f0b35a;
 }
 
 @media (max-width: 600px) {
