@@ -11,7 +11,6 @@ import {
 import { DEFAULT_PROFILE } from "@/lib/store/profile";
 import type { Achievement, Position } from "@/lib/store/types";
 import { todayKst } from "@/lib/time";
-import { CareerSubnav } from "../career-subnav";
 import { PositionsBoard } from "./positions-board";
 import type { BoardData, PositionRow } from "./types";
 import cstyles from "../career.module.css";
@@ -89,14 +88,12 @@ export default async function PositionsPage() {
 
   return (
     <main className={cstyles.shell} style={{ maxWidth: 900 }}>
-      <div className={cstyles.crumb}>커리어</div>
       <h1 className={cstyles.title}>추천 포지션</h1>
       <p className={cstyles.lede}>
         게임잡에서 고른 직무의 공고를 모아 내 기술·성과와 맞춰 봅니다. 이 탭을 열 때 마지막 수집이 12시간 넘었으면 새로 받아 옵니다. 적합도는
         기술 일치 60 · 경력 조건 25 · 성과로 증명된 정도 15 로 매깁니다. 공고 원문은 게임잡에서
         엽니다.
       </p>
-      <CareerSubnav />
       {!configured ? (
         <p className={cstyles.banner}>원격 저장소가 설정되지 않았습니다.</p>
       ) : failed || !data ? (

@@ -5,6 +5,8 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { applyTheme, readTheme, saveTheme, type Theme } from "@/lib/theme";
 import { isShowcasePath } from "@/lib/public-paths";
+import { todayKst } from "@/lib/time";
+import { sectionTabs } from "./section-tabs";
 import styles from "./site-header.module.css";
 
 // 1차 네비는 홈·일지만. 설정은 오른쪽 톱니 버튼으로, 그 왼쪽에 도움말(?)·테마 토글.
@@ -35,6 +37,7 @@ export function SiteHeader() {
   }, [helpOpen]);
 
   if (pathname === "/login" || pathname.startsWith("/quick") || isShowcasePath(pathname)) return null;
+  const section = sectionTabs(pathname, todayKst());
 
   // 해/달 토글: 현재 효과 테마의 반대로 전환(명시값 저장).
   function toggle() {
@@ -169,6 +172,20 @@ export function SiteHeader() {
             </Link>
           </div>
         </div>
+        {section ? (
+          <nav className={styles.sub} aria-label={section.label}>
+            {section.tabs.map((t) => (
+              <Link
+                key={t.label}
+                href={t.href}
+                className={styles.subItem}
+                aria-current={t.on ? "page" : undefined}
+              >
+                {t.label}
+              </Link>
+            ))}
+          </nav>
+        ) : null}
       </header>
 
       {helpOpen ? <HelpModal onClose={() => setHelpOpen(false)} /> : null}

@@ -16,10 +16,14 @@
 .backLink {
   color: var(--text-muted);
   text-decoration: none;
-  border: 1px solid var(--border);
   border-radius: 7px;
-  padding: 4px 10px;
+  padding: 4px 9px;
   font-size: 13px;
+  font-weight: 600;
+}
+.backLink:hover {
+  color: var(--text);
+  background: var(--surface-2);
 }
 .section {
   border: 1px solid var(--border);
@@ -109,11 +113,17 @@
   font-weight: 600;
 }
 .secondary {
-  background: var(--bg);
-  border: 1px solid var(--border);
+  background: none;
+  border: 0;
   border-radius: 7px;
-  padding: 7px 12px;
+  padding: 7px 10px;
   color: var(--text-muted);
+  font-weight: 600;
+  cursor: pointer;
+}
+.secondary:hover {
+  color: var(--text);
+  background: var(--surface-2);
 }
 .primary:disabled,
 .secondary:disabled {

@@ -602,7 +602,7 @@ export function CareerBoard({
                       ) : null}
                       {a.theme ? <span className={styles.topic}>{a.theme}</span> : null}
                       {a.projectId && projById.get(a.projectId) ? (
-                        <span className={styles.topic}>📁 {projById.get(a.projectId)!.name}</span>
+                        <span className={styles.topic}>{projById.get(a.projectId)!.name}</span>
                       ) : null}
                       {a.hidden ? <span className={styles.hiddenChip}>숨김</span> : null}
                       {a.sourceDates.length ? (

@@ -10,9 +10,19 @@ function AchievementCard({ a, proj }: { a: PublicAchievement; proj?: PublicProje
     <div className={styles.acard}>
       <div className={styles.featTop}>
         <span className={styles.acardTitle}>{a.title}</span>
-        {a.theme ? <span className={styles.themeChip}>{a.theme}</span> : null}
-        {proj ? <span className={styles.projChip}>📁 {proj.name}</span> : null}
-        {a.year ? <span className={styles.period}>{a.year}</span> : null}
+        {a.theme || proj || a.year ? (
+
+          <div className={styles.metaLine}>
+
+            {a.theme ? <span>{a.theme}</span> : null}
+
+            {proj ? <span>{proj.name}</span> : null}
+
+            {a.year ? <span>{a.year}</span> : null}
+
+          </div>
+
+        ) : null}
       </div>
       {detail ? (
         <div className={styles.detail}>

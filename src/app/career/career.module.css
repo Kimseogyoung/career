@@ -37,33 +37,35 @@
 .toolbar {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 8px;
   align-items: center;
-  border: 1px solid var(--border);
-  background: var(--surface-2);
-  border-radius: 12px;
-  padding: 12px;
 }
+/* 보기 전환·필터: 회색 트랙 + 고른 칸만 흰색(색 채움 없음) */
 .seg {
   display: inline-flex;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  overflow: hidden;
-  background: var(--surface);
+  gap: 2px;
+  padding: 3px;
+  border-radius: 9px;
+  background: var(--surface-2);
 }
 .seg button {
   font: inherit;
   font-size: 12.5px;
-  padding: 6px 12px;
+  padding: 4px 11px;
   border: none;
+  border-radius: 7px;
   background: none;
   color: var(--text-muted);
   cursor: pointer;
 }
+.seg button:hover {
+  color: var(--text);
+}
 .seg button[data-on="true"] {
-  background: var(--surface-2);
+  background: var(--surface);
   color: var(--text);
   font-weight: 600;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 .rangeInputs {
   display: flex;
@@ -86,16 +88,20 @@
 .starFilter {
   font: inherit;
   font-size: 12.5px;
-  padding: 6px 11px;
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  background: var(--surface);
+  padding: 7px 11px;
+  border: 0;
+  border-radius: 9px;
+  background: none;
   color: var(--text-muted);
   cursor: pointer;
 }
+.starFilter:hover {
+  color: var(--text);
+}
 .starFilter[data-on="true"] {
   color: var(--text);
-  border-color: var(--accent);
+  font-weight: 600;
+  background: var(--surface-2);
 }
 .pull {
   margin-left: auto;
@@ -169,14 +175,11 @@
   align-items: center;
 }
 .kind {
-  font-size: 10.5px;
+  font-size: 11px;
   font-weight: 700;
-  padding: 1px 7px;
-  border-radius: 999px;
 }
 .detailK {
   color: var(--accent);
-  border: 1px solid color-mix(in srgb, var(--accent) 50%, var(--border));
 }
 .briefK {
   color: var(--text-muted);
@@ -192,15 +195,21 @@
 .spacer {
   flex: 1;
 }
+/* 보조 동작: 테두리 없는 글자 버튼 */
 .ghost {
   font: inherit;
   font-size: 13px;
-  padding: 7px 13px;
-  border: 1px solid var(--border);
+  font-weight: 600;
+  padding: 7px 10px;
+  border: 0;
   border-radius: 7px;
   background: none;
   color: var(--text-muted);
   cursor: pointer;
+}
+.ghost:hover {
+  color: var(--text);
+  background: var(--surface-2);
 }
 .saveBtn {
   font: inherit;
@@ -245,22 +254,27 @@
 }
 .bulkDel {
   font: inherit;
-  font-size: 12px;
-  padding: 4px 11px;
-  border: 1px solid color-mix(in srgb, var(--danger) 45%, var(--border));
+  font-size: 12.5px;
+  font-weight: 600;
+  padding: 4px 9px;
+  border: 0;
   border-radius: 7px;
   background: none;
   color: var(--danger);
   cursor: pointer;
 }
+.bulkDel:hover {
+  background: color-mix(in srgb, var(--danger) 10%, transparent);
+}
 .qFilter {
   font: inherit;
   font-size: 12.5px;
-  padding: 5px 9px;
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  background: var(--surface);
+  padding: 6px 8px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--surface-2);
   color: var(--text);
+  cursor: pointer;
 }
 .selBox {
   margin-top: 2px;
@@ -271,17 +285,17 @@
 }
 .addBtn {
   font: inherit;
-  font-size: 12.5px;
-  padding: 5px 11px;
-  border: 1px dashed var(--border);
+  font-size: 13px;
+  font-weight: 600;
+  padding: 5px 9px;
+  border: 0;
   border-radius: 7px;
   background: none;
-  color: var(--text-muted);
+  color: var(--accent);
   cursor: pointer;
 }
 .addBtn:hover {
-  color: var(--text);
-  border-color: var(--text-muted);
+  background: var(--surface-2);
 }
 .empty {
   color: var(--text-muted);
@@ -336,12 +350,9 @@
   font-weight: 600;
 }
 .badge {
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
-  padding: 1px 7px;
-  border-radius: 999px;
   color: var(--accent);
-  border: 1px solid color-mix(in srgb, var(--accent) 45%, var(--border));
 }
 .detail {
   margin-top: 8px;
@@ -382,24 +393,21 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   margin-top: 7px;
 }
-.topic {
-  font-size: 11.5px;
-  color: var(--text-muted);
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  padding: 1px 8px;
-}
-.srcs {
-  font-size: 12px;
-  color: var(--text-muted);
-}
+/* 메타(분기 · 분류 · 프로젝트 · 근거 수)는 상자 없이 글자와 가운뎃점 */
+.topic,
+.srcs,
 .period {
-  font-size: 11.5px;
-  color: var(--accent);
+  font-size: 12.5px;
+  color: var(--text-muted);
   font-variant-numeric: tabular-nums;
+}
+:is(.period, .topic, .hiddenChip, .srcs) + :is(.period, .topic, .hiddenChip, .srcs)::before {
+  content: "·";
+  margin-right: 6px;
+  opacity: 0.6;
 }
 .more2 {
   background: none;
@@ -495,28 +503,6 @@
   gap: 8px;
 }
 
-/* 커리어 서브탭(성과·프로젝트·내 정보) */
-.subnav {
-  display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
-  margin: 2px 0 18px;
-}
-.subnavLink {
-  font-size: 13px;
-  font-weight: 600;
-  text-decoration: none;
-  color: var(--text-muted);
-  padding: 6px 13px;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-}
-.subnavLink[aria-current="page"] {
-  background: var(--surface-2);
-  color: var(--text);
-  border-color: var(--accent);
-}
-
 /* 프로젝트 소개 줄 */
 .pdesc {
   font-size: 13px;
@@ -564,12 +550,9 @@
 
 /* 성과 카드: 숨김 표시 */
 .hiddenChip {
-  font-size: 11px;
+  font-size: 12.5px;
+  font-weight: 600;
   color: var(--text-muted);
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  padding: 1px 8px;
-  background: var(--surface-2);
 }
 
 /* 글자 수 표시 */
@@ -618,27 +601,27 @@
 /* 진행 중 / 날짜 선택 */
 .seg2 {
   display: inline-flex;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  overflow: hidden;
+  gap: 2px;
+  padding: 3px;
+  border-radius: 9px;
+  background: var(--surface-2);
   align-self: flex-end;
 }
 .seg2 button {
   font: inherit;
   font-size: 12.5px;
-  font-weight: 600;
-  padding: 7px 13px;
+  padding: 5px 11px;
   border: none;
-  background: var(--bg);
+  border-radius: 7px;
+  background: none;
   color: var(--text-muted);
   cursor: pointer;
 }
-.seg2 button + button {
-  border-left: 1px solid var(--border);
-}
 .seg2 button[aria-checked="true"] {
-  background: var(--accent);
-  color: var(--accent-fg);
+  background: var(--surface);
+  color: var(--text);
+  font-weight: 600;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 /* 프로젝트 목록 썸네일 */

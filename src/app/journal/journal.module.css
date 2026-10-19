@@ -19,26 +19,40 @@
   margin: 12px 0;
 }
 
-/* 카테고리 필터 */
+/* 카테고리 필터: 색 점 + 글자(범례 겸). 누르면 그 카테고리만 강조. */
 .filters {
   display: flex;
-  gap: 6px;
+  gap: 2px 4px;
   flex-wrap: wrap;
-  margin-bottom: 10px;
+  margin: 0 0 10px -8px;
 }
 .chip {
-  font-size: 12px;
-  padding: 3px 10px;
-  border-radius: 999px;
-  border: 1px solid var(--border);
-  background: var(--surface);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font: inherit;
+  font-size: 12.5px;
+  padding: 3px 8px;
+  border: 0;
+  border-radius: 7px;
+  background: none;
   color: var(--text-muted);
   cursor: pointer;
 }
-.chip[data-on="true"] {
-  color: #fff;
-  border-color: transparent;
+.chip::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
   background: var(--chip, var(--accent));
+}
+.chip:hover {
+  color: var(--text);
+}
+.chip[data-on="true"] {
+  color: var(--text);
+  font-weight: 600;
+  background: color-mix(in srgb, var(--chip, var(--accent)) 14%, transparent);
 }
 
 /* 월 그리드 */

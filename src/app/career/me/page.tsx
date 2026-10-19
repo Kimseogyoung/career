@@ -1,7 +1,6 @@
 import { getProfileStore, isStoreConfigured } from "@/lib/store/instance";
 import { DEFAULT_PROFILE } from "@/lib/store/profile";
 import type { Profile } from "@/lib/store/types";
-import { CareerSubnav } from "../career-subnav";
 import { ProfileForm } from "./profile-form";
 import styles from "../career.module.css";
 
@@ -23,13 +22,10 @@ export default async function MyInfoPage() {
 
   return (
     <main className={styles.shell}>
-      <div className={styles.crumb}>커리어</div>
       <h1 className={styles.title}>내 정보</h1>
       <p className={styles.lede}>
         공개 Showcase 홈을 채우는 정보입니다. 소개 → 기술 스택 → 경력 순으로 노출됩니다.
       </p>
-
-      <CareerSubnav />
 
       {!configured ? (
         <p className={styles.banner}>원격 저장소가 설정되지 않았습니다.</p>

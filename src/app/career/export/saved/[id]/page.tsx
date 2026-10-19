@@ -2,7 +2,6 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getAchievementStore, getResumeStore, isStoreConfigured } from "@/lib/store/instance";
 import type { ResumeFile } from "@/lib/store/resumes";
-import { CareerSubnav } from "../../../career-subnav";
 import { PortfolioPaper, resumeSummary, savedAtText } from "../../doc";
 import { PrintButton } from "../../print-button";
 import { DeleteVersion } from "./delete-version";
@@ -64,7 +63,6 @@ export default async function SavedResumePage({ params }: { params: Promise<{ id
             입니다 ({resumeSummary(resume.meta)}). 원본을 고쳐도 이 문서는 바뀌지 않습니다.
           </p>
         ) : null}
-        <CareerSubnav />
 
         {failed ? (
           <p className={cstyles.banner}>원격 저장소에 연결하지 못했습니다. 잠시 후 다시 시도하세요.</p>

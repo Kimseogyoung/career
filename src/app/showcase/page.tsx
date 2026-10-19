@@ -191,9 +191,19 @@ export default async function ShowcasePage() {
                 <li key={a.id} className={styles.featItem}>
                   <div className={styles.featTop}>
                     <span className={styles.ftitle}>{a.title}</span>
-                    {a.theme ? <span className={styles.themeChip}>{a.theme}</span> : null}
-                    {proj ? <span className={styles.projChip}>📁 {proj.name}</span> : null}
-                    {a.year ? <span className={styles.period}>{a.year}</span> : null}
+                    {a.theme || proj || a.year ? (
+
+                      <div className={styles.metaLine}>
+
+                        {a.theme ? <span>{a.theme}</span> : null}
+
+                        {proj ? <span>{proj.name}</span> : null}
+
+                        {a.year ? <span>{a.year}</span> : null}
+
+                      </div>
+
+                    ) : null}
                   </div>
                   {line ? <div className={styles.oneLine}>{line}</div> : null}
                   {a.tech.length ? (

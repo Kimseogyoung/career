@@ -2,7 +2,7 @@ import Link from "next/link";
 import { monthShort, weekRangeLabel } from "@/lib/calendar";
 import styles from "./journal-nav.module.css";
 
-// 일지 내부 보기 전환(Year·Month·Week) + 브레드크럼. 서버 컴포넌트(링크만).
+// 일지 브레드크럼(연 › 월 › 주 › 일). 연·월·주 전환은 헤더 둘째 줄(section-tabs). 서버 컴포넌트(링크만).
 export interface JournalCtx {
   view: "year" | "month" | "week" | "day";
   y: number;
@@ -12,12 +12,6 @@ export interface JournalCtx {
 }
 
 export function JournalNav(ctx: JournalCtx) {
-  const views: { key: JournalCtx["view"]; label: string; href: string }[] = [
-    { key: "year", label: "Year", href: `/journal/year/${ctx.y}` },
-    { key: "month", label: "Month", href: `/journal/month/${ctx.ym}` },
-    { key: "week", label: "Week", href: `/journal/week/${ctx.isoWeek}` },
-  ];
-
   const crumbs: { label: string; href?: string; cur?: boolean }[] = [];
   crumbs.push({
     label: `${ctx.y}`,
@@ -47,16 +41,6 @@ export function JournalNav(ctx: JournalCtx) {
 
   return (
     <div className={styles.bar}>
-      <div className={styles.seg} role="group" aria-label="보기">
-        {views.map((v) => {
-          const on = ctx.view === v.key || (ctx.view === "day" && v.key === "week");
-          return (
-            <Link key={v.key} href={v.href} className={styles.segBtn} data-on={on}>
-              {v.label}
-            </Link>
-          );
-        })}
-      </div>
       <nav className={styles.crumbs} aria-label="경로">
         {crumbs.map((c, i) => (
           <span key={i} className={styles.crumbPart}>

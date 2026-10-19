@@ -20,20 +20,21 @@
 
 .nav {
   display: flex;
-  gap: 6px;
+  gap: 2px;
 }
 
 .navLink {
   color: var(--text-muted);
   text-decoration: none;
-  border: 1px solid var(--border);
   border-radius: 7px;
-  padding: 4px 10px;
+  padding: 4px 9px;
   font-size: 13px;
+  font-weight: 600;
 }
 
 .navLink:hover {
   color: var(--text);
+  background: var(--surface-2);
 }
 
 .banner {
@@ -68,13 +69,17 @@
 
 .addBtn {
   background: none;
-  border: 1px dashed var(--border);
-  border-radius: 8px;
-  color: var(--text-muted);
-  padding: 7px 12px;
+  border: 0;
+  border-radius: 7px;
+  color: var(--accent);
+  font-weight: 600;
+  padding: 6px 9px;
   font-size: 13px;
   cursor: pointer;
   font-family: inherit;
+}
+.addBtn:hover {
+  background: var(--surface-2);
 }
 
 .addBtn:hover {
@@ -149,13 +154,17 @@
   width: 100%;
   text-align: left;
   cursor: pointer;
-  border: 1px dashed var(--border);
-  border-radius: 8px;
+  border: 0;
+  border-bottom: 1px solid var(--border);
+  border-radius: 0;
   font-family: inherit;
   font-size: 12.5px;
   color: var(--text-muted);
-  padding: 9px 12px;
-  background: color-mix(in srgb, var(--text-muted) 6%, var(--surface));
+  padding: 9px 2px;
+  background: none;
+}
+.fold:hover {
+  color: var(--text);
 }
 
 .foldChev {
@@ -168,7 +177,7 @@
 }
 
 .foldBody {
-  border: 1px dashed var(--border);
+  border: 0;
   border-radius: 8px;
   padding: 12px;
   color: var(--text-muted);
@@ -225,19 +234,31 @@
   min-width: 0;
 }
 
-/* 빈 시각 행: 시간 눈금 유지 + 그 시각에 바로 추가 */
+/* 빈 시각 행: 시간 눈금만 남기고 상자는 그리지 않는다. 마우스를 올리면(또는 터치 기기에선 흐리게) "+ 기록". */
 .emptySlot {
   align-self: start;
   width: 100%;
   text-align: left;
   background: none;
-  border: 1px dashed var(--border);
-  border-radius: 8px;
+  border: 0;
+  border-radius: 7px;
   color: var(--text-muted);
   padding: 8px 11px;
   font-size: 12.5px;
   cursor: pointer;
   font-family: inherit;
+  opacity: 0;
+  transition: opacity 0.12s;
+}
+.emptySlot:hover,
+.emptySlot:focus-visible {
+  opacity: 1;
+  background: var(--surface-2);
+}
+@media (hover: none) {
+  .emptySlot {
+    opacity: 0.45;
+  }
 }
 
 .emptySlot:hover {

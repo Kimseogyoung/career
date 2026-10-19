@@ -75,6 +75,7 @@
   overflow: hidden;
 }
 .fill {
+  display: block;
   height: 100%;
   border-radius: 999px;
 }
@@ -85,27 +86,28 @@
 }
 .quick {
   display: flex;
-  gap: 8px;
+  gap: 2px;
   flex-wrap: wrap;
-  margin-top: 14px;
+  margin: 12px 0 0 -9px;
 }
+/* 다른 화면으로 가는 링크는 글자로(버튼처럼 상자 두르지 않음). 주 동작(.primary)만 채운다. */
 .btn {
-  border: 1px solid var(--border);
-  background: var(--surface);
-  color: var(--text);
-  border-radius: 9px;
-  padding: 9px 14px;
+  border: 0;
+  background: none;
+  color: var(--accent);
+  border-radius: 8px;
+  padding: 6px 9px;
   font-size: 13px;
+  font-weight: 600;
   text-decoration: none;
 }
 .btn:hover {
-  border-color: var(--accent);
+  background: var(--surface-2);
 }
 .btn.primary {
   background: var(--accent);
   color: var(--accent-fg);
-  border-color: transparent;
-  font-weight: 600;
+  padding: 9px 14px;
 }
 .banner {
   background: color-mix(in srgb, var(--danger) 12%, var(--surface));
@@ -114,4 +116,7 @@
   padding: 10px 12px;
   font-size: 13px;
   margin-bottom: 14px;
+}
+.quick:has(.primary) {
+  margin-left: 0;
 }

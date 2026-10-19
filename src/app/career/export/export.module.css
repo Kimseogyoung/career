@@ -13,25 +13,29 @@
   gap: 10px;
   margin: 16px 0 18px;
 }
+/* 문서 종류(포트폴리오 / 경력기술서)도 보기 전환과 같은 모양 */
 .kind {
-  display: flex;
-  gap: 6px;
+  display: inline-flex;
+  gap: 2px;
+  padding: 3px;
+  border-radius: 9px;
+  background: var(--surface-2);
 }
 .kindOn,
 .kindOff {
-  padding: 6px 12px;
-  border-radius: 8px;
-  font-size: 13px;
-  font-weight: 600;
+  padding: 4px 11px;
+  border-radius: 7px;
+  font-size: 12.5px;
 }
 .kindOn {
-  background: var(--accent);
-  color: var(--accent-fg);
+  background: var(--surface);
+  color: var(--text);
+  font-weight: 600;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 .kindOff {
-  border: 1px dashed var(--border);
   color: var(--text-muted);
-  font-weight: 500;
+  opacity: 0.7;
 }
 .opts {
   display: flex;
@@ -41,20 +45,26 @@
 }
 .seg {
   display: inline-flex;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  overflow: hidden;
+  gap: 2px;
+  padding: 3px;
+  border-radius: 9px;
+  background: var(--surface-2);
 }
 .seg a {
-  padding: 5px 10px;
+  padding: 4px 11px;
+  border-radius: 7px;
   font-size: 12.5px;
   color: var(--text-muted);
   text-decoration: none;
 }
+.seg a:hover {
+  color: var(--text);
+}
 .seg a[aria-current="true"] {
-  background: var(--surface-2);
+  background: var(--surface);
   color: var(--text);
   font-weight: 600;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 .count {
   font-size: 12px;
@@ -72,23 +82,30 @@
   cursor: pointer;
 }
 
+/* 보조 동작: 테두리 없는 글자 버튼 */
 .ghostBtn,
 .dangerBtn {
   display: inline-block;
-  padding: 6px 12px;
+  padding: 6px 10px;
   border-radius: 8px;
-  border: 1px solid var(--border);
+  border: 0;
   background: transparent;
-  color: var(--text);
+  color: var(--text-muted);
   font: inherit;
   font-size: 13px;
   font-weight: 600;
   text-decoration: none;
   cursor: pointer;
 }
+.ghostBtn:hover {
+  color: var(--text);
+  background: var(--surface-2);
+}
 .dangerBtn {
-  border-color: var(--danger);
   color: var(--danger);
+}
+.dangerBtn:hover {
+  background: color-mix(in srgb, var(--danger) 10%, transparent);
 }
 .printBtn:disabled,
 .ghostBtn:disabled,
@@ -226,7 +243,7 @@
 .savedEmpty {
   margin: 0;
   padding: 12px 14px;
-  border: 1px dashed var(--border);
+  border: 1px solid var(--border);
   border-radius: 10px;
   font-size: 12.5px;
   color: var(--text-muted);

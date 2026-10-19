@@ -4,7 +4,6 @@ import type { PortfolioDoc } from "@/lib/export/portfolio";
 import { getResumeStore, isStoreConfigured } from "@/lib/store/instance";
 import type { ResumeMeta } from "@/lib/store/types";
 import { todayKst } from "@/lib/time";
-import { CareerSubnav } from "../career-subnav";
 import { PortfolioPaper, savedAtText, scopeText } from "./doc";
 import { PrintButton } from "./print-button";
 import { SaveVersion } from "./save-version";
@@ -51,13 +50,11 @@ export default async function ExportPage({ searchParams }: { searchParams: Searc
   return (
     <main className={`${cstyles.shell} ${styles.wide}`}>
       <div className={styles.noPrint}>
-        <div className={cstyles.crumb}>커리어</div>
         <h1 className={cstyles.title}>내보내기</h1>
         <p className={cstyles.lede}>
           성과·프로젝트·내 정보를 묶어 제출용 문서로 만듭니다. AI 없이 저장된 내용 그대로 조립합니다.
           &ldquo;인쇄 · PDF 저장&rdquo;에서 대상을 PDF로 고르면 파일로 받을 수 있습니다.
         </p>
-        <CareerSubnav />
 
         <div className={styles.toolbar}>
           <div className={styles.kind}>

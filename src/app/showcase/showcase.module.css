@@ -7,12 +7,16 @@
 /* 공개 사이트 메뉴 */
 .nav {
   display: flex;
-  align-items: center;
-  gap: 4px;
+  align-items: stretch;
+  gap: 2px;
   flex-wrap: wrap;
-  padding-bottom: 14px;
+  min-height: 50px;
   margin-bottom: 20px;
   border-bottom: 1px solid var(--border);
+}
+.nav > .brand,
+.nav > .navBtn {
+  align-self: center;
 }
 .brand {
   font-weight: 700;
@@ -25,17 +29,16 @@
   flex: 1;
 }
 .navBtn {
-  font-size: 12.5px;
+  font-size: 13px;
   font-weight: 600;
   text-decoration: none;
   color: var(--text-muted);
-  padding: 5px 11px;
-  border: 1px solid var(--border);
+  padding: 5px 9px;
   border-radius: 7px;
 }
 .navBtn:hover {
   color: var(--text);
-  border-color: var(--text-muted);
+  background: var(--surface-2);
 }
 
 /* 이름·직함 */
@@ -60,26 +63,28 @@
 .contact {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
-  margin: 10px 0 4px;
+  gap: 2px 4px;
+  margin: 8px 0 4px -8px;
 }
+/* 연락처는 상자 없는 글자 링크(누르면 복사·새 탭). */
 .contactBtn {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 5px 11px;
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  background: var(--surface);
-  color: var(--text);
+  padding: 4px 8px;
+  border: 0;
+  border-radius: 7px;
+  background: none;
+  color: var(--accent);
   font: inherit;
-  font-size: 13px;
+  font-size: 13.5px;
+  font-weight: 600;
   text-decoration: none;
   cursor: pointer;
   max-width: 100%;
 }
 .contactBtn:hover {
-  border-color: var(--accent);
+  background: var(--surface-2);
 }
 .contactEmail {
   user-select: all;
@@ -93,16 +98,30 @@
   display: none;
 }
 .navLink {
-  font-size: 13px;
-  font-weight: 600;
+  position: relative;
+  display: flex;
+  align-items: center;
+  font-size: 14px;
   text-decoration: none;
   color: var(--text-muted);
-  padding: 5px 11px;
-  border-radius: 7px;
+  padding: 0 10px;
+}
+.navLink:hover {
+  color: var(--text);
 }
 .navLink[aria-current="page"] {
-  background: var(--surface-2);
   color: var(--text);
+  font-weight: 700;
+}
+.navLink[aria-current="page"]::after {
+  content: "";
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  bottom: -1px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--accent);
 }
 
 .pageTitle {
@@ -201,14 +220,10 @@
   font-weight: 500;
 }
 .tlBadge {
-  font-size: 10.5px;
+  font-size: 11px;
   font-weight: 700;
-  color: var(--accent-fg);
-  background: var(--accent);
-  border-radius: 999px;
-  padding: 1px 7px;
+  color: var(--accent);
   margin-left: 8px;
-  vertical-align: 1px;
 }
 .tlOrg {
   font-size: 14.5px;
@@ -469,47 +484,48 @@
   font-size: 14.5px;
   font-weight: 600;
 }
-.themeChip {
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--accent);
-  border: 1px solid color-mix(in srgb, var(--accent) 45%, var(--border));
-  border-radius: 999px;
-  padding: 2px 9px;
-  background: color-mix(in srgb, var(--accent) 8%, transparent);
-}
-.projChip {
-  font-size: 11.5px;
+/* 성과 메타(테마 · 프로젝트 · 연도)는 상자 없이 한 줄 글자. */
+.metaLine {
+  flex-basis: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  font-size: 12.5px;
   color: var(--text-muted);
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  padding: 1px 9px;
+}
+.metaLine > * + *::before {
+  content: "·";
+  margin: 0 6px;
+  opacity: 0.6;
 }
 
 /* 성과 전체: 토글 + 그룹 + 풀카드 */
+/* 보기 전환: 회색 트랙 + 고른 칸만 흰색(색 채움 없음) */
 .toggle {
   display: inline-flex;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  overflow: hidden;
+  gap: 2px;
+  padding: 3px;
+  border-radius: 9px;
+  background: var(--surface-2);
   margin-bottom: 18px;
 }
 .toggle button {
   font: inherit;
   font-size: 12.5px;
-  font-weight: 600;
-  padding: 7px 15px;
+  padding: 4px 12px;
   border: none;
-  background: var(--surface);
+  border-radius: 7px;
+  background: none;
   color: var(--text-muted);
   cursor: pointer;
 }
-.toggle button + button {
-  border-left: 1px solid var(--border);
+.toggle button:hover {
+  color: var(--text);
 }
 .toggle button[aria-pressed="true"] {
-  background: var(--accent);
-  color: var(--accent-fg);
+  background: var(--surface);
+  color: var(--text);
+  font-weight: 600;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 .group {
   margin-bottom: 22px;
