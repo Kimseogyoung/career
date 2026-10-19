@@ -7,6 +7,7 @@ import {
   fromMin,
   previousEntry,
   toMin,
+  type LaidOutEntry,
   type RecentActivity,
 } from "@/lib/timeline";
 import type { Category, Entry, RecordingHours } from "@/lib/store/types";
@@ -29,12 +30,21 @@ type Editing =
 
 interface Group {
   startMin: number;
-  entries: Entry[];
+  items: LaidOutEntry[];
 }
 
-// 내용이 3줄을 넘을 법하면 "더보기"를 노출(대략적 기준 — 넘치지 않으면 클램프가 표가 안 남).
-function likelyOverflows(content: string): boolean {
-  return content.length > 90 || content.split("\n").length > 3;
+// 겹친 묶음 안의 시간 칸(분). 15분 칸 × 18px ≈ 1시간 72px(1시간 카드 한 장이 들어가는 높이).
+const SLOT = 15;
+const SLOT_PX = 18;
+
+// 겹친 묶음 안에서는 짧은 기록일수록 본문을 덜 보인다(1시간 이하 1줄, 2시간 이하 2줄).
+function linesFor(minutes: number): number {
+  return minutes <= 60 ? 1 : minutes <= 120 ? 2 : 3;
+}
+
+// 내용이 lines 줄을 넘을 법하면 "더보기"를 노출(대략적 기준 — 넘치지 않으면 클램프가 표가 안 남).
+function likelyOverflows(content: string, lines = 3): boolean {
+  return content.length > lines * 30 || content.split("\n").length > lines;
 }
 
 export function DayGrid({
@@ -59,15 +69,15 @@ export function DayGrid({
 
   // 겹침 묶음(clusterId)으로 그룹핑 → 시간 순서로 흐르는 행.
   const groups = useMemo<Group[]>(() => {
-    const byCluster = new Map<number, Entry[]>();
+    const byCluster = new Map<number, LaidOutEntry[]>();
     for (const it of layout.items) {
       const arr = byCluster.get(it.clusterId) ?? [];
-      arr.push(it.entry);
+      arr.push(it);
       byCluster.set(it.clusterId, arr);
     }
-    const gs = [...byCluster.values()].map((es) => {
-      const sorted = [...es].sort((a, b) => (a.start < b.start ? -1 : 1));
-      return { startMin: toMin(sorted[0]!.start), entries: sorted };
+    const gs = [...byCluster.values()].map((its) => {
+      const sorted = [...its].sort((a, b) => a.top - b.top);
+      return { startMin: sorted[0]!.top, items: sorted };
     });
     return gs.sort((a, b) => a.startMin - b.startMin);
   }, [layout]);
@@ -170,14 +180,21 @@ export function DayGrid({
         : { start: "", end: "" };
 
   // 카드 1장
-  function card(entry: Entry, withActions: boolean) {
+  function card(entry: Entry, withActions: boolean, place?: { gridRow: string; gridColumn: number; lines: number }) {
     const cat = catById.get(entry.category);
     const isOpen = expanded.has(entry.id);
-    const showMore = Boolean(entry.content) && (isOpen || likelyOverflows(entry.content));
+    const lines = place?.lines ?? 3;
+    const showMore = Boolean(entry.content) && (isOpen || likelyOverflows(entry.content, lines));
     return (
       <div
+        key={entry.id}
         className={styles.card}
-        style={{ ["--cat" as string]: cat?.color }}
+        style={{
+          ["--cat" as string]: cat?.color,
+          ["--lines" as string]: lines,
+          gridRow: place?.gridRow,
+          gridColumn: place?.gridColumn,
+        }}
         role="button"
         tabIndex={0}
         onClick={() => openEdit(entry)}
@@ -249,15 +266,49 @@ export function DayGrid({
     );
   }
 
-  // 그룹(겹침 묶음) 1행
+  // 그룹 1행. 단독 기록은 내용 길이대로, 겹친 묶음은 그 안에서만 시간 비례로 그린다.
   function groupRow(g: Group) {
+    const key = `g-${g.items[0]!.entry.id}`;
+    if (g.items.length === 1) {
+      return (
+        <div key={key} className={styles.trow}>
+          <div className={styles.gut}>{fromMin(g.startMin)}</div>
+          {card(g.items[0]!.entry, true)}
+        </div>
+      );
+    }
+    const s0 = Math.floor(g.startMin / SLOT) * SLOT;
+    const e0 = Math.ceil(Math.max(...g.items.map((it) => it.top + it.height)) / SLOT) * SLOT;
+    const ncols = g.items[0]!.ncols;
+    const row = (min: number) => Math.floor((min - s0) / SLOT) + 1;
+    const hours: number[] = [];
+    for (let m = Math.ceil((s0 + 1) / 60) * 60; m < e0; m += 60) hours.push(m);
     return (
-      <div key={`g-${g.entries[0]!.id}`} className={styles.trow}>
-        <div className={styles.gut}>{fromMin(g.startMin)}</div>
-        {g.entries.length === 1 ? (
-          card(g.entries[0]!, true)
-        ) : (
-          <div className={styles.tcols}>{g.entries.map((e) => card(e, false))}</div>
+      <div
+        key={key}
+        className={styles.cluster}
+        style={{
+          gridTemplateColumns: `46px repeat(${ncols}, minmax(0, 1fr))`,
+          gridTemplateRows: `repeat(${(e0 - s0) / SLOT}, minmax(${SLOT_PX}px, auto))`,
+        }}
+      >
+        <div className={styles.gut} style={{ gridRow: 1 }}>
+          {fromMin(g.startMin)}
+        </div>
+        {hours.map((m) => (
+          <div key={`l${m}`} className={styles.hourLine} style={{ gridRow: row(m) }} />
+        ))}
+        {hours.map((m) => (
+          <div key={`h${m}`} className={`${styles.gut} ${styles.hourGut}`} style={{ gridRow: row(m) }}>
+            {fromMin(m)}
+          </div>
+        ))}
+        {g.items.map((it) =>
+          card(it.entry, false, {
+            gridRow: `${row(it.top)} / ${Math.max(row(it.top) + 1, Math.ceil((it.top + it.height - s0) / SLOT) + 1)}`,
+            gridColumn: it.col + 2,
+            lines: linesFor(it.height),
+          }),
         )}
       </div>
     );

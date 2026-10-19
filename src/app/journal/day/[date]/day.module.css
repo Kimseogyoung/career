@@ -227,11 +227,34 @@
   text-align: right;
 }
 
-.tcols {
+/* 겹친 묶음: 이 안에서만 시간 비례(15분 칸). 열은 묶음의 최대 동시 겹침 수,
+   카드는 자기 시작~끝 칸만 차지한다. 글이 길면 칸이 늘어나는 것은 허용(완화된 눈금). */
+.cluster {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-  min-width: 0;
+  column-gap: 8px;
+  border-top: 1px solid var(--border);
+  padding: 8px 0;
+}
+.cluster:first-child {
+  border-top: none;
+}
+.cluster > .card {
+  position: relative; /* 눈금선 위로 */
+  z-index: 1;
+  margin: 2px 0;
+}
+.cluster > .gut {
+  grid-column: 1;
+  margin-right: 2px;
+}
+.cluster > .hourGut {
+  padding-top: 0;
+  transform: translateY(-50%); /* 글자 가운데를 정시 선에 맞춘다 */
+}
+.hourLine {
+  grid-column: 2 / -1;
+  align-self: start;
+  border-top: 1px dashed var(--border);
 }
 
 /* 빈 시각 행: 시간 눈금만 남기고 상자는 그리지 않는다. 마우스를 올리면(또는 터치 기기에선 흐리게) "+ 기록". */
@@ -319,7 +342,7 @@
 
 .cbody.clamp {
   display: -webkit-box;
-  -webkit-line-clamp: 3;
+  -webkit-line-clamp: var(--lines, 3);
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
