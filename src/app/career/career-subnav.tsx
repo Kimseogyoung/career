@@ -20,7 +20,9 @@ export function CareerSubnav() {
           key={t.href}
           href={t.href}
           className={styles.subnavLink}
-          aria-current={path === t.href ? "page" : undefined}
+          aria-current={
+            path === t.href || (t.href !== "/career" && path.startsWith(`${t.href}/`)) ? "page" : undefined
+          }
         >
           {t.label}
         </Link>

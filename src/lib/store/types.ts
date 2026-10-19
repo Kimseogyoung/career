@@ -146,6 +146,20 @@ export interface AchievementsFile {
   achievements: Achievement[];
 }
 
+// ── 커리어: 내보내기 저장본 (meta/resumes/) ─────────────────────────
+
+export type ResumeKind = "portfolio";
+
+/** 저장본 목록 한 줄. 본문(조립 결과)은 meta/resumes/<id>.json 에 따로 둔다. */
+export interface ResumeMeta {
+  id: string; // ULID
+  name: string;
+  kind: ResumeKind;
+  options: { starOnly: boolean; photos: boolean };
+  counts: { projects: number; achievements: number };
+  createdAt: string;
+}
+
 // ── 커리어: 프로젝트 (meta/projects.json) ──────────────────────────
 
 /** 프로젝트 시작·종료 시점. 날짜는 월 단위 "YYYY-MM", 코멘트는 "합류"·"출시" 같은 짧은 말. */

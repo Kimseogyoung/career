@@ -6,6 +6,7 @@ import { SettingsStore } from "./settings";
 import { AchievementStore } from "./achievements";
 import { ProjectStore } from "./projects";
 import { ProfileStore } from "./profile";
+import { ResumeStore } from "./resumes";
 
 // Store·SettingsStore 싱글턴. 환경변수로 구성하며, 설정이 없으면 null 을 반환한다.
 // 원격 설정이 없어도 앱은 떠야 하므로(제약 6) 호출 측에서 null 을 "미설정"으로 처리한다.
@@ -23,6 +24,7 @@ interface StoreGlobal {
   achievements: AchievementStore | null;
   projects: ProjectStore | null;
   profile: ProfileStore | null;
+  resumes: ResumeStore | null;
   initPromise: Promise<void> | null;
   configured: boolean;
 }
@@ -34,6 +36,7 @@ const state: StoreGlobal = (g.__careerStore ??= {
   achievements: null,
   projects: null,
   profile: null,
+  resumes: null,
   initPromise: null,
   configured: false,
 });
@@ -76,6 +79,7 @@ export async function getStore(): Promise<Store | null> {
   state.achievements = new AchievementStore(github);
   state.projects = new ProjectStore(github);
   state.profile = new ProfileStore(github);
+  state.resumes = new ResumeStore(github);
   state.initPromise = state.instance.init();
   await state.initPromise;
   return state.instance;
@@ -103,6 +107,12 @@ export async function getProjectStore(): Promise<ProjectStore | null> {
 export async function getProfileStore(): Promise<ProfileStore | null> {
   await getStore();
   return state.profile;
+}
+
+/** 내보내기 저장본 저장소. */
+export async function getResumeStore(): Promise<ResumeStore | null> {
+  await getStore();
+  return state.resumes;
 }
 
 /** 설정 여부만 빠르게 확인(네트워크 없음). */

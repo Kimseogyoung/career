@@ -19,9 +19,12 @@
 │     └─ 2026-10.json
 ├─ snapshots/                     # 월 1회 tar.gz (2차 사본)
 │  └─ 2026-10-01.tar.gz
-└─ career/                        # 2단계. MVP에서는 생성하지 않음
-   ├─ applications/
-   └─ resumes/
+└─ meta/                          # 커리어(2·3단계)
+   ├─ achievements.json · projects.json · profile.json
+   ├─ media/<projectId>/<photoId>.<ext>
+   └─ resumes/                    # 내보내기 저장본(3-2)
+      ├─ index.json
+      └─ <id>.json
 ```
 
 **왜 이 모양인가**: 네트워크가 정본이므로 요청 수를 최소화해야 한다. 달력은 `index.json` 1회, 월 상세는 월 파일 1회로 끝난다. (근거: [ARCHITECTURE.md §3.4](./ARCHITECTURE.md))
@@ -249,6 +252,30 @@
 - 이메일은 공개 DTO 에 **원문을 넣지 않고 base64(`emailEncoded`)로만** 내보낸다. 화면에서 "복사" 를 눌러야 풀린다 — HTML 을 긁는 단순 수집기 회피용이며 보안 장치는 아니다.
 - 공개 홈 노출 순서: 이름·직함 → 연락처·링크 → 한마디 → 기술 스택 → 경력 → 프로젝트 → ⭐ 대표 성과.
 
+### 2.7.1 `meta/resumes/` (커리어 · 내보내기 저장본, ADR-016)
+
+내보내기 결과 중 사용자가 "이 상태로 저장"한 것만 남긴다. 목록과 본문을 나눈다(본문은 성과 전문이라 수십 KB).
+
+```jsonc
+// meta/resumes/index.json — 목록(최신순)
+{ "version": 1, "resumes": [
+  { "id": "01M5…", "name": "넥슨 지원용", "kind": "portfolio",
+    "options": { "starOnly": true, "photos": false },
+    "counts": { "projects": 3, "achievements": 9 }, "createdAt": "2026-10-19T08:59:00.000Z" }
+] }
+
+// meta/resumes/<id>.json — 본문(저장 당시 조립 결과 그대로)
+{ "version": 1, "meta": { /* 위와 같은 한 줄 */ },
+  "sourceIds": ["01M4…", "…"],      // 근거 성과 id(조립 순서) — 3-3 근거 역추적용
+  "doc": { /* PortfolioDoc: profile, career, projects[+achievements 전문], loose, counts */ } }
+```
+
+- **본문은 스냅샷**: 성과·프로젝트·내 정보를 복사해 넣는다. 원본을 고쳐도 저장본은 바뀌지 않는다. 저장본 화면은 `sourceIds` 로 지금 원본과 비교해 "N건 수정·M건 삭제"만 안내한다.
+- **사진은 복사하지 않고 가리킨다**(`/showcase/media/<projectId>/<photoId>`). 원본 사진을 지우면 저장본에서도 빠진다 — 레포 용량을 저장본마다 늘리지 않기 위함.
+- **본문은 서버가 다시 조립한다**: 저장 API 는 옵션만 받는다(클라이언트가 보낸 문서를 저장하지 않음).
+- **쓰기 순서로 일관성 유지("목록에 있으면 본문이 있다")**: 저장은 본문 → 목록(목록 쓰기가 실패하면 본문 삭제), 삭제는 목록 → 본문. 목록 sha 충돌은 다시 읽어 재시도.
+- 이름 60자(비면 "저장본"), 본문 900KB 상한(GitHub contents API 1MB 한계). id 는 영숫자 ULID 만 경로로 만든다.
+
 ### 2.8 입력 한도와 "기존 글은 자르지 않는다"
 
 - 화면 한도(`src/lib/career-limits.ts`): 한마디 500자, 경력 비고 500자(약 10줄), 프로젝트 소개 300자, 기간 코멘트 20자, 사진 설명 100자 — **새로 입력할 때만** 적용(maxLength·카운터).
@@ -310,6 +337,8 @@ tagIndex: Map<string, Set<string>>     // 태그 → 날짜 집합. index.json �
 | PATCH/DELETE | `/api/projects/:id` | 프로젝트 수정(이름·소개·기간, 사진 순서·설명) / 삭제(사진 파일 포함, 연결된 성과는 '기타'로 남음) |
 | POST | `/api/projects/:id/photos?w=&h=` | 사진 추가(본문 = 이미지 바이트, 최대 10장·900KB) |
 | DELETE | `/api/projects/:id/photos/:photoId` | 사진 삭제(파일 포함) |
+| GET/POST | `/api/resumes` | 내보내기 저장본 목록 / 지금 조립 결과 저장(`{ name, kind:"portfolio", starOnly, photos }` — 본문은 서버가 조립) |
+| GET/DELETE | `/api/resumes/:id` | 저장본 한 건(본문 포함) / 삭제(원본 성과엔 영향 없음) |
 | GET/PUT | `/api/profile` | 내 정보(이름·직함·한마디·기술 스택·경력) 조회 / 전체 교체 |
 | GET | `/showcase/media/:projectId/:photoId` | 공개 프로젝트 사진(인증 불필요, 등록된 사진만, immutable 캐시) |
 | POST | `/api/push/subscribe` | 푸시 구독 등록 |
