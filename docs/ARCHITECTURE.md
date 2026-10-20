@@ -30,7 +30,7 @@
        ▼                       ▼
 ┌───────────────────┐  ┌───────────────────┐
 │ GitHub (private)  │  │  Claude API       │
-│  ← 기록의 정본    │  │  claude-opus-5    │
+│  ← 기록의 정본    │  │  claude-opus-5-5  │
 │  Contents API     │  │  요약 생성        │
 └───────────────────┘  └───────────────────┘
 ```
@@ -45,7 +45,7 @@
 |---|---|---|
 | 프레임워크 | Next.js (App Router) + TypeScript | UI·API·스케줄러가 한 프로세스 |
 | 스케줄러 | node-cron | `instrumentation.ts`에서 기동 |
-| 요약 | `@anthropic-ai/sdk` — `claude-opus-5`, `thinking: { type: "adaptive" }` | 키 없으면 수동 폴백 |
+| 요약·성과 추출 | `@anthropic-ai/sdk` — `claude-opus-5-5`(`ANTHROPIC_MODEL` 로 변경), `thinking: { type: "adaptive" }` | 키 없으면 수동 폴백 |
 | 알림 | `web-push` (VAPID) + Service Worker | PWA |
 | 인증 | argon2 해시 + JWT httpOnly 쿠키 | 사용자 테이블 없음 |
 | 원격 저장 | GitHub Contents API (`fetch`) | git 바이너리·로컬 `.git` 불필요 |
@@ -174,7 +174,7 @@ PUT /api/journal/2026-10-01/entries/<id>
 
 ## 7. 요약 생성 (Claude API)
 
-- SDK: `@anthropic-ai/sdk`, 모델 `claude-opus-5`, `thinking: { type: "adaptive" }`.
+- SDK: `@anthropic-ai/sdk`, 모델 `claude-opus-5-5`(`ANTHROPIC_MODEL` 로 변경), `thinking: { type: "adaptive" }`.
 - 입력은 해당 기간의 엔트리/하위 요약뿐. 토큰이 작아(1K 미만) 스트리밍 불필요.
 - 결과는 `{ text, generatedBy: "ai" | "manual", model, generatedAt, editedAt }`로 보관해 **AI 초안과 사람이 고친 것을 구분**한다.
 - 실패 시: 요약을 비워두고 `status: "failed"` 기록. 다음 스케줄이나 수동 버튼에서 재시도. **요약 실패가 기록 기능을 막지 않는다.**
