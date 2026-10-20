@@ -28,7 +28,7 @@ const securityHeaders = [
   { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(), payment=()" },
   ...(isProd
     ? [
-        // 서브도메인은 포함하지 않는다(sandbox.seogyoung.com 의 다른 서비스에 영향 주지 않게).
+        // 서브도메인은 포함하지 않는다(같은 상위 도메인의 다른 서비스에 영향 주지 않게).
         { key: "Strict-Transport-Security", value: "max-age=31536000" },
         { key: "Content-Security-Policy", value: CSP },
       ]

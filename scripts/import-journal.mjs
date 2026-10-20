@@ -2,7 +2,7 @@
 // 각 주 [YYYY/MM/DD ~ ...] 블록을 그 주 첫날 09:00-18:00 '업무' 엔트리 1건으로 넣는다.
 // 실행:
 //   미리보기:  node scripts/import-journal.mjs --dry [--source <path>]
-//   실제 넣기: BASE_URL=https://sandbox.seogyoung.com PW=앱비번 node scripts/import-journal.mjs [--source <path>]
+//   실제 넣기: BASE_URL=https://career.example.com PW=앱비번 node scripts/import-journal.mjs [--source <path>]
 // 기본 source: scripts/journal-source.txt
 import { readFileSync } from "node:fs";
 

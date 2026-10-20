@@ -14,13 +14,16 @@
 
 ## 화면
 
-<!-- 스크린샷 자리: docs/images/ 에 아래 파일명(png)으로 넣으면 바로 표시됩니다. -->
+![일지 — 월 달력과 주간 요약](docs/images/month.png)
 
 | | |
 |---|---|
-| ![홈 화면](docs/images/home.png)<br>**홈 — 달력과 주간 요약** | ![일 상세](docs/images/day.png)<br>**일 상세 — 시간 단위 타임라인** |
-| ![월 보기](docs/images/month.png)<br>**월 — 한 달 요약(큰 줄기·성과)** | ![연 보기](docs/images/year.png)<br>**연 — 열두 달 한눈에** |
-| ![검색](docs/images/search.png)<br>**검색 — 전체 기간 부분일치** | ![커리어](docs/images/career.png)<br>**커리어 — 성과 모음** |
+| ![하루 보기](docs/images/day.png)<br>**하루 — 시간 단위 기록과 AI 일간 요약** | ![성과 모음](docs/images/career.png)<br>**커리어 — 기록에서 뽑아 모은 성과** |
+| ![추천 포지션](docs/images/positions-open.png)<br>**추천 포지션 — 공고와 내 기술·성과 맞춰 보기** | ![테마](docs/images/theme-sky.jpg)<br>**테마 — 기본 테마 7종과 내 테마** |
+
+**[전체 화면 보기 →](docs/SCREENS.md)** 연·주 보기, 검색, 프로젝트, 포트폴리오 내보내기, 공개 Showcase, 설정, 테마 7종, 다크 모드, 모바일
+
+> 캡처의 인물·회사·기록은 모두 지어낸 예시 데이터다.
 
 ## 상태
 
@@ -39,6 +42,7 @@
 
 | | |
 |---|---|
+| [화면 모음](docs/SCREENS.md) | 전체 화면 캡처(예시 데이터) |
 | [기획서](docs/PLAN.md) | 무엇을 왜 만드는가, 기능 명세, 화면 |
 | [아키텍처](docs/ARCHITECTURE.md) | 시스템 구성, 기술 스택, 저장 계층, 배포, 장애 동작 |
 | [데이터 모델](docs/DATA-MODEL.md) | 저장 레이아웃, 스키마, API, 코드 규약 |

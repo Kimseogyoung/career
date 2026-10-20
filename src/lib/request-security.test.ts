@@ -24,7 +24,7 @@ test("IP: X-Real-IP 가 없으면 X-Forwarded-For 의 마지막 값", () => {
 
 // ── CSRF (교차 출처 변경 요청) ────────────────────────────────────
 
-const HOST = "career.sandbox.seogyoung.com";
+const HOST = "career.example.com";
 
 test("CSRF: 다른 사이트의 POST/PUT/PATCH/DELETE 는 차단", () => {
   for (const m of ["POST", "PUT", "PATCH", "DELETE"]) {

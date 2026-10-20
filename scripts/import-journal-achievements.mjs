@@ -2,7 +2,7 @@
 // AI 추출본이 너무 요약돼 디테일이 깎인 걸 보강하는 용도. 근거 날짜는 그 주(월) → 일지로 링크됨.
 // 실행:
 //   미리보기:  node scripts/import-journal-achievements.mjs --dry [--source <path>]
-//   실제 넣기: BASE_URL=https://career.sandbox.seogyoung.com PW=앱비번 node scripts/import-journal-achievements.mjs
+//   실제 넣기: BASE_URL=https://career.example.com PW=앱비번 node scripts/import-journal-achievements.mjs
 import { readFileSync } from "node:fs";
 
 const args = process.argv.slice(2);
